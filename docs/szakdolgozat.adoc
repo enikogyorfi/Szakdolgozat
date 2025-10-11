@@ -1,0 +1,122 @@
+= Szakdolgozat
+
+:toc:
+:toclevels: 3
+:sectnums:
+:sectnumlevels: 3
+
+
+== Bevezetés
+
+A szakdolgozat célja, hogy bemutassa a hallgató által választott témakörben végzett kutatást, elemzést és annak eredményeit.
+A dolgozat során a hallgató mélyebb ismereteket szerez a témában, fejleszti kutatási és íráskészségét, valamint hozzájárul a tudományos közösséghez.
+A dolgozat felépítése általában a következő részekből áll:
+
+* Bevezetés: A témakör bemutatása, a kutatási kérdések és célok megfogalmazása.
+* Irodalmi áttekintés: A témához kapcsolódó korábbi kutatások és elméletek ismertetése.
+* Módszertan: A kutatási módszerek és eszközök bemutatása.
+
+* Eredmények: A kutatás során gyűjtött adatok és azok elemzése.
+
+== Irodalmi áttekintés
+
+== Bűnügyi elemzés prototípus fejlesztése
+
+A bűnügyi elemzés prototípus fejlesztése során a következő lépéseket kell követni:
+
+=== Adatfeldolgozás és feltáró adatelemzés
+
+A fejlesztés első lépéseként a `crime_data.csv` adathalmazt a `pandas` könyvtár segítségével betöltöttük egy DataFrame-be.
+A feltáró adatelemzés során különböző vizualizációkat készítettünk a `plotly` könyvtárral, hogy mélyebb betekintést nyerjünk az adatok szerkezetébe és a bűncselekmények eloszlásába.
+
+* **Treemap diagram:** A főbb bűncselekménytípusok arányának vizualizálására készült, amelyen a leggyakoribb kategóriák, mint a lopás (`THEFT`) és a testi sértés (`BATTERY`), vizuálisan is kiemelkedtek.
+* **Hisztogram és Sunburst diagram:** Ezek az ábrák a bűncselekmények kerületenkénti eloszlását mutatták be, lehetővé téve a leginkább érintett területek azonosítását.
+* **Interaktív térkép:** A `folium` könyvtár segítségével egy interaktív térképet hoztunk létre, amelyen a bűncselekmények földrajzi elhelyezkedését jelenítettük meg `MarkerCluster` használatával, hogy az adatok sűrűsége könnyen átlátható legyen.
+
+=== Prediktív modell készítése és finomhangolása
+
+A cél az volt, hogy előre jelezzük a napi bűncselekmények számát havi bontásban.
+Ehhez a 2001 és 2024 közötti adatokat használtuk tanítóadatként.
+
+.Modellfejlesztési lépések
+
+. **Adatok előkészítése:** Az eredeti adathalmazból kinyertük az `Év` és `Hónap` információkat.
+Ezt követően csoportosítottuk az adatokat kerület, év és hónap szerint, majd kiszámítottuk a havi átlagos napi bűncselekményszámot.
+A modell bemeneti jellemzői (`features`) a `District` (kerület), `Year` (év) és `Month` (hónap) lettek.
+. **Modellválasztás:** A predikcióhoz a `scikit-learn` könyvtár `RandomForestRegressor` modelljét választottuk, amely robusztussága és hatékonysága miatt alkalmas az ilyen típusú regressziós feladatokra.
+. **Hiperparaméter-hangolás:** A modell pontosságának növelése érdekében két módszert is alkalmaztunk:
+** `GridSearchCV`: Egy előre definiált paraméterrácson keresi meg a legjobb kombinációt.
+A hangolás során a `n_estimators`, `max_features`, `max_depth` és `bootstrap` paramétereket vizsgáltuk.
+** `RandomizedSearchCV`: Véletlenszerűen választ paraméterkombinációkat egy megadott tartományból, ami gyorsabb lehet nagy paraméterterek esetén.
+A legjobb paramétereket a `parameters/` mappába mentettük, hogy a hangolási folyamatot ne kelljen minden futtatáskor újra elvégezni.
+. **Funkciótervezés (Feature Engineering):** A modell prediktív erejének javítása érdekében új, származtatott jellemzőket hoztunk létre:
+** `Month_Sin`: A hónapok ciklikusságát reprezentálja szinuszos transzformációval, ami segít a modellnek megérteni az évszakos mintázatokat.
+** `Is_Winter` és `Is_Summer`: Bináris változók, amelyek jelzik, hogy egy adott hónap a téli vagy a nyári időszakba esik-e.
+** `District_Year_Interaction`: A kerület és az év közötti interakciót modellezi, ami segíthet azokban az esetekben, ahol egy kerület bűnözési rátája az évek során specifikusan változik.
+
+=== Eredmények vizualizációja és értékelése
+
+A végleges, hangolt modell segítségével előrejelzéseket készítettünk a 2025-ös évre.
+Az eredmények kiértékeléséhez és bemutatásához a következő lépéseket tettük:
+
+. **Metrikák:** A modell teljesítményét a gyökös közép négyzetes hiba (RMSE) és a közepes abszolút százalékos hiba (MAPE) metrikákkal értékeltük.
+A modell pontossága (Accuracy) `100 - MAPE` képlettel került kiszámításra.
+. **Térképes vizualizáció:** A `geopandas` és `folium` könyvtárakkal egy choropleth térképet hoztunk létre, amely Chicago rendőrségi kerületeit ábrázolja.
+A térképen három különböző nézetet jelenítettünk meg:
+** A modell által *prediktált* átlagos napi bűncselekményszámot kerületenként.
+** A *valós* átlagos napi bűncselekményszámot kerületenként.
+** A prediktált és a valós értékek közötti *eltérést*, ami a modell pontosságát vizuálisan is bemutatja.
+Az interaktív térképen az egyes kerületekre kattintva megjelennek a konkrét prediktált és valós értékek, így az eredmények könnyen összehasonlíthatók.
+
+=== Modellértékelés és Eredmények Összehasonlítása
+
+A modell teljesítményének értékelése több lépcsőben történt, hogy biztosítsuk annak megbízhatóságát és pontosságát.
+
+. **Alapmodell értékelése:** Az alap `RandomForestRegressor` modell a tanító adathalmazon kiemelkedően magas, 93.7%-os pontosságot ért el.
+A tanítási görbe (learning curve) elemzése azonban enyhe túltanulásra utalt, mivel a tanító adatokon elért pontosság magasabb volt, mint a keresztvalidációs teszt adatokon.
+Ez jelezte, hogy a modell finomhangolásra szorul.
+
+. **Hiperparaméter-hangolás hatása:** A `GridSearchCV` és `RandomizedSearchCV` segítségével végzett hangolás javított a modell teljesítményén.
+A `GridSearchCV` által talált paraméterekkel a pontosság 94.3%-ra nőtt a tanító adatokon, ami a modell általánosíthatóságának javulását mutatta.
+
+. **Funkciók fontossága:** A hangolt modell elemzése során megvizsgáltuk a bemeneti jellemzők fontosságát.
+A `feature_importance_` attribútum alapján a `District` (kerület) és a `Year` (év) bizonyultak a legmeghatározóbb jellemzőknek a bűncselekmények számának előrejelzésében.
+
+. **Teljesítmény a teszt adatokon:** A végleges, hangolt modellt a korábban félretett teszt adathalmazon (az eredeti adatok 20%-a) is kiértékeltük.
+Itt a modell 86.3%-os pontosságot ért el.
+A tanító és teszt adatok közötti pontosságkülönbség várható, és a modell valós körülmények közötti teljesítményét tükrözi.
+
+. **Funkciótervezés eredményei:** Az újonnan létrehozott, származtatott jellemzők (pl. `Month_Sin`, `Is_Winter`) bevezetése tovább javította a modell pontosságát.
+A kiterjesztett adathalmazon tanított modell a teszt adatokon 86.4%-os, a 2025-ös évi előrejelzésen pedig 83.3%-os pontosságot produkált.
+Ez a csekély, de mérhető javulás igazolja a funkciótervezés hasznosságát a modell prediktív erejének növelésében.
+
+
+[source,python]
+----
+# Import necessary libraries
+import pandas as pd
+import plotly.express as px
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+import geopandas as gpd
+import folium
+
+----
+
+image::../newplot.png[Ez egy kép]
+
+include::alma.adoc[]
+
+
+stem:[a^2 + b^2 = c^2]
+
+latexmath:[C = \alpha + \beta Y^{\gamma} + \epsilon]
+
+[plantuml]
+----
+@startuml
+Alice -> Bob: Hello
+Bob --> Alice: Hi!
+@enduml
+----
+
