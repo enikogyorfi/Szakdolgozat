@@ -1,3 +1,4 @@
+:stem:
 = Szakdolgozat
 
 :toc:
@@ -91,32 +92,8 @@ A kiterjesztett adathalmazon tanított modell a teszt adatokon 86.4%-os, a 2025-
 Ez a csekély, de mérhető javulás igazolja a funkciótervezés hasznosságát a modell prediktív erejének növelésében.
 
 
-[source,python]
-----
-# Import necessary libraries
-import pandas as pd
-import plotly.express as px
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-import geopandas as gpd
-import folium
-
-----
-
-image::../newplot.png[Ez egy kép]
-
-include::alma.adoc[]
+include::Geometriai_Brown.adoc[]
 
 
-stem:[a^2 + b^2 = c^2]
 
-latexmath:[C = \alpha + \beta Y^{\gamma} + \epsilon]
-
-[plantuml]
-----
-@startuml
-Alice -> Bob: Hello
-Bob --> Alice: Hi!
-@enduml
-----
 

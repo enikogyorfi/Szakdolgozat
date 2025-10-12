@@ -1,0 +1,83 @@
+:sectnums:
+:sectnumlevels: 3
+:stem: latexmath
+
+== Geometriai Brownian mozgás
+
+=== Bevezetés
+
+Ha megengedünk némi bizonytalanságot egy differenciálegyenlet együtthatóiban, akkor egy realisztikusabb modelt tudunk felépíteni.
+Tekintsünk egy egyszerű populációs modellt, ahol a populáció növekedési rátája arányos a populáció méretével.
+Ezt a következő differenciálegyenlettel írhatjuk le:
+
+[latexmath]
+++++
+\frac{dN(t)}{dt} = a(t)N(t)
+++++
+
+Ahol stem:[N(t)] a populáció mérete időben, és stem:[a(t)] a növekedési ráta az idő függvényében.
+
+Ha a növekedési rátát nem ismerjük teljesen pontosan, akkor helyettesíthetjük egy determinisztikus és egy sztochasztikus komponens összegével:
+
+[latexmath]
+++++
+a(t) = r(t) + n(t)
+++++
+
+Ahol stem:[r(t)] a determinisztikus komponens, stem:[n(t)] pontos viselkedését nem ismerjük, csak a valószínűségi eloszlását.
+
+=== Matematikai háttér
+
+==== Definíciók
+
+.Valószínűségi Tér
+Egy valószínűségi tér stem:[(\Omega, \mathcal{F}, P)] hármasa tartalmazza:
+
+* stem:[\Omega] *(Eseménytér)*: A lehetséges kimenetelek halmaza.
+* stem:[\mathcal{F}] *($\sigma$-algebra)*: stem:[\Omega] részhalmazainak olyan rendszere, amely tartalmazza az stem:[\emptyset] üres halmazt; komplementer-zárt; és megszámlálható unióra zárt. Az stem:[(\Omega, \mathcal{F})] párost mérhető térnek nevezzük.
+* stem:[P] *(Valószínűségi Mérték)*: Egy stem:[P: \mathcal{F} \to \mathbb{R}] függvény, amely kielégíti a stem:[P(\emptyset)=0] és stem:[P(\Omega)=1] feltételeket, és megszámlálható additivitással rendelkezik diszjunkt halmazok esetén.
+
+stem:[\sigma] -algebra generálása: Adott stem:[\mathcal{U}] halmazrendszer esetén a stem:[\mathcal{H}_{\mathcal{U}}] a stem:[\mathcal{U}]-t tartalmazó legszűkebb stem:[\sigma]-algebra.
+Ha stem:[\Omega] topológiai tér, a nyílt halmazok által generált stem:[\sigma]-algebra a Borel stem:[\sigma]-algebra (stem:[\mathcal{B}]).
+
+==== Brown-mozgás
+
+Egy általános, Itô-típusú SDE a következő szimbolikus formában írható fel:
+[latexmath]
+++++
+dX(t) = \mu(t, X(t))dt + \sigma(t, X(t))dB(t)
+++++
+Ez az egyenlet valójában egy integrálegyenlet rövidítése, és két fő részből áll:
+
+* *Drift tag*: a folyamat változásának determinisztikus, előre jelezhető komponense egy infinitezimális stem:[dt] időlépés alatt.
+* *Diffúziós tag* (stem:[\sigma(X_t, t)dW_t]): Ez a tag a sztochasztikus, előre nem látható komponenst képviseli. A hatásának nagyságát a stem:[\sigma(X_t, t)] volatilitás- vagy diffúziós függvény skálázza, amely függhet a rendszer aktuális állapotától és az időtől is. Ez a tag visz véletlenszerűséget a rendszer leírásába
+
+A fent leírt folyamatot Brown-mozgásnak nevezzük, ha a következő feltételek teljesülnek:
+
+* a stem:[$t \mapsto B_t$] függvény 1 valószínűséggel folytonos
+* stem:[$B_0$] értéke 1 valószínűséggel 0
+* stem:[$B_{t+s} - B_t$] eloszlása normális eloszlású 0 várható értékkel és stem:[$s$] szórásnégyzettel tetszőleges stem:[$s, t$] pozitív számokra
+* stem:[$B_{t+s} - B_t$] független a stem:[$\{B_u : u \leq t\}$] folyamat korábbi értékeitől tetszőleges stem:[$s, t$] pozitív számokra
+
+==== Itô integrál
+
+==== Itô formula
+
+==== Geometriai Brown-mozgás
+
+A pénzügyi modellezésben és más területeken, ahol a vizsgált mennyiségek (pl. árak, populációk mérete) nem vehetnek fel negatív értéket és a növekedésük arányos a jelenlegi méretükkel, a leggyakrabban használt modell a geometriai Brown-mozgás (GBM).
+Az SDE, amely ezt a folyamatot leíró SDE a következő :
+[latexmath]
+++++
+dS(t) = \mu S(t) dt + \sigma S(t) dB(t)
+++++
+Ahol stem:[S(t)] a vizsgált mennyiség (pl. árfolyam), stem:[\mu] a drift (várható növekedési ráta), stem:[\sigma] a volatilitás (a véletlenszerű ingadozás mértéke), és stem:[B(t)] egy standard Brown-mozgás.
+A geometriai Brown-mozgás egyenletének egyik nagy előnye, hogy létezik rá explicit, zárt alakú megoldás.
+Ez a megoldás a következőképpen néz ki:
+[latexmath]
+++++
+S(t) = S(0) \exp\left( \left(\mu - \frac{\sigma^2}{2}\right)t + \sigma B(t) \right)
+++++
+Ahol stem:[S(0)] a kezdeti érték.
+Ez a megoldás azt mutatja, hogy a folyamat logaritmusa normális eloszlású, ami azt jelenti, hogy maga a folyamat lognormális eloszlású.
+A megoldás levezetése az Itô formula alkalmazásával történik.
