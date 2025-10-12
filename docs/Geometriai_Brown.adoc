@@ -2,7 +2,7 @@
 :sectnumlevels: 3
 :stem: latexmath
 
-== Geometriai Brownian mozgás
+== Geometriai Brown mozgás
 
 === Bevezetés
 
