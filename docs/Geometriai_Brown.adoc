@@ -81,3 +81,44 @@ S(t) = S(0) \exp\left( \left(\mu - \frac{\sigma^2}{2}\right)t + \sigma B(t) \rig
 Ahol stem:[S(0)] a kezdeti érték.
 Ez a megoldás azt mutatja, hogy a folyamat logaritmusa normális eloszlású, ami azt jelenti, hogy maga a folyamat lognormális eloszlású.
 A megoldás levezetése az Itô formula alkalmazásával történik.
+
+=== Alkalmazás
+
+A geometriai Brown-mozgás modelljét egy valós adatsoron, a bűnözési statisztikákon alkalmaztuk. A cél a napi bűnesetek számának előrejelzése volt egy kiválasztott körzetben.
+
+==== Adatok előkészítése és paraméterbecslés
+
+A modellhez a 2001 és 2024 közötti, első kerületre vonatkozó napi bűnesetszámokat tartalmazó adatokat használtuk. Az adatokból kiválasztottuk a megfelelő időszakot, majd a 2025-ös év első 9 hónapjára készítettünk előrejelzést. A paramétereket a következőképpen becsültük:
+
+* **Kezdeti érték (stem:[S(0)]):** A 2024-es év utolsó ismert napi bűnesetszáma.
+* **Drift (stem:[\mu]):** A historikus adatok relatív napi változásainak átlaga, azaz stem:[\mu = \mathrm{mean}\left(\frac{S_{i} - S_{i-1}}{S_{i-1}}\right)].
+* **Volatilitás (stem:[\sigma]):** A relatív napi változások szórása, azaz stem:[\sigma = \mathrm{std}\left(\frac{S_{i} - S_{i-1}}{S_{i-1}}\right)].
+
+==== Szimuláció menete
+
+A szimuláció során a geometriai Brown-mozgás zárt alakú megoldását alkalmaztuk:
+
+[latexmath]
+++++
+S(t) = S(0) \exp\left( \left(\mu - \frac{\sigma^2}{2}\right)t + \sigma B(t) \right)
+++++
+
+Ahol stem:[t] az idő, stem:[B(t)] pedig a standard Brown-mozgás. Több szcenáriót generáltunk, mindegyikhez külön Brown-mozgás realizációt (véletlenszerű pályát) hoztunk létre. A szimuláció lépései:
+
+1. A paraméterek (stem:[S(0)], stem:[\mu], stem:[\sigma]) meghatározása a historikus adatokból.
+2. A szimulációs időhorizont (9 hónap) és időlépés (1 hónap) rögzítése.
+3. Minden szcenárióhoz véletlenszerű Brown-mozgás pálya generálása.
+4. Az előrejelzett értékek kiszámítása a fenti képlet alapján minden hónapra.
+
+==== Eredmények vizualizációja és kiértékelése
+
+Az előrejelzési szcenáriókat ábrázoltuk, és összevetettük a 2025-ös év tényleges adataival. Az eredmények értékeléséhez minden szcenárióra kiszámítottuk a gyökös négyzetes hibát (RMSE):
+
+[latexmath]
+++++
+\mathrm{RMSE} = \sqrt{\frac{1}{N} \sum_{i=1}^N (y_i - \hat{y}_i)^2}
+++++
+
+ahol stem:[y_i] a tényleges, stem:[\hat{y}_i] az előrejelzett érték. A vizualizációk és a hibamértékek alapján értékeltük a modell előrejelző képességét.
+
+Az alkalmazás során bemutattuk, hogy a geometriai Brown-mozgás modell alkalmas lehet a bűnesetek számának előrejelzésére, különösen, ha a folyamat sztochasztikus ingadozásait is figyelembe kell venni.
