@@ -40,6 +40,13 @@ Egy valószínűségi tér stem:[(\Omega, \mathcal{F}, P)] hármasa tartalmazza:
 stem:[\sigma] -algebra generálása: Adott stem:[\mathcal{U}] halmazrendszer esetén a stem:[\mathcal{H}_{\mathcal{U}}] a stem:[\mathcal{U}]-t tartalmazó legszűkebb stem:[\sigma]-algebra.
 Ha stem:[\Omega] topológiai tér, a nyílt halmazok által generált stem:[\sigma]-algebra a Borel stem:[\sigma]-algebra (stem:[\mathcal{B}]).
 
+A standard, egydimenziós Wiener-folyamat, amelyet gyakran latexmath:[W_t] vagy latexmath:[B_t] szimbólummal jelölnek, egy olyan időben folytonos sztochasztikus folyamat, amely az alábbi négy tulajdonságnak tesz eleget:
+
+* *Kiindulópont:* A folyamat a latexmath:[t=0] időpontban a nullából indul, 1 valószínűséggel. Matematikailag: latexmath:[W_0 = 0].
+* *Folytonos trajektóriák:* A folyamat pályái, azaz a latexmath:[t \mapsto W_t(\omega)] leképezések minden egyes latexmath:[\omega] elemi eseményre, majdnem biztosan (azaz 1 valószínűséggel) folytonosak. Ez egy kulcsfontosságú tulajdonság, amely megkülönbözteti a Wiener-folyamatot a diszkrét idejű véletlen bolyongásoktól.
+* *Független növekmények:* Bármely latexmath:[0 \le s_1 < t_1 \le s_2 < t_2] időpontsorozatra a latexmath:[W_{t_1} - W_{s_1}] és latexmath:[W_{t_2} - W_{s_2}] valószínűségi változók függetlenek egymástól. Ez a tulajdonság azt jelenti, hogy a folyamat jövőbeli változásai függetlenek a múltbeli változásoktól; a folyamat "nem emlékszik" a múltjára. Ez a Markov-tulajdonság egy erősebb formája.
+* *Stacionárius, normális eloszlású növekmények:* Bármely latexmath:[s < t] időpontpárra a latexmath:[W_t - W_s] növekmény normális eloszlású, 0 várható értékkel és latexmath:[t-s] szórásnégyzettel. Formálisan: latexmath:[W_t - W_s \sim \mathcal{N}(0, t-s)]. Ez a feltétel magában foglalja, hogy a növekmények statisztikai tulajdonságai csak az időkülönbség hosszától függenek (stacionaritás), nem pedig annak abszolút helyétől az időtengelyen.
+
 ==== Brown-mozgás
 
 Egy általános, Itô-típusú SDE a következő szimbolikus formában írható fel:
@@ -52,12 +59,14 @@ Ez az egyenlet valójában egy integrálegyenlet rövidítése, és két fő ré
 * *Drift tag*: a folyamat változásának determinisztikus, előre jelezhető komponense egy infinitezimális stem:[dt] időlépés alatt.
 * *Diffúziós tag* (stem:[\sigma(X_t, t)dW_t]): Ez a tag a sztochasztikus, előre nem látható komponenst képviseli. A hatásának nagyságát a stem:[\sigma(X_t, t)] volatilitás- vagy diffúziós függvény skálázza, amely függhet a rendszer aktuális állapotától és az időtől is. Ez a tag visz véletlenszerűséget a rendszer leírásába
 
-A fent leírt folyamatot Brown-mozgásnak nevezzük, ha a következő feltételek teljesülnek:
+A fent leírt folyamatot Brown-mozgásnak nevezzük, ha stem:[\mu(t, X(t))] és stem:[\sigma(t, X(t))] konstansok.
 
-* a stem:[$t \mapsto B_t$] függvény 1 valószínűséggel folytonos
-* stem:[$B_0$] értéke 1 valószínűséggel 0
-* stem:[$B_{t+s} - B_t$] eloszlása normális eloszlású 0 várható értékkel és stem:[$s$] szórásnégyzettel tetszőleges stem:[$s, t$] pozitív számokra
-* stem:[$B_{t+s} - B_t$] független a stem:[$\{B_u : u \leq t\}$] folyamat korábbi értékeitől tetszőleges stem:[$s, t$] pozitív számokra
+
+[latexmath]
+++++
+dX_t = \mu dt + \sigma dW_t
+++++
+
 
 ==== Itô integrál
 
@@ -84,41 +93,69 @@ A megoldás levezetése az Itô formula alkalmazásával történik.
 
 === Alkalmazás
 
-A geometriai Brown-mozgás modelljét egy valós adatsoron, a bűnözési statisztikákon alkalmaztuk. A cél a napi bűnesetek számának előrejelzése volt egy kiválasztott körzetben.
+A geometriai Brown-mozgás (GBM) modelljét egy valós adatsoron, a bűnözési statisztikákon alkalmaztuk. A cél a napi bűnesetek számának előrejelzése volt egy kiválasztott kerületben a historikus adatok alapján. Az elemzés a `Geometriai Brown mozgas.ipynb` Jupyter notebookban található.
 
-==== Adatok előkészítése és paraméterbecslés
+==== A modell felépítése és diszkretizálása
 
-A modellhez a 2001 és 2024 közötti, első kerületre vonatkozó napi bűnesetszámokat tartalmazó adatokat használtuk. Az adatokból kiválasztottuk a megfelelő időszakot, majd a 2025-ös év első 9 hónapjára készítettünk előrejelzést. A paramétereket a következőképpen becsültük:
+Az előrejelzéshez a GBM zárt alakú megoldását használtuk, amely két fő komponensből áll:
 
-* **Kezdeti érték (stem:[S(0)]):** A 2024-es év utolsó ismert napi bűnesetszáma.
-* **Drift (stem:[\mu]):** A historikus adatok relatív napi változásainak átlaga, azaz stem:[\mu = \mathrm{mean}\left(\frac{S_{i} - S_{i-1}}{S_{i-1}}\right)].
-* **Volatilitás (stem:[\sigma]):** A relatív napi változások szórása, azaz stem:[\sigma = \mathrm{std}\left(\frac{S_{i} - S_{i-1}}{S_{i-1}}\right)].
+*   **Drift:** A hosszabb távú trendet írja le. A modellben a driftet a stem:[(\mu - \frac{1}{2}\sigma^2)t] tag képviseli, amely a folyamat determinisztikus növekedését vagy csökkenését határozza meg.
+*   **Diffúzió:** A rövidebb távú, véletlenszerű ingadozásokat modellezi. Ezt a stem:[\sigma B(t)] tag fejezi ki, ahol a stem:[B(t)] Brown-mozgás a véletlen sokkok forrása, stem:[\sigma] volatilitás pedig skálázza ezeket a sokkokat.
 
-==== Szimuláció menete
-
-A szimuláció során a geometriai Brown-mozgás zárt alakú megoldását alkalmaztuk:
+A szimulációhoz a folytonos idejű megoldást diszkrét időlépésekre bontottuk. Az stem:[S_k] értéket az stem:[S_{k-1}] értékből származtatjuk:
 
 [latexmath]
 ++++
-S(t) = S(0) \exp\left( \left(\mu - \frac{\sigma^2}{2}\right)t + \sigma B(t) \right)
+S_k = S_{k-1} \cdot \exp\left( \left(\mu - \frac{\sigma^2}{2}\right)\Delta t + \sigma \sqrt{\Delta t} Z_k \right)
 ++++
 
-Ahol stem:[t] az idő, stem:[B(t)] pedig a standard Brown-mozgás. Több szcenáriót generáltunk, mindegyikhez külön Brown-mozgás realizációt (véletlenszerű pályát) hoztunk létre. A szimuláció lépései:
+ahol stem:[Z_k] egy standard normális eloszlású véletlen változó. A teljes idősorra vonatkozó explicit megoldás diszkrét formája, amit a szimuláció során alkalmaztunk:
 
-1. A paraméterek (stem:[S(0)], stem:[\mu], stem:[\sigma]) meghatározása a historikus adatokból.
-2. A szimulációs időhorizont (9 hónap) és időlépés (1 hónap) rögzítése.
-3. Minden szcenárióhoz véletlenszerű Brown-mozgás pálya generálása.
-4. Az előrejelzett értékek kiszámítása a fenti képlet alapján minden hónapra.
+[latexmath]
+++++
+S(t_k) = S(0) \exp\left( \left(\mu - \frac{\sigma^2}{2}\right)t_k + \sigma W(t_k) \right)
+++++
 
-==== Eredmények vizualizációja és kiértékelése
+ahol stem:[W(t_k)] a diszkrét Brown-mozgás (véletlen bolyongás) értéke a stem:[t_k] időpontban.
 
-Az előrejelzési szcenáriókat ábrázoltuk, és összevetettük a 2025-ös év tényleges adataival. Az eredmények értékeléséhez minden szcenárióra kiszámítottuk a gyökös négyzetes hibát (RMSE):
+==== Adatok előkészítése
+
+A modellhez a 2001 és 2024 közötti, első kerületre vonatkozó napi bűnesetszámokat tartalmazó historikus adatokat használtuk. A 2025-ös év adatait validációs célokra különítettük el.
+
+==== Paraméterek definiálása és becslése
+
+A szimulációhoz szükséges paramétereket a historikus adatokból becsültük, a notebookban leírtak szerint:
+
+*   **stem:[S_0] (Kezdeti érték):** A historikus idősor utolsó ismert értéke, azaz a 2024-es év utolsó napi bűnesetszáma.
+*   **stem:[\Delta t] (Időlépés):** Az adatok gyakoriságának megfelelő időlépés. Esetünkben havi adatokkal dolgoztunk, így stem:[\Delta t = 1] (hónap).
+*   **stem:[T] (Előrejelzési horizont):** Az előrejelzés teljes időtávja. A 2025-ös év első 9 hónapjára készítettünk becslést, így stem:[T = 9] hónap.
+*   **stem:[N] (Időpontok száma):** Az előrejelzési horizonton belüli időpontok száma, stem:[N = T / \Delta t = 9].
+*   **stem:[\mu] (Drift paraméter):** A historikus adatok relatív változásainak átlaga. Ez a paraméter a bűnesetek számának átlagos növekedési vagy csökkenési rátáját méri.
+[latexmath]
+++++
+\mu = \text{mean}\left(\frac{S_i - S_{i-1}}{S_{i-1}}\right)
+++++
+*   **stem:[\sigma] (Volatilitás):** A historikus adatok relatív változásainak szórása. Ez a paraméter az adatsor ingadozásának mértékét, a véletlen sokkok nagyságát határozza meg.
+[latexmath]
+++++
+\sigma = \text{std}\left(\frac{S_i - S_{i-1}}{S_{i-1}}\right)
+++++
+*   **stem:[b] (Brown-növekmények):** Egy vektor, amely minden egyes időlépéshez egy standard normális eloszlásból ($\mathcal{N}(0,1)$) húzott véletlen számot tárol. Ezek adják a modell sztochasztikus viselkedésének alapját.
+*   **stem:[W] (Brown-pálya):** A Brown-növekmények kumulatív összege. A stem:[W(t_k)] érték a teljes véletlen hatást összegzi a szimuláció kezdetétől a stem:[t_k] időpontig.
+
+==== Szimuláció és eredmények kiértékelése
+
+A szimuláció során több lehetséges jövőbeli pályát (szcenáriót) generáltunk, hogy felmérjük a modell bizonytalanságát. Minden szcenárióhoz egyedi Brown-pályát (stem:[W]) generáltunk.
+
+Az előrejelzett értékeket a fentebb bemutatott diszkrét megoldási képlettel számítottuk ki minden egyes szcenárióra és időpontra.
+
+Az eredmények kiértékeléséhez az előrejelzett értékeket összevetettük a 2025-ös év tényleges (validációs) adataival. A modell pontosságát minden szcenárióra a gyökös négyzetes hiba (RMSE) metrikával mértük:
 
 [latexmath]
 ++++
 \mathrm{RMSE} = \sqrt{\frac{1}{N} \sum_{i=1}^N (y_i - \hat{y}_i)^2}
 ++++
 
-ahol stem:[y_i] a tényleges, stem:[\hat{y}_i] az előrejelzett érték. A vizualizációk és a hibamértékek alapján értékeltük a modell előrejelző képességét.
+ahol stem:[y_i] a tényleges, stem:[\hat{y}_i] pedig az előrejelzett érték.
 
-Az alkalmazás során bemutattuk, hogy a geometriai Brown-mozgás modell alkalmas lehet a bűnesetek számának előrejelzésére, különösen, ha a folyamat sztochasztikus ingadozásait is figyelembe kell venni.
+A notebookban az elemzést kiterjesztettük az összes kerületre. Minden kerületre külön-külön futtattuk a modellt, és kiválasztottuk a legalacsonyabb RMSE értékkel rendelkező szcenáriót, mint a legvalószínűbb előrejelzést. A vizualizációk és a hibamértékek alapján a geometriai Brown-mozgás modell alkalmasnak bizonyult a bűnesetek számának sztochasztikus modellezésére és előrejelzésére.
