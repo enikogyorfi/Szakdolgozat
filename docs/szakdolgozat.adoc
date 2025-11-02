@@ -91,9 +91,69 @@ A tanító és teszt adatok közötti pontosságkülönbség várható, és a mo
 A kiterjesztett adathalmazon tanított modell a teszt adatokon 86.4%-os, a 2025-ös évi előrejelzésen pedig 83.3%-os pontosságot produkált.
 Ez a csekély, de mérhető javulás igazolja a funkciótervezés hasznosságát a modell prediktív erejének növelésében.
 
+=== Idősoros előrejelzési modellek (Notebook 3. pont)
+
+A korábbi modell a `District`, `Year` és `Month` jellemzők alapján készített előrejelzést. A notebook 3. pontjában egy fejlettebb, idősoros megközelítést alkalmaztunk, ahol a modell a múltbeli bűncselekményi adatokból tanul mintázatokat. A cél az, hogy a következő hónapok bűncselekményszámát az előző hónapok adatai és azok statisztikai mutatói alapján jelezzük előre.
+
+==== Jellemzők kinyerése (Feature Engineering)
+
+Az idősoros modellek hatékonysága nagyban függ a bemeneti jellemzők minőségétől. A következő technikákat alkalmaztuk a modell prediktív erejének növelésére:
+
+. **Késleltetett értékek (Lagged Features):** A legfontosabb új jellemzőtípus. Létrehoztunk `Number of Crimes Per Day Lag X` nevű oszlopokat, ahol az `X` azt jelöli, hogy hány hónappal korábbi adatot használunk fel. Például a `Lag 1` az előző havi, a `Lag 12` pedig az egy évvel korábbi napi átlagos bűncselekményszámot jelenti. Ez segít a modellnek felismerni a szezonalitást és a rövid távú trendeket. A notebookban 12 havi késleltetést alkalmaztunk.
+
+. **Mozgóátlag (Rolling Mean):** A `rolling_mean` funkció egy adott időablakra (pl. az elmúlt 3 vagy 6 hónapra) számítja ki a napi bűncselekményszámok átlagát. Ez a mutató segít kisimítani a rövid távú ingadozásokat és kiemelni a hosszabb távú trendeket az adatsorban. Például egy növekvő mozgóátlag a bűnözés növekedésére utalhat.
+
+. **Mozgó szórás (Rolling Standard Deviation):** A `rolling_std` funkció a mozgóátlaghoz hasonlóan egy adott időablakra számolja ki a bűncselekményszámok szórását. Ez a mutató az adatsor volatilitását (változékonyságát) méri. Egy magas mozgó szórás azt jelzi, a bűncselekmények száma az adott időszakban erősen ingadozott, míg egy alacsony érték stabilabb időszakra utal. Ez az információ segíthet a modellnek felkészülni a hirtelen változásokra.
+
+. **Ciklikus jellemzők:** Az időbeli ismétlődések (pl. évszakok) modellezésére a `Month` oszlopot szinuszos és koszinuszos transzformációval (`Month_Sin`, `Month_Cos`) alakítottuk át, valamint bináris jelzőket (`Is_Winter`, `Is_Summer`) hoztunk létre.
+
+==== Modellezési stratégia és validáció
+
+. **Többkimenetű predikció (Multi-output Prediction):** Ahelyett, hogy csak a következő hónapot jósolnánk meg, a modellt úgy tanítottuk, hogy egyszerre több jövőbeli időpontra (a notebookban 8 hónapra) adjon előrejelzést. Ehhez a `scikit-learn` `MultiOutputRegressor` osztályát használtuk, amely egy alapmodellt (pl. `RandomForestRegressor` vagy `LGBMRegressor`) csomagol be, hogy az képes legyen több célváltozót kezelni.
+
+. **Walk-Forward validáció:** Idősoros adatoknál a hagyományos keresztvalidáció nem alkalmazható, mert az a jövőbeli adatokkal tanítaná a modellt a múltbeli adatok predikciójához (adatszivárgás). Ehelyett a `TimeSeriesSplit` (walk-forward) validációt használtuk. Ez a módszer az adatsort egymást követő szeletekre bontja: a modell mindig a múltbeli szeleteken tanul, és a közvetlenül utána következő szeleten validáljuk. Ez a valós felhasználási esetet szimulálja.
+
+==== Szekvenciális előrejelzés a teszt adatokon
+
+A 2025-ös évre vonatkozó predikciók elkészítésekor egy szekvenciális, lépésről-lépésre történő módszert is alkalmaztunk.
+. A modell a 2024-es év utolsó 12 hónapjának valós adataival indul.
+. Előrejelzést készít 2025 januárjára.
+. A januári predikciót beilleszti a "történeti" adatok közé, mint a legfrissebb (Lag 1) értéket.
+. Ezzel a frissített adatsorral készít előrejelzést februárra, és így tovább.
+Ez a módszer szimulálja, hogyan működne a modell a valóságban, ahol a jövőbeli valós értékek nem ismertek.
+
+==== Eredmények és értékelés
+
+Az idősoros megközelítés, különösen a `LightGBM` modellel és a `MultiOutputRegressor`-ral kombinálva, robusztus eredményeket produkált. A walk-forward validáció során a modell átlagos pontossága 80-85% között mozgott a különböző adat-felosztásokon, ami a valós körülmények közötti megbízható teljesítményt jelzi. A mozgóátlag és mozgó szórás bevezetése tovább stabilizálta a modell előrejelzéseit, mivel jobban tudta kezelni az adatokban rejlő trendeket és volatilitást.
+
+==== Modellezési technikák előnyei és összehasonlítása
+
+A notebook 3. pontjában alkalmazott idősoros modell sikeressége több kulcsfontosságú technikának köszönhető. Az alábbiakban részletezzük ezek előnyeit.
+
+===== A késleltetett és mozgó statisztikai jellemzők szerepe
+
+A nyers idősorok mellett származtatott jellemzők (késleltetett értékek, mozgóátlag, mozgó szórás) bevonása kritikus fontosságú a modell prediktív erejének növelésében.
+
+*   **Késleltetett értékek (Lag Features):** A lag jellemzők teszik lehetővé, hogy a modell közvetlenül tanuljon a múltbeli adatokból. Segítségükkel a modell képes felismerni az autokorrelációt (az idősor önmagával való korrelációját különböző időkésleltetések mellett) és a szezonalitást. Például egy 12 hónapos késleltetés (`Lag 12`) egyértelműen az éves ciklikusságra utal, míg a rövidebb távú (pl. `Lag 1`, `Lag 2`) késleltetések a rövid távú trendeket és a "lendületet" ragadják meg.
+
+*   **Mozgóátlag (Rolling Mean):** A mozgóátlagok kisimítják az adatsorban lévő rövid távú zajt és kiugró értékeket, ezáltal láthatóbbá teszik a mögöttes trendet. A modell számára ez egy stabilabb, kevésbé zajos bemeneti jelet biztosít, ami segít a hosszabb távú mintázatok azonosításában.
+
+*   **Mozgó szórás (Rolling Standard Deviation):** Ez a mutató az idősor közelmúltbeli volatilitását (változékonyságát) méri. Egy magas mozgó szórás instabil, ingadozó időszakra utal, míg egy alacsony érték stabilabb periódust jelez. Ez az információ segít a modellnek felmérni az előrejelzés bizonytalanságát, és jobban alkalmazkodni a változó piaci vagy környezeti feltételekhez.
+
+===== Többkimenetű (Multi-Output) vs. Szekvenciális előrejelzés
+
+A jövőbeli értékek előrejelzésére két fő stratégia létezik: a szekvenciális (vagy iteratív) és a többkimenetű (vagy direkt) módszer. A projekt során mindkettőt vizsgáltuk, de a többkimenetű megközelítés bizonyult előnyösebbnek.
+
+*   **Szekvenciális előrejelzés:** Ez a módszer lépésről lépésre halad. Először megjósolja a következő időpont (`t+1`) értékét. Ezután ezt a frissen kapott predikciót bemeneti jellemzőként használja fel a `t+2` időpont előrejelzéséhez, és így tovább.
+    *   **Hátránya:** A legnagyobb problémája a **hibák halmozódása (error accumulation)**. Mivel minden egyes lépésben a modell a saját (potenciálisan hibás) előrejelzését használja fel, a kezdeti apró hibák az idő előrehaladtával felerősödhetnek. Ez azt eredményezi, hogy a hosszabb távú előrejelzések pontossága drasztikusan csökkenhet.
+
+*   **Többkimenetű előrejelzés:** Ezzel a stratégiával egyetlen modellt tanítunk, amely képes egyszerre, egy lépésben megjósolni a teljes előrejelzési horizontot (pl. a következő 8 hónapot). A modell közvetlen kapcsolatot tanul meg a bemeneti jellemzők és a jövőbeli értékek sorozata között.
+    *   **Előnyei:**
+        1.  **Elkerüli a hibák halmozódását:** Mivel a modell nem használja fel a saját predikcióit a további jóslatokhoz, immunis a hibák felgyülemlésének problémájára. Minden jövőbeli értéket az eredeti, valós bemeneti adatok alapján becsül meg.
+        2.  **Hatékonyság:** Gyakran számítási szempontból is hatékonyabb, mivel egyetlen `predict` hívással megkapjuk a teljes előrejelzési sorozatot, ahelyett hogy egy ciklusban, egyesével generálnánk azokat.
+        3.  **Függőségek modellezése:** A `MultiOutputRegressor` képes implicit módon modellezni a jövőbeli célváltozók közötti összefüggéseket is (pl. hogy egy magas `t+1` érték általában magas `t+2` értéket is jelent).
+
+Ezen előnyök miatt a többkimenetű stratégia általában robusztusabb és megbízhatóbb eredményeket ad, különösen hosszabb előrejelzési horizont esetén.
+
 
 include::Geometriai_Brown.adoc[]
-
-
-
-

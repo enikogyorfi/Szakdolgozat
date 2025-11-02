@@ -6,6 +6,186 @@
 
 === Bevezetés
 
+A tudományos modellezés kezdetben a klasszikus fizika által inspirált determinizmusra épült.
+Ennek alapvető matematikai eszközei a közönséges differenciálegyenletek (ODE-k), amelyek feltételezik, hogy egy rendszer jövőbeli állapota a jelenlegi állapotból egyértelműen kiszámítható. Egy ODE adott kezdőfeltételek mellett egyetlen, előre meghatározott trajektóriát ír le.
+Klasszikus példák erre a bolygók mozgása a Nap körül vagy egy ideális, súrlódásmentes rugó által mozgatott test pályája, ahol a jövőbeli pozíció és sebesség pontosan kiszámítható.
+Azonban a komplex biológiai, pénzügyi vagy társadalmi rendszerek elemzése során nyilvánvalóvá vált, hogy valós rendszerben a bizonytalanság és a véletlenszerűség nem elhanyagolható, hanem a dinamika szerves és megkerülhetetlen része.
+Egy részvényárfolyam, egy járvány terjedése vagy a bűnözési ráta alakulása olyan folyamatok, amelyeket részben vagy teljesen véletlen hatások befolyásolnak.
+Ezen jelenségek leírására született meg a sztochasztikus (vagy véletlenszerű) folyamat fogalma, amely olyan időben végbemenő folyamatot jelöl, amelyet valószínűségi változók jellemeznek.
+Az SDE-k a sztochasztikus folyamatok egy fontos osztályának dinamikáját (időbeli fejlődését) leíró matematikai eszközök, amelyek lehetővé teszik a véletlenszerű komponensek beépítését a dinamikai modellekbe.
+Míg egy ODE egy adott kezdőpontból egyetlen, jól definiált megoldást jelöl ki, addig egy SDE egyetlen kezdőpontból a lehetséges jövőbeli kimenetelek végtelen sokaságát vázolja fel.
+Ellentétben a közönséges differenciálegyenletek (ODE-k) egyedi, determinisztikus trajektóriát adó megoldásaival, egy sztochasztikus differenciálegyenlet (SDE) megoldása maga egy sztochasztikus folyamat.
+Ez a folyamat a lehetséges trajektóriák halmazán definiál egy valószínűségi mértéket.
+Tehát a megoldás nem egyetlen függvény, hanem a trajektóriák teljes sokasága, valamint az ezen sokaság felett értelmezett valószínűségi eloszlás, amely meghatározza az egyes útvonal-családok bekövetkezésének valószínűségét.
+
+=== A Sztochasztikus Folyamatok Elméleti Alapjai
+
+==== Definíciók és alapfogalmak
+
+.Valószínűségi tér
+
+Egy valószínűségi tér stem:[(\Omega, \mathcal{F}, P)] hármasa tartalmazza:
+
+* stem:[\Omega] *(Eseménytér)*: A lehetséges kimenetelek halmaza.
+* stem:[\mathcal{F}] *(stem:[\sigma]-algebra)*: stem:[\Omega] részhalmazainak olyan rendszere, amely tartalmazza az stem:[\emptyset] üres halmazt; komplementer-zárt; és megszámlálható unióra zárt. Az stem:[(\Omega, \mathcal{F})] párost mérhető térnek nevezzük.
+* stem:[P] *(Valószínűségi Mérték)*: Egy stem:[P: \mathcal{F} \to \mathbb{R}] függvény, amely kielégíti a stem:[P(\emptyset)=0] és stem:[P(\Omega)=1] feltételeket, és megszámlálható additivitással rendelkezik diszjunkt halmazok esetén.
+
+*Definíció*: Borel σ-algebra: A R nyitott részhalmazai generálják a Borel σ-algebrát (stem:[\mathcal{B}]).
+
+*Definíció*: A függvények egy halmaza által *generált σ-algebra* a legkisebb σ-algebra, amelyre vonatkozóan ezen függvények mind mérhetők.
+
+.Abszolút folytonosság
+
+Tegyük fel, hogy adott két valószínűségi mérték stem:[\mathcal{P}],stem:[\mathcal{Q}]: stem:[\mathcal{F}] -> [0,1] ugyanazon mérhető téren stem:[(\Omega, \mathcal{F})].
+
+*Definíció*: Azt mondjuk, hogy a stem:[Q] mérték abszolút folytonos a stem:[P]-re nézve, ha létezik egy integrálható véletlen változó stem:[f] stem:[\Omega \to \mathbb{R}] melyre minden A stem:[\in \mathcal{F}] esetén :
+
+\[
+\mathcal{Q}(A) = \int_A f (\omega) \, d\mathcal{P}(\omega)
+\]
+
+Ekkor stem:[f] a stem:[\mathcal{Q}] mérték stem:[\mathcal{P}]-re vonatkozó sűrűségfüggvénye. Ebben az esetben ha stem:[E^{\mathcal{P}}] és stem:[E^{\mathcal{Q}}] a két mérték várható értékei stem:[\mathcal{P}] és stem:[\mathcal{Q}] szerint, akkor minden stem:[\mathcal{Q}]- szerint integrálható véletlen változóra stem:[X]:
+\[
+E^{\mathcal{Q}}[X] = \int_{\Omega} Xd\mathcal{Q} = \int_{\Omega} X f d\mathcal{P} = E^{\mathcal{P}}[X f]
+\]
+
+.Eloszlás és sűrűségfüggvény
+
+Egy valószínűségi változó stem:[X: \Omega \to \mathbb{R}] eloszlásfüggvénye stem:[F_X: \mathbb{R} \to [0,1]] a következőképpen van definiálva:
+
+\[
+F_X(x) = \mathcal{P}(\{\omega \in \Omega : X(\omega) \le x\})
+\]
+
+*Definició* : Egy valószinűségi változó stem:[X] folytonos, ha a valószínűségi mérték stem:[\mathcal{P}_X] abszolút folytonos a Lebesgue mértékre nézve.
+
+Ebben az esetben az eloszlásfüggvénye differenciálható:
+
+\[
+F_X^{\prime}(x) = f_X(x)
+\]
+
+*Definíció* : Ekkor stem:[f_X: \mathbb{R} \to [0, \infty)] a valószínűségi változó stem:[X] sűrűségfüggvénye. A sűrűségfüggvény kielégíti a következő feltételeket:
+
+1. *Nemnegativitás*: Minden x ∈ ℝ esetén f_X(x) ≥ 0.
+2. *Integrálhatóság*: A sűrűségfüggvény integráljára teljesül, hogy
+
+\[
+\int_{-\infty}^{\infty} f_X(x) \, dx = 1
+\]
+
+Ha stem:[A \in \mathcal{B}(\mathbb{R})], akkor annak a valószínűsége, hogy stem:[X] értéke stem:[A]-ba esik az alábbi integrállal számítható ki:
+
+\[
+\mathcal{P}(X \in A) = \int_A f_X(x) \, dx
+\]
+
+.Feltételes várható érték
+Legyen stem:[X: \Omega \to \mathbb{R}] egy integrálható valószínűségi változó a (stem:[\Omega, \mathcal{F}, \mathcal{P}]) valószinűségi téren.
+A stem:[\mathcal{G} \subseteq \mathcal{F}] egy σ-algebra.
+
+*Definíció*: A stem:[X] valószínűségi változó stem:[\mathcal{G}]-re vonatkozó feltételes várható értéke egy stem:[\mathcal{G}]-mérhető valószínűségi változó stem:[E[X|\mathcal{G}\]: \Omega \to \mathbb{R}]
+amely kielégíti a következő feltételt: minden korlátos stem:[\mathcal{G}]-mérhető valószínűségi változóra stem:[Y]:
+\[
+E[XY] = E[E[X|\mathcal{G}]Y]
+\]
+
+Ha stem:[Y = 1_B] egy indikátor függvény egy stem:[B \in \mathcal{G}] eseményre, akkor minden stem:[B \in \mathcal{G}] teljesül:
+\[
+\int _B E[X|\mathcal{G}] d\mathcal{P} = \int_B X d\mathcal{P}
+\]
+
+
+=== Sztochasztikus folyamatok:
+
+Tekintsünk egy olyan, időben „véletlenszerűen” változó, valós értékű mennyiségre, mint amilyen például a szél sebességének egy komponense egy meteorológiai állomáson,
+vagy egy Brown-mozgást végző pollenszemcse hely-, illetve sebességkoordinátája.
+Ezeket a folyamatokat egy stem:[ X: (0, \infty) \times \Omega \to \mathbb{R} ] mérhető függvénnyel írhatjuk le, ahol stem:[\Omega] egy valószínűségi tér
+és stem:[X]-et sztochasztikus folyamatnak nevezzük. stem:[X(t,ω)] a folyamat értéke a t időpontban, a stem:[\omega \in \Omega] kimenetel esetén.
+ A folyamat általában a stem:[t \in (0, \infty)] időintervallumon (vagy más időintervallumon, pl. diszkrét időpontokon) van definiálva.
+Egy sztochasztikus folyamatra kétféleképpen is gondolhatunk. Először is, rögzítve egy stem:[\omega \in \Omega] elemet, egy időfüggvényt kapunk:
+
+\[
+X_{\omega} : t \mapsto X(t, \omega),
+\]
+
+amelyet a folyamat trajektóriájának nevezünk. Ebből a szempontból a folyamat az stem:[\{X_{\omega} : \omega \in \Omega\}] függvények gyűjteménye, a valószínűségi mérték pedig a trajektóriák terén értelmezett mérték.
+
+Másrészről, rögzítve egy stem:[t \in [0, \infty)] időpontot, egy, az stem:[\Omega] valószínűségi téren értelmezett valószínűségi változót kapunk:
+
+\[
+X_t : \omega \mapsto X(t, \omega).
+\]
+
+Ebből a nézőpontból a folyamat a stem:[t] időváltozó által indexelt stem:[\{X_t : 0 \le t < \infty\}] valószínűségi változók gyűjteménye.
+A valószínűségi mérték ezen valószínűségi változók együttes eloszlását  írja le.
+
+.Markov folyamatok
+
+*Definíció*: Egy sztochasztikus folyamat stem:[X = \{X_t : t \ge 0\}] Markov-folyamat, ha minden stem:[0 \le s < t] és minden Borel-mérhető stem:[f : \mathbb{R} \to \mathbb{R}] függvény esetén, ahol stem:[E|f(X_t)| < \infty], teljesül a következő feltétel:
+\[E[f(X_t) | \mathcal{F}_s] = E[f(X_t) | X_s]\]
+Ahol stem:[\mathcal{F}_s] a stem:[X]-folyamat stem:[s] időpontig ismert információit tartalmazó σ-algebra.
+Tehát a Markov-folyamat jövőbeli állapota csak a jelenlegi állapottól függ, és nem függ a múltbeli állapotoktól.
+
+Egy X folyamat Markov-folyamat, ha bármely stem:[0 \le t_1 \lt t_2 \lt \dots \lt t_{n+1}] időpont esetén a feltételes valószínűségi sűrűségfüggvény csak a legutolsó időponttól függ, azaz:
+
+\[
+p(x_{n+1}, t_{n+1} \mid x_n, t_n; \dots; x_2, t_2; x_1, t_1) = p(x_{n+1}, t_{n+1} \mid x_n, t_n)
+\]
+
+Ebből következik, hogy az együttes valószínűségi sűrűség feltételes formája felírható átmeneti sűrűségek szorzataként:
+\[
+p(x_n, t_n; \dots; x_2, t_2 \mid x_1, t_1) = p(x_n, t_n \mid x_{n-1}, t_{n-1}) \cdots p(x_2, t_2 \mid x_1, t_1).
+\]
+
+Így egy folytonos Markov-folyamat összes együttes véges dimenziós valószínűségi sűrűségfüggvényét meg lehet határozni az átmeneti sűrűségfüggvény stem:[p(x,t \mid y,s)] és a kezdeti érték stem:[X_0] sűrűségfüggvénye stem:[p_0(x)] segítségével.
+Például az stem:[X_t] egypontos sűrűsége a következőképpen adható meg:
+
+\[
+p(x,t) = \int_{-\infty}^{\infty} p(x,t \mid y,0) p_0(y) dy.
+\]
+
+Egy Markov-folyamat átmeneti valószínűségei nem tetszőlegesek, hanem kielégítik a Chapman-Kolmogorov egyenletet. Folytonos Markov-folyamat esetén ez az egyenlet a következő:
+\[
+p(x,t \mid y,s) = \int_{-\infty}^{\infty} p(x,t \mid z,r) p(z,r \mid y,s) dz
+\]
+bármely stem:[s < r < t] esetén.
+
+Jelentése: Ahhoz, hogy a folyamat az stem:[s] időpontban lévő stem:[y] pontból a stem:[t] időpontban lévő stem:[x] pontba jusson, át kell haladnia egy tetszőleges köztes stem:[r] időpontban valamilyen stem:[z] ponton.
+
+Egy folytonos Markov-folyamat időben homogén (time-homogeneous), ha az átmeneti sűrűsége csak az időbeli különbségektől függ:
+\[
+p(x,t \mid y,s) = p(x, t-s \mid y,0)
+\]
+
+.Brown-mozgás
+
+A standard, egydimenziós Brown-mozgás (Wiener-folyamat), amelyet gyakran stem:[W_t] vagy stem:[B_t] szimbólummal jelölnek, egy olyan időben folytonos sztochasztikus folyamat, amely az alábbi négy tulajdonságnak tesz eleget:
+
+* A folyamat a stem:[t=0] időpontban a nullából indul, 1 valószínűséggel, azaz stem:[B_0 = 0].
+* A folyamat pályái, azaz a stem:[t \mapsto W_t(\omega)] leképezések minden egyes stem:[\omega] elemi eseményre, majdnem biztosan (azaz 1 valószínűséggel) folytonosak. Ez egy kulcsfontosságú tulajdonság, amely megkülönbözteti a Wiener-folyamatot a diszkrét idejű véletlen bolyongásoktól.
+* Bármely stem:[0 \le s_1 < t_1 \le s_2 < t_2] időpontsorozatra a stem:[B_{t_1} - B_{s_1}] és stem:[B_{t_2} - B_{s_2}] valószínűségi változók függetlenek egymástól. Ez a tulajdonság azt jelenti, hogy a folyamat jövőbeli változásai függetlenek a múltbeli változásoktól.
+* Bármely stem:[s < t] időpontpárra a stem:[B_t - B_s] növekmény normális eloszlású, 0 várható értékkel és stem:[t-s] szórásnégyzettel. Formálisan: stem:[B_t - B_s \sim \mathcal{N}(0, t-s)]. Ez a feltétel magában foglalja, hogy a növekmények statisztikai tulajdonságai csak az időkülönbség hosszától függenek (stacionaritás), nem pedig annak abszolút helyétől az időtengelyen.
+
+
+
+
+
+
+
+
+
+
+
+Egy közönséges differenciálegyenlet az alábbi formában írható fel:
+[latexmath]
+++++
+\frac{dx(t)}{dt} = f(t, x(t))
+++++
+
+
+
+== Példa sztochasztikus differenciálegyenletre
 Ha megengedünk némi bizonytalanságot egy differenciálegyenlet együtthatóiban, akkor egy realisztikusabb modelt tudunk felépíteni.
 Tekintsünk egy egyszerű populációs modellt, ahol a populáció növekedési rátája arányos a populáció méretével.
 Ezt a következő differenciálegyenlettel írhatjuk le:
@@ -26,19 +206,7 @@ a(t) = r(t) + n(t)
 
 Ahol stem:[r(t)] a determinisztikus komponens, stem:[n(t)] pontos viselkedését nem ismerjük, csak a valószínűségi eloszlását.
 
-=== Matematikai háttér
 
-==== Definíciók
-
-.Valószínűségi Tér
-Egy valószínűségi tér stem:[(\Omega, \mathcal{F}, P)] hármasa tartalmazza:
-
-* stem:[\Omega] *(Eseménytér)*: A lehetséges kimenetelek halmaza.
-* stem:[\mathcal{F}] *($\sigma$-algebra)*: stem:[\Omega] részhalmazainak olyan rendszere, amely tartalmazza az stem:[\emptyset] üres halmazt; komplementer-zárt; és megszámlálható unióra zárt. Az stem:[(\Omega, \mathcal{F})] párost mérhető térnek nevezzük.
-* stem:[P] *(Valószínűségi Mérték)*: Egy stem:[P: \mathcal{F} \to \mathbb{R}] függvény, amely kielégíti a stem:[P(\emptyset)=0] és stem:[P(\Omega)=1] feltételeket, és megszámlálható additivitással rendelkezik diszjunkt halmazok esetén.
-
-stem:[\sigma] -algebra generálása: Adott stem:[\mathcal{U}] halmazrendszer esetén a stem:[\mathcal{H}_{\mathcal{U}}] a stem:[\mathcal{U}]-t tartalmazó legszűkebb stem:[\sigma]-algebra.
-Ha stem:[\Omega] topológiai tér, a nyílt halmazok által generált stem:[\sigma]-algebra a Borel stem:[\sigma]-algebra (stem:[\mathcal{B}]).
 
 A standard, egydimenziós Wiener-folyamat, amelyet gyakran latexmath:[W_t] vagy latexmath:[B_t] szimbólummal jelölnek, egy olyan időben folytonos sztochasztikus folyamat, amely az alábbi négy tulajdonságnak tesz eleget:
 
@@ -91,6 +259,9 @@ Ahol stem:[S(0)] a kezdeti érték.
 Ez a megoldás azt mutatja, hogy a folyamat logaritmusa normális eloszlású, ami azt jelenti, hogy maga a folyamat lognormális eloszlású.
 A megoldás levezetése az Itô formula alkalmazásával történik.
 
+
+
+
 === Alkalmazás
 
 A geometriai Brown-mozgás (GBM) modelljét egy valós adatsoron, a bűnözési statisztikákon alkalmaztuk. A cél a napi bűnesetek számának előrejelzése volt egy kiválasztott kerületben a historikus adatok alapján. Az elemzés a `Geometriai Brown mozgas.ipynb` Jupyter notebookban található.
@@ -131,16 +302,18 @@ A szimulációhoz szükséges paramétereket a historikus adatokból becsültük
 *   **stem:[T] (Előrejelzési horizont):** Az előrejelzés teljes időtávja. A 2025-ös év első 9 hónapjára készítettünk becslést, így stem:[T = 9] hónap.
 *   **stem:[N] (Időpontok száma):** Az előrejelzési horizonton belüli időpontok száma, stem:[N = T / \Delta t = 9].
 *   **stem:[\mu] (Drift paraméter):** A historikus adatok relatív változásainak átlaga. Ez a paraméter a bűnesetek számának átlagos növekedési vagy csökkenési rátáját méri.
+
 [latexmath]
 ++++
 \mu = \text{mean}\left(\frac{S_i - S_{i-1}}{S_{i-1}}\right)
 ++++
 *   **stem:[\sigma] (Volatilitás):** A historikus adatok relatív változásainak szórása. Ez a paraméter az adatsor ingadozásának mértékét, a véletlen sokkok nagyságát határozza meg.
+
 [latexmath]
 ++++
 \sigma = \text{std}\left(\frac{S_i - S_{i-1}}{S_{i-1}}\right)
 ++++
-*   **stem:[b] (Brown-növekmények):** Egy vektor, amely minden egyes időlépéshez egy standard normális eloszlásból ($\mathcal{N}(0,1)$) húzott véletlen számot tárol. Ezek adják a modell sztochasztikus viselkedésének alapját.
+*   **stem:[b] (Brown-növekmények):** Egy vektor, amely minden egyes időlépéshez egy standard normális eloszlásból stem:[({N}(0,1))] húzott véletlen számot tárol. Ezek adják a modell sztochasztikus viselkedésének alapját.
 *   **stem:[W] (Brown-pálya):** A Brown-növekmények kumulatív összege. A stem:[W(t_k)] érték a teljes véletlen hatást összegzi a szimuláció kezdetétől a stem:[t_k] időpontig.
 
 ==== Szimuláció és eredmények kiértékelése
