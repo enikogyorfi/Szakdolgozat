@@ -167,21 +167,28 @@ A standard, egydimenziós Brown-mozgás (Wiener-folyamat), amelyet gyakran stem:
 * Bármely stem:[0 \le s_1 < t_1 \le s_2 < t_2] időpontsorozatra a stem:[B_{t_1} - B_{s_1}] és stem:[B_{t_2} - B_{s_2}] valószínűségi változók függetlenek egymástól. Ez a tulajdonság azt jelenti, hogy a folyamat jövőbeli változásai függetlenek a múltbeli változásoktól.
 * Bármely stem:[s < t] időpontpárra a stem:[B_t - B_s] növekmény normális eloszlású, 0 várható értékkel és stem:[t-s] szórásnégyzettel. Formálisan: stem:[B_t - B_s \sim \mathcal{N}(0, t-s)]. Ez a feltétel magában foglalja, hogy a növekmények statisztikai tulajdonságai csak az időkülönbség hosszától függenek (stacionaritás), nem pedig annak abszolút helyétől az időtengelyen.
 
+A független növekmények tulajdonságából adódóan a Brown-mozgás egy Gauss-Markov-folyamat. Továbbá, mivel az átmeneti sűrűsége csak az időbeli különbségtől függ, egyben időben homogén Markov-folyamat is.
+Bár a Brown-mozgás trajektóriái folytonosak, de nem differenciálhatóak.
+
+*Definíció* : Egy stem:[F:[a,b\] \to \mathbb{R}] függvényt akkor nevezünk Hölder-folytonosnak a stem:[[a,b]] intervallumon stem:[\gamma] kitevővel, ha stem:[0 < \gamma \le 1], és létezik egy stem:[C] állandó, melyre minden stem:[s,t \in [a,b]] esetén teljesül a következő egyenlőtlenség:
+
+\[
+|F(t) - F(s)| \le C|t-s|^{\gamma}
+\]
 
 
 
-
-
-
+== Sztochasztikus differenciálegyenletek
 
 
 
 
 Egy közönséges differenciálegyenlet az alábbi formában írható fel:
-[latexmath]
-++++
+\[
 \frac{dx(t)}{dt} = f(t, x(t))
-++++
+\]
+ahol stem:[x(t)] a vizsgált mennyiség időbeli változása, és stem:[f(t, x(t))] egy determinisztikus függvény, amely meghatározza a rendszer dinamikáját.
+
 
 
 
@@ -208,12 +215,7 @@ Ahol stem:[r(t)] a determinisztikus komponens, stem:[n(t)] pontos viselkedését
 
 
 
-A standard, egydimenziós Wiener-folyamat, amelyet gyakran latexmath:[W_t] vagy latexmath:[B_t] szimbólummal jelölnek, egy olyan időben folytonos sztochasztikus folyamat, amely az alábbi négy tulajdonságnak tesz eleget:
 
-* *Kiindulópont:* A folyamat a latexmath:[t=0] időpontban a nullából indul, 1 valószínűséggel. Matematikailag: latexmath:[W_0 = 0].
-* *Folytonos trajektóriák:* A folyamat pályái, azaz a latexmath:[t \mapsto W_t(\omega)] leképezések minden egyes latexmath:[\omega] elemi eseményre, majdnem biztosan (azaz 1 valószínűséggel) folytonosak. Ez egy kulcsfontosságú tulajdonság, amely megkülönbözteti a Wiener-folyamatot a diszkrét idejű véletlen bolyongásoktól.
-* *Független növekmények:* Bármely latexmath:[0 \le s_1 < t_1 \le s_2 < t_2] időpontsorozatra a latexmath:[W_{t_1} - W_{s_1}] és latexmath:[W_{t_2} - W_{s_2}] valószínűségi változók függetlenek egymástól. Ez a tulajdonság azt jelenti, hogy a folyamat jövőbeli változásai függetlenek a múltbeli változásoktól; a folyamat "nem emlékszik" a múltjára. Ez a Markov-tulajdonság egy erősebb formája.
-* *Stacionárius, normális eloszlású növekmények:* Bármely latexmath:[s < t] időpontpárra a latexmath:[W_t - W_s] növekmény normális eloszlású, 0 várható értékkel és latexmath:[t-s] szórásnégyzettel. Formálisan: latexmath:[W_t - W_s \sim \mathcal{N}(0, t-s)]. Ez a feltétel magában foglalja, hogy a növekmények statisztikai tulajdonságai csak az időkülönbség hosszától függenek (stacionaritás), nem pedig annak abszolút helyétől az időtengelyen.
 
 ==== Brown-mozgás
 
