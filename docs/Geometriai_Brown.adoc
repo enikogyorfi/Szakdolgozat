@@ -67,8 +67,8 @@ F_X^{\prime}(x) = f_X(x)
 
 *Definíció* : Ekkor stem:[f_X: \mathbb{R} \to [0, \infty)] a valószínűségi változó stem:[X] sűrűségfüggvénye. A sűrűségfüggvény kielégíti a következő feltételeket:
 
-1. *Nemnegativitás*: Minden x ∈ ℝ esetén f_X(x) ≥ 0.
-2. *Integrálhatóság*: A sűrűségfüggvény integráljára teljesül, hogy
+1. Nemnegativitás: Minden x ∈ ℝ esetén f_X(x) ≥ 0.
+2. Integrálhatóság: A sűrűségfüggvény integráljára teljesül, hogy
 
 \[
 \int_{-\infty}^{\infty} f_X(x) \, dx = 1
@@ -180,14 +180,38 @@ Bár a Brown-mozgás trajektóriái folytonosak, de nem differenciálhatóak.
 
 == Sztochasztikus differenciálegyenletek
 
-
-
-
 Egy közönséges differenciálegyenlet az alábbi formában írható fel:
 \[
 \frac{dx(t)}{dt} = f(t, x(t))
 \]
 ahol stem:[x(t)] a vizsgált mennyiség időbeli változása, és stem:[f(t, x(t))] egy determinisztikus függvény, amely meghatározza a rendszer dinamikáját.
+Integrál formában és stem:[x(0) = x_0] kezdeti értékkel ez az egyenlet a következőképpen néz ki:
+\[
+x(t) = x_0 + \int_0^t f(s, x(s)) ds
+\]
+Egy SDE akkor jön létre, ha a differenciálegyenlet egy együtthatója determinisztikus paraméter helyett sztochasztikus paraméterré válik.
+Pédául tekintsük a következő KDE-t:
+\[
+\frac{dx(t)}{dt} = a(t)x(t)
+\]
+Amennyiben feltessük, hogy stem:[a(t)] egy sztochasztikus folyamat, akkor az egyenlet sztochasztikus differenciálegyenletté alakul.
+Ekkor az stem:[a(t)] a következő formában írható fel:
+\[
+a(t) = f(t) + h(t)\xi(t)
+\]
+ahol stem:[\xi(t)] egy fehér zaj folyamat.
+Ekkor az SDE a következőképpen néz ki:
+\[
+\frac{dx(t)}{dt} = \left( f(t) + h(t)\xi(t) \right) x(t)
+\]
+Legyen stem:[dW(t) = \xi(t)dt] ahol stem:[dW(t)] a Brown-mozgás differenciálját jelöli, ekkor az SDE differenciál formában a következőképpen írható fel:
+\[
+dx(t) = f(t)x(t)dt + h(t)x(t)dW(t)
+\]
+Általánosabban egy Itô-típusú sztochasztikus differenciálegyenlet a következő formában írható fel:
+\[
+dx(t,\omega) = f(t, x(t,\omega))dt + \g(t, x(t,\omega))dW(t)
+\]
 
 
 
