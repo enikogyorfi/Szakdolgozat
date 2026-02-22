@@ -8,6 +8,8 @@ import os
 import seaborn as sns
 import shap
 from sklearn.inspection import permutation_importance
+from sklearn.model_selection import cross_val_predict
+from sklearn.base import clone
 
 def train_test_split(data, features, target, test_year):
     df = data.copy()
@@ -200,9 +202,10 @@ def residual_model(data, name, rolling_features, demo_features, target, test_yea
     best_model = hyperparameter_tuning(model,name, X_train, y_train)
     y_train_pred = best_model.predict(X_train)
     y_test_pred = best_model.predict(X_test)
-    residuals_train = y_train - y_train_pred
+    residuals_train = (y_train - y_train_pred)
     residuals_test = y_test - y_test_pred
     name_residuals = f'{name}_residuals'
+
     best_model_residuals = hyperparameter_tuning(model, name_residuals, X_train_demo, residuals_train)
     Results_test_pred, Max_Error_res, metrics_res = predict(best_model_residuals, name_residuals, X_test_demo, residuals_test, WMAPE=True)
     visualitzacio(Results_test_pred, name_residuals, best_model_residuals, X_train_demo, X_test_demo, residuals_test)
@@ -228,3 +231,4 @@ def residual_model(data, name, rolling_features, demo_features, target, test_yea
         mlflow.log_metrics(metrics_final)
 
     return Results_test_pred, metrics_res, Results_final, metrics_final
+

@@ -1,0 +1,390 @@
+== Demográfiai adatok előkészítése
+
+=== Áttekintés
+
+A szakdolgozatban a bűnözési idősorok (pl. napi bűncselekmény-szám) magyarázó változóiként Chicago közösségi területeire (Community Area) vonatkozó, nyilvánosan elérhető demográfiai és szocioökonómiai mutatókat használtam.
+A demográfiai adatforrás az *U.S. Census Bureau* által publikált *American Community Survey (ACS) 5-year estimates* idősor, amely kellően stabil becslést ad kis területi egységekre is.
+
+A feldolgozás célja egy olyan panel (idő × terület) adatbázis előállítása volt, amelyben minden (i) évhez és (ii) community area-hoz tartoznak aggregált mutatók (foglalkoztatás, jövedelem, életkori csoportok, szegénység, iskolázottság).
+
+=== Adatforrás és időbontás
+
+* Forrás: U.S. Census Bureau API (`https://api.census.gov/data/\{year\}/acs/acs5`).
+* Időszak: `2013–2023` (évenkénti ACS 5-year kiadványok).
+* Földrajzi lekérdezés: Illinois állam (17), Cook megye (031), *census tract* szint.
+
+[NOTE]
+====
+A lekérdezés API kulcs nélkül is működik, de nagyobb/biztonságosabb futtatáshoz érdemes Census API kulcsot használni, különben a túl sok kérés miatt a szolgáltatás átmenetileg letilthat.
+====
+
+=== Területi illesztés (tract → community area)
+
+Az ACS változók *tract* szinten érkeznek, ezért a tractokat community area azonosítóhoz kellett rendelni.
+Ehhez egy helyi geojson állományt használtam:
+
+* `data/CensusTractsTIGER2010_20251115.geojson`
+
+A fájl tartalmazza a következő kulcsokat:
+
+* `geoid10` → `GEOID` (tract azonosító)
+* `commarea` → `community_area` (community area sorszám)
+* `commarea_n` → `community` (community area név)
+
+A tract szintű ACS táblát a fenti GEOID alapján *inner join*-nal illesztettem, így csak azok a tractok kerültek be, amelyekhez van community area megfeleltetés.
+
+=== Felhasznált ACS változók
+
+A notebookban a következő (ACS táblákból származó) változók kerültek lekérésre.
+Zárójelben a notebookban használt ACS kód látható.
+
+==== Foglalkoztatás
+
+* Foglalkoztatottak száma (`B23025_003E`)
+* Munkanélküliek száma (`B23025_005E`)
+* Munkaerő-állomány / labor force (`B23025_002E`)
+
+A community area szintű ráták számítása:
+
+* `employment_rate = employed / labor_force`
+* `unemployment_rate = unemployed / labor_force`
+
+[NOTE]
+====
+A notebookban később szerepel egy átalakítás: `employed = employed - unemployed`.
+Ez akkor értelmezhető, ha az `employed` mezőt nem foglalkoztatottként, hanem „nem munkanélküli”-ként közelítjük.
+Ha a szigorú definíciót szeretnénk követni, akkor a `B23025_003E` változót érdemes változtatás nélkül használni.
+====
+
+==== Jövedelem
+
+* Medián háztartási jövedelem (`B19013_001E`)
+* Teljes népesség súlyozáshoz (`B01003_001E`)
+* Egy főre jutó jövedelem (`B19301_001E`)
+
+===== Súlyozott átlagos jövedelem
+
+A medián háztartási jövedelem (tract szinten) gyakran tartalmaz hiányos vagy speciális kódolt értékeket.
+A notebook a `-666666666` értéket hiányként kezeli, majd eldobja azokat a sorokat, amelyekből a súlyozás nem számolható.
+
+A community area szintű *súlyozott átlagos jövedelem* a tract szintű medián jövedelmek és népesség súlyozott átlaga:
+
+* `income_proxy = B19013_001E * B01003_001E`
+* `weighted_avg_income = sum(income_proxy) / sum(total_pop)`
+
+Emellett a notebook eltárolja a community area szintű jövedelem-mediánt is (`median_household_income`), amely a tract mediánok mediánja.
+
+===== Egy főre jutó jövedelem (per capita income)
+
+A per capita income community area szintre emelése szintén népesség-súlyozással történik:
+
+* `total_income_pc = B19301_001E * B01003_001E`
+* `per_capita_income = sum(total_income_pc) / sum(pc_pop)`
+
+==== Korcsoport (férfi 15–29)
+
+A bűnözési mintázatok miatt külön változó készült a fiatal férfi népességre.
+A notebook a következő bontásokat összegezte:
+
+* 15–17 (`B01001_007E`)
+* 18–19 (`B01001_008E`)
+* 20 (`B01001_009E`)
+* 21 (`B01001_010E`)
+* 22–24 (`B01001_011E`)
+* 25–29 (`B01001_012E`)
+* 30–34 (`B01001_013E`)
+
+Ezek tract szintű összege:
+
+* `male_15_29 = sum(age_vars)`
+
+majd community area szintű aggregálás:
+
+* `male_15_29 = sum(male_15_29)`
+
+==== Szegénység
+
+* Szegénységi küszöb alatt élők (`B17001_002E`)
+* Szegénységi státuszra vonatkozó teljes népesség (`B17001_001E`)
+
+A community area szintű szegénységi ráta:
+
+* `poverty_rate = below_poverty / total_poverty_pop`
+
+==== Iskolázottság (25+)
+
+* 25 év felettiek teljes száma (`B15003_001E`)
+* „No high school” proxy: alsó végzettségi kategóriák összege (`B15003_002E` … `B15003_016E`)
+
+A notebook a „középiskola nélküli” arányt nem közvetlenül, hanem egy proxy összegző változóval képzi:
+
+* `no_hs_proxy = sum(B15003_002E..B15003_016E)`
+
+majd community area szintre emelve:
+
+* `no_hs_25plus = sum(no_hs_proxy)`
+* `pop_25plus = sum(B15003_001E)`
+
+=== Éves panel összeállítása és kimenet
+
+A fenti mutatók minden ACS évre elkészülnek, majd az évek concatenálásával egy panel adatbázis jön létre.
+Az időindex az ACS kiadványéve:
+
+* `acs_year = year`
+
+A kimenet CSV formátumban:
+
+* `data/chicago_community_areas_acs5_2013_2023_weighted_income.csv`
+
+A várható kulcsmezők:
+
+* `community_area` (azonosító)
+* `community` (név)
+* `acs_year`
+
+és a számított demográfiai mezők (pl. `employment_rate`, `unemployment_rate`, `weighted_avg_income`, `per_capita_income`, `poverty_rate`, `male_15_29`, stb.).
+
+=== Adatminőség és korlátok
+
+* *Hiányzó jövedelemértékek:* a medián jövedelem esetén előforduló `-666666666` értékeket hiányként kezelem.
+* *ACS 5-year értelmezés:* az ACS 5-year becslések valójában többéves időablakot tükröznek, így az `acs_year` nem egyetlen naptári év „pontértéke”, hanem egy 5 éves aggregált becslés publikálási éve.
+* *Területi megfeleltetés:* a tract → community area illesztés a használt TIGER/geojson állománytól függ; ha a területi határok változnak, a megfeleltetést frissíteni kell.
+
+== Az adatok előállításától a modellezésig
+
+Ebben a részben bemutatom, hogyan kapcsolódnak össze a kinyert szociodemográfiai adatok a bűnözési adatokkal, milyen jellemzők (feature-ök) készülnek belőlük, és hogyan használhatók fel a predikciókban.
+
+=== Szociodemográfiai panel előkészítése és származtatott ráták
+
+A kinyert ACS panelt a modellhez a következő átnevezésekkel igazítottam a crime adatokhoz:
+
+* `acs_year` → `Year`
+* `community_area` → `Community Area`
+
+A nyers aggregátumokból két arányváltozó került képzésre:
+
+* `no_hs_25plus_rate = no_hs_25plus / pop_25plus`
+  (25 év felettiek körében a középiskola nélküli végzettség proxy aránya)
+* `male_15_34_rate = male_15_29 / total_pop`
+  (a fiatal férfi népesség aránya a teljes népességen belül)
+
+Ezek a ráták jobban összehasonlíthatóak területek között, mint az abszolút létszámok.
+
+=== Crime adatok agregálása és a hiányzó kombinációk kezelése
+
+A bűnözési adatokból a célváltozó éves aggregálással készült:
+
+* `counts`: a bűncselekmények száma *Community Area × Year* bontásban.
+
+A *Primary Type* szerinti bontásnál a cél az volt, hogy ne legyenek hiányzó (év, terület, típus) kombinációk.
+Ezért egy teljes rácsot hoztam létre az összes elérhető:
+
+* community area,
+* év,
+* primary type
+
+kombinációból, majd az ott hiányzó darabszámokat 0-val töltöttem fel.
+Ez a lépés különösen fontos a típusonkénti idősoros modellezésnél, mert a hiányzó sorok a későbbi lag/rolling feature képzést is „szétszakítanák”.
+
+=== Szociodemográfiai adatok extrapolációja 2024-re
+
+Mivel az ACS panel 2023-ig áll rendelkezésre, viszont a szakdolgozatban 2024-re készül előrejelzés, a szociodemográfiai mutatókat 2024-re extrapoláltam.
+Az extrapoláció polinomiális illesztéssel készült (a notebookban `degree = 4`).
+
+Az extrapolált 2024-es sorokat a történeti adatokhoz hozzáfűztem, így a szociodemográfiai panel `2013–2024` tartományra vált teljessé.
+
+[NOTE]
+====
+Az extrapoláció determinisztikus lépés, ezért a 2024-es demográfiai értékek bizonytalansága nincs explicit módon modellezve.
+Ez a korlát az eredmények interpretációjánál fontos.
+====
+
+=== Összekapcsolás a bűnözési idősorral
+
+A végső modellezési tábla úgy áll elő, hogy a crime éves aggregátumot (counts) összekapcsolom a szociodemográfiai panellel:
+
+* join kulcsok: `Year`, `Community Area`
+* join típusa: bal oldali összekapcsolás (crime a „fő” tábla)
+
+Ennek eredménye egy olyan panel adat, ahol minden bűnözési megfigyeléshez hozzárendelődnek az adott év community area szocio-demográfiai jellemzői.
+
+== Feature engineering az idősor jelleg kihasználására
+
+A bűnözési idősorokban erős a folytonosság (autokorreláció) és a trend/szezonalitás, ezért a modell bemenetébe idősoros jellemzők is kerültek.
+
+=== Késleltetett (lagged) változók
+
+A lagged feature-ök azt rögzítik, hogy az előző időpont(ok) bűncselekmény-száma mennyiben magyarázza a következő évet.
+A notebookban 1 késleltetést készítettem:
+
+* `counts_1 = counts(t-1)`
+
+A késleltetés community area-nként készül (`groupby('Community Area').shift(1)`).
+
+=== Rolling mean változók
+
+A rolling mean feature-ök a rövid távú „mozgó átlag” jellegű trendet ragadják meg.
+A notebookban három ablakméret szerepel (`window_size = 3`), és mindegyik a megelőző időpont(ok) átlagát veszi:
+
+* `counts_1_rollingmean`: 1 éves visszatekintő átlag
+* `counts_2_rollingmean`: 2 éves visszatekintő átlag
+* `counts_3_rollingmean`: 3 éves visszatekintő átlag
+
+A rolling mean képzésnél is community area-nként történik az illesztés, így a területek idősorai nem „keverednek”.
+
+== Modellépítés és validáció
+
+=== Tanító–teszt bontás (időalapú)
+
+A modellek tanítása és értékelése időalapú szeparációval történt:
+
+* tanító halmaz: `Year < 2024`
+* teszt halmaz: `Year == 2024`
+
+Ez biztosítja, hogy ne kerüljön „jövőbeli” információ a tanításba.
+
+=== Random Forest regresszió
+
+Fő modellként `RandomForestRegressor` szolgált.
+A modell kétféle feature-készlettel került kipróbálásra:
+
+1. *Csak idősoros jellemzők* (rolling mean / lag):
+   `Community Area`, `Year`, `counts_*_rollingmean`
+2. *Idősoros + szociodemográfiai jellemzők:*
+   az előzőek + `total_pop`, `weighted_avg_income`, `employment_rate`, `unemployment_rate`, `per_capita_income`, `poverty_rate`, `no_hs_25plus_rate`, `male_15_34_rate`
+
+A hiperparaméterezés `TimeSeriesSplit` alapú random kereséssel történik, és a célfüggvény a `neg_mean_squared_error`.
+
+=== Típusonkénti (Primary Type) predikció
+
+A szakdolgozat kiterjesztéseként a predikciók Primary Type bontásban is elkészíthetők.
+Ilyenkor minden típusra külön-külön képezhető rolling mean idősor, majd külön modell tanítható.
+
+A notebookban egy egyszerű adatminőségi szűrés is megjelenik: ha egy adott típusnál a sorok többsége 0 (azaz ritka esemény), akkor a típus kihagyható, mert a modell tanulása instabil.
+
+=== Reziduális (kétlépcsős) modell
+
+A reziduális modell célja, hogy különválassza:
+
+* az idősoros komponens által megmagyarázott részt, és
+* a demográfiai tényezőkkel magyarázható „maradékot”.
+
+Lépések:
+
+1. *Idősoros modell:* rolling feature-ök alapján predikció készül (`y_pred_ts`).
+2. *Reziduum számítás:* `residual = y_true - y_pred_ts`.
+3. *Demográfiai modell:* a reziduumot demográfiai feature-ökkel tanítom.
+4. *Végső predikció:* `y_pred_final = y_pred_ts + y_pred_residual`.
+
+Ez a felbontás segít abban, hogy a demográfiai változók hatása ne „nyelődjön el” az idősoros trend mellett.
+
+== Eredmények értelmezése
+
+A futások eredményeit a következő metrikákkal értékeltem:
+
+* `RMSE` (gyöknégyzetes átlagos hiba): érzékeny a nagy eltérésekre.
+* `MAPE` (átlagos százalékos hiba): könnyen értelmezhető, de problémás lehet, ha a tényleges érték 0-hoz közeli.
+* `WMAPE` (súlyozott MAPE): stabilabb alternatíva, különösen ritka eseményeknél.
+* `Accuracy = 100 - MAPE`: csak akkor értelmezhető, ha a MAPE stabil (nem 0-val oszt).
+* `Max_Error`: a legnagyobb abszolút eltérés.
+
+A vizualizációk az interpretációt segítik:
+
+* *Actual vs Predicted* szórásdiagram: gyorsan jelzi az alul-/túlbecslést és az outliereket.
+* *Hiba hisztogram / Top–Bottom 10*: megmutatja, mely területeken a legnagyobb a hiba.
+* *Feature importance, permutation importance*: a modell által fontosnak tartott bemeneti változók.
+* *SHAP összefoglaló*: a változók globális és lokális hatásának értelmezése.
+
+[NOTE]
+====
+Ha a tesztben sok 0 érték szerepel (pl. ritka Primary Type), a MAPE és az ebből számolt Accuracy szélsőséges (akár `-inf`) is lehet.
+Ilyen esetekben érdemes a WMAPE-re támaszkodni, vagy az értékelést olyan halmazon végezni, ahol a célváltozó nem 0.
+====
+
+== Eredmények vizuális értékelése (ábrák alapján)
+
+Ebben a részben az elkészült előrejelzésekhez mentett ábrák (scatter plot, hibaeloszlás, feature importance, permutation importance, SHAP) alapján értelmezem a modellek viselkedését.
+A cél nem csak a metrikák (RMSE/MAPE) számszerű összehasonlítása, hanem annak megértése is, hogy *hol* és *miért* téved a modell.
+
+=== Tényérték vs. becslés (scatter plot)
+
+A `Results_scatter.png` (valamint a reziduális modellnél a `Residual_Model_szocdem_residuals_Results_scatter.png`) ábrák a tényleges és prediktált értékeket hasonlítják össze.
+A szaggatott (vagy jelölt) `y=x` átló azt jelenti, hogy a modell pontosan találta el az adott pontot.
+
+Általános értelmezési szempontok:
+
+* Ha a pontok szorosan az átló körül helyezkednek el, akkor a modellezés jól leköveti a 2024-es értékeket.
+* Ha a nagy tényszámoknál a pontok jellemzően az átló *alatt* vannak, akkor a modell *alulbecsüli* a magas bűnözési terhelésű területeket (konzervatív becslés, „regression to the mean”).
+* Ha az alacsony tényszámoknál a pontok az átló *felett* jelennek meg, akkor a modell *túlbecslést* ad csendesebb területekre.
+* A szélső outlierek (nagyon távoli pontok) gyakran olyan community area-k, ahol 2024-ben valamilyen lokális sokk, adatminőségi törés, vagy a korábbi évekhez képest szokatlan változás történt.
+
+A reziduális modell scatter ábrája akkor tekinthető előrelépésnek, ha:
+
+* a pontfelhő „átló körüli szórása” csökken, és
+* különösen a korábban rendszeresen alulbecsült magas értékek közelebb kerülnek az átlóhoz.
+
+image::../Images/Results_scatter.png[align=center]
+image::../Images/Residual_Model_szocdem_residuals_Results_scatter.png[align=center]
+
+=== Hibaeloszlás (histogram)
+
+A `Results_histogram.png` és `Residual_Model_szocdem_residuals_Results_histogram.png` ábrák a predikciós hibák eloszlását mutatják (tipikusan `error = y_true - y_pred`).
+
+Értelmezési szempontok:
+
+* A 0 köré koncentrált, keskeny eloszlás jó általános pontosságot jelez.
+* Ha az eloszlás jobbra tolódik (pozitív hibatömeg), akkor a modell jellemzően *alulbecsül* (mert `y_true - y_pred > 0`).
+* Ha balra tolódik (negatív), akkor inkább *túlbecsül*.
+* A hosszú „farok” (thick tail) arra utal, hogy néhány területnél nagy, atipikus eltérés van; ez az RMSE-t erősen rontja.
+
+A reziduális megközelítés akkor hasznos, ha az eloszlás:
+
+* kevésbé aszimmetrikus (kisebb szisztematikus torzítás), és/vagy
+* a farok rövidül (kevesebb extrém hiba).
+
+image::../Images/Results_histogram.png[align=center]
+image::../Images/Residual_Model_szocdem_residuals_Results_histogram.png[align=center]
+
+=== Feature importance (Random Forest)
+
+A `Feature_importance.png` ábra a Random Forest modell által fontosnak tartott változókat mutatja.
+Ezt *globális* fontosságként érdemes értelmezni: átlagosan mely feature csökkenti legjobban a döntési fák hibáját.
+
+Tipikus, várható mintázat a feladathoz:
+
+* Az idősoros feature-ök (pl. `counts_1_rollingmean`, `counts_2_rollingmean`, `counts_3_rollingmean` vagy `counts_1`) gyakran dominálnak, mert a bűnözés erősen autokorrelált.
+* A demográfiai változók (pl. `poverty_rate`, `employment_rate`, `weighted_avg_income`, `no_hs_25plus_rate`) akkor emelkednek ki, ha a területek közötti strukturális különbségeket segítenek megmagyarázni.
+
+Fontos korlát: az alap RF feature importance torzulhat (pl. magas kardinalitású / nagy szórású változókat preferál), ezért érdemes permutation importance-szal is ellenőrizni.
+
+image::../Images/Feature_importance.png[align=center]
+
+=== Reziduális modell: permutation importance és SHAP
+
+A reziduális modell esetén a cél az, hogy a demográfiai változók *a maradék hibát* magyarázzák, tehát itt a fontosság-ábrák interpretációja „tisztább” lehet.
+
+* A `Residual_Model_szocdem_residuals_Feature_importance.png` az RF alapú fontosság.
+* A `Residual_Model_szocdem_residuals_permutation_importance.png` azt mutatja, hogy mennyit romlik a modell teljesítménye, ha egy feature értékeit véletlenszerűen összekeverjük.
+  Ez közvetlenebb képet ad arról, hogy az adott változó mennyire szükséges a predikcióhoz.
+
+A `Residual_Model_szocdem_residuals_shap_summary.png` SHAP összefoglaló ábra:
+
+* A felső változók járulnak hozzá leginkább a reziduum előjelének és nagyságának meghatározásához.
+* A pontok színe a feature értékének nagyságát jelöli (alacsony–magas), a vízszintes elhelyezkedés pedig a SHAP-hatást.
+* Ha egy változónál a magas értékek (pl. magas szegénységi ráta) jellemzően pozitív SHAP irányba tolják a reziduumot, az azt sugallja, hogy a demográfiai változók ott *növelik* a várt bűnözést a tisztán idősoros bázishoz képest.
+
+image::../Images/Residual_Model_szocdem_residuals_Feature_importance.png[align=center]
+image::../Images/Residual_Model_szocdem_residuals_permutation_importance.png[align=center]
+image::../Images/Residual_Model_szocdem_residuals_shap_summary.png[align=center]
+
+=== Példa: típusonkénti modell-interpretáció (SHAP)
+
+Bizonyos Primary Type kategóriákhoz külön SHAP ábra is készült (pl. `RF_2024_by_CRIMINAL_SEXUAL_ASSAULT_szocdem_shap_summary.png`).
+Az ilyen ábrák segítenek megérteni, hogy ugyanazok a demográfiai tényezők *eltérően* hathatnak különböző bűncselekmény-típusokra.
+
+image::../Images/RF_2024_by_CRIMINAL_SEXUAL_ASSAULT_szocdem_shap_summary.png[align=center]
+
+[NOTE]
+====
+A fenti ábrák értelmezésekor fontos szem előtt tartani, hogy a modellek *asszociációt* tanulnak (prediktív kapcsolatot), nem oksági viszonyt. Különösen a demográfiai változóknál (jövedelem, szegénység, iskolázottság) a hatások együtt mozognak és rejtett kovariánsokkal is összefügghetnek.
+====
