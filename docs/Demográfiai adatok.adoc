@@ -13,10 +13,6 @@ A feldolgozás célja egy olyan panel (idő × terület) adatbázis előállít�
 * Időszak: `2013–2023` (évenkénti ACS 5-year kiadványok).
 * Földrajzi lekérdezés: Illinois állam (17), Cook megye (031), *census tract* szint.
 
-[NOTE]
-====
-A lekérdezés API kulcs nélkül is működik, de nagyobb/biztonságosabb futtatáshoz érdemes Census API kulcsot használni, különben a túl sok kérés miatt a szolgáltatás átmenetileg letilthat.
-====
 
 === Területi illesztés (tract → community area)
 
@@ -49,12 +45,6 @@ A community area szintű ráták számítása:
 * `employment_rate = employed / labor_force`
 * `unemployment_rate = unemployed / labor_force`
 
-[NOTE]
-====
-A notebookban később szerepel egy átalakítás: `employed = employed - unemployed`.
-Ez akkor értelmezhető, ha az `employed` mezőt nem foglalkoztatottként, hanem „nem munkanélküli”-ként közelítjük.
-Ha a szigorú definíciót szeretnénk követni, akkor a `B23025_003E` változót érdemes változtatás nélkül használni.
-====
 
 ==== Jövedelem
 
