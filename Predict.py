@@ -1,3 +1,5 @@
+import pickle
+
 from sklearn.model_selection import (train_test_split, KFold,GridSearchCV,
                                      StratifiedKFold, RandomizedSearchCV, TimeSeriesSplit)
 import numpy as np
@@ -29,6 +31,8 @@ def train_test_split(data, features, target, test_year):
 
 
 def hyperparameter_tuning(model, name,X_train, y_train):
+    model_dir = "Models"
+    os.makedirs(model_dir, exist_ok=True)
     tscsv = TimeSeriesSplit(n_splits=5)
     param_random = {
         'criterion': ['absolute_error', 'squared_error'],
@@ -50,6 +54,8 @@ def hyperparameter_tuning(model, name,X_train, y_train):
     with mlflow.start_run(run_name=f'{name}_Hyperparameter_Tuning'):
         random_search.fit(X_train, y_train)
         best_model = random_search.best_estimator_
+        best_model_path = os.path.join(model_dir, f'{name}_model.pkl')
+        pickle.dump(best_model, open(best_model_path, 'wb'))
         mlflow.log_params(random_search.best_params_)
     return best_model
 
@@ -152,7 +158,37 @@ def permutation_importance_plot(model, X_test, y_test, feature_names):
     plt.xlabel('Mean Importance')
     plt.ylabel('Feature')
 
+def permutation_importance_table(model, name, X_test, y_test, feature_names):
+    Result_tables_dir = "Results_tables"
+    os.makedirs(Result_tables_dir, exist_ok=True)
+    with mlflow.start_run(run_name=f'{name}_Permutation_Importance'):
+        perm = permutation_importance(model, X_test, y_test, n_repeats=10, random_state=42)
+        perm_importance_table = pd.DataFrame({
+            'Feature': feature_names,
+            'Importance_Mean': perm.importances_mean,
+            'Importance_Std': perm.importances_std,
+            'Type': 'Test (Permutation)'
+        }).sort_values(by='Importance_Mean', ascending=False)
+        table_path = os.path.join(Result_tables_dir, f'{name}_permutation_importance.csv')
+        perm_importance_table.to_csv(table_path, index=False)
+        mlflow.log_artifact(table_path, artifact_path="Result_tables")
+    return perm_importance_table
 
+def shap_table(model,name, X_train):
+    Result_tables_dir = "Results_tables"
+    os.makedirs(Result_tables_dir, exist_ok=True)
+    with mlflow.start_run(run_name=f'{name}_SHAP_values'):
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(X_train)
+        shap_df = pd.DataFrame({
+            "Feature": X_train.columns,
+            "Mean_ABS_SHAP_Value": np.abs(shap_values).mean(axis=0),
+            "Mean_SHAP": shap_values.mean(axis=0)
+            }).sort_values(by="Mean_ABS_SHAP_Value",  ascending=False)
+        table_path = os.path.join(Result_tables_dir, f'{name}_shap_values.csv')
+        shap_df.to_csv(table_path, index=False)
+        mlflow.log_artifact(table_path, artifact_path="Result_tables")
+    return shap_df
 
 
 def visualitzacio(Results, name, model, X_train, X_test, y_test):
@@ -189,12 +225,20 @@ def visualitzacio(Results, name, model, X_train, X_test, y_test):
         plt.close()
         mlflow.log_artifact(full_path, artifact_path="plots")
 
-def prediction(data, features, name, target, test_year, model, WMAPE=False):
+
+def prediction(data, features,path_name, name, target, test_year, model, WMAPE=False):
     X_train, y_train, X_test, y_test = train_test_split(data, features, target, test_year)
-    best_model = hyperparameter_tuning(model, name, X_train, y_train)
+    #try to load the saved model from the previous run
+    try:
+        with open(path_name, 'rb') as f:
+            best_model = pickle.load(f)
+    except FileNotFoundError:
+        best_model = hyperparameter_tuning(model, name, X_train, y_train)
     Results, Max_Error, metrics = predict(best_model, name, X_test, y_test, WMAPE)
     visualitzacio(Results, name, best_model, X_train, X_test, y_test)
-    return Results, Max_Error, metrics, best_model
+    Permutation_table = permutation_importance_table(best_model, name, X_test, y_test, features)
+    SHAP_table = shap_table(best_model, name, X_train)
+    return Results, Max_Error, metrics, best_model, Permutation_table, SHAP_table
 
 def residual_model(data, name, rolling_features, demo_features, target, test_year, model):
     X_train, y_train, X_test, y_test = train_test_split(data, rolling_features, target, test_year)

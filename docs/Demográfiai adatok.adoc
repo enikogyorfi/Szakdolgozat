@@ -191,13 +191,17 @@ Ez a lépés különösen fontos a típusonkénti idősoros modellezésnél, mer
 Mivel az ACS panel 2023-ig áll rendelkezésre, viszont a szakdolgozatban 2024-re készül előrejelzés, a szociodemográfiai mutatókat 2024-re extrapoláltam.
 Az extrapoláció polinomiális illesztéssel készült (a notebookban `degree = 4`).
 
+[source,python]
+----
+# Polinomiális illesztés (degree=4) alkalmazása a jellemzőkre
+coef = np.polyfit(x, y, degree)
+poly_fn = np.poly1d(coef)
+y_pred = poly_fn(target_year)
+----
+Az extrapoláció jóságát a 2023-as év adataival ellenőriztük, összehasonlítva a becsült értékeket a tényadatokkal.
 Az extrapolált 2024-es sorokat a történeti adatokhoz hozzáfűztem, így a szociodemográfiai panel `2013–2024` tartományra vált teljessé.
 
-[NOTE]
-====
-Az extrapoláció determinisztikus lépés, ezért a 2024-es demográfiai értékek bizonytalansága nincs explicit módon modellezve.
-Ez a korlát az eredmények interpretációjánál fontos.
-====
+
 
 === Összekapcsolás a bűnözési idősorral
 
@@ -212,15 +216,6 @@ Ennek eredménye egy olyan panel adat, ahol minden bűnözési megfigyeléshez h
 
 A bűnözési idősorokban erős a folytonosság (autokorreláció) és a trend/szezonalitás, ezért a modell bemenetébe idősoros jellemzők is kerültek.
 
-=== Késleltetett (lagged) változók
-
-A lagged feature-ök azt rögzítik, hogy az előző időpont(ok) bűncselekmény-száma mennyiben magyarázza a következő évet.
-A notebookban 1 késleltetést készítettem:
-
-* `counts_1 = counts(t-1)`
-
-A késleltetés community area-nként készül (`groupby('Community Area').shift(1)`).
-
 === Rolling mean változók
 
 A rolling mean feature-ök a rövid távú „mozgó átlag” jellegű trendet ragadják meg.
@@ -230,9 +225,11 @@ A notebookban három ablakméret szerepel (`window_size = 3`), és mindegyik a m
 * `counts_2_rollingmean`: 2 éves visszatekintő átlag
 * `counts_3_rollingmean`: 3 éves visszatekintő átlag
 
-A rolling mean képzésnél is community area-nként történik az illesztés, így a területek idősorai nem „keverednek”.
+A rolling mean képzésnél is community area-nként történik az illesztés.
 
 == Modellépítés és validáció
+
+A választott algoritmus a **Random Forest Regressor**.
 
 === Tanító–teszt bontás (időalapú)
 
@@ -241,11 +238,11 @@ A modellek tanítása és értékelése időalapú szeparációval történt:
 * tanító halmaz: `Year < 2024`
 * teszt halmaz: `Year == 2024`
 
-Ez biztosítja, hogy ne kerüljön „jövőbeli” információ a tanításba.
+=== Hiperparaméter-tuning és Validáció
+A modell optimalizálása `RandomizedSearchCV` segítségével történt, 50 iterációval és `TimeSeriesSplit` keresztvalidációval. Ez a módszer figyelembe veszi az adatok időbeli sorrendiségét.
 
-=== Random Forest regresszió
+=== Featurelisták és modellek
 
-Fő modellként `RandomForestRegressor` szolgált.
 A modell kétféle feature-készlettel került kipróbálásra:
 
 1. *Csak idősoros jellemzők* (rolling mean / lag):
@@ -253,14 +250,13 @@ A modell kétféle feature-készlettel került kipróbálásra:
 2. *Idősoros + szociodemográfiai jellemzők:*
    az előzőek + `total_pop`, `weighted_avg_income`, `employment_rate`, `unemployment_rate`, `per_capita_income`, `poverty_rate`, `no_hs_25plus_rate`, `male_15_34_rate`
 
-A hiperparaméterezés `TimeSeriesSplit` alapú random kereséssel történik, és a célfüggvény a `neg_mean_squared_error`.
 
 === Típusonkénti (Primary Type) predikció
 
 A szakdolgozat kiterjesztéseként a predikciók Primary Type bontásban is elkészíthetők.
 Ilyenkor minden típusra külön-külön képezhető rolling mean idősor, majd külön modell tanítható.
 
-A notebookban egy egyszerű adatminőségi szűrés is megjelenik: ha egy adott típusnál a sorok többsége 0 (azaz ritka esemény), akkor a típus kihagyható, mert a modell tanulása instabil.
+Ha egy adott típusnál a sorok többsége 0 (azaz ritka esemény), akkor a típus kihagyható, mert a modell tanulása instabil.
 
 === Reziduális (kétlépcsős) modell
 
@@ -278,15 +274,46 @@ Lépések:
 
 Ez a felbontás segít abban, hogy a demográfiai változók hatása ne „nyelődjön el” az idősoros trend mellett.
 
-== Eredmények értelmezése
+== Kísérletkövetés és Naplózás (MLflow)
+A kutatás során az **MLflow** keretrendszert alkalmaztuk a kísérleti folyamatok szisztematikus követésére és az eredmények reprodukálhatóságának biztosítására. A naplózási stratégia az alábbi főbb komponensekből áll:
 
-A futások eredményeit a következő metrikákkal értékeltem:
+* **Paraméterek naplózása**: A `hyperparameter_tuning` folyamat során a `RandomizedSearchCV` által kiválasztott optimális modellparamétereket (pl. `n_estimators`, `max_depth`, `max_features`) az MLflow automatikusan rögzíti (`mlflow.log_params`).
+* **Metrikák követése**: Minden predikciós futás során a modell jóságát leíró statisztikai mutatók rögzítésre kerülnek (`mlflow.log_metrics`), lehetővé téve a különböző modellváltozatok (pl. csak idősoros vs. szociodemográfiai adatokkal kiegészített) összehasonlítását.
+* **Artefaktumok és Vizualizációk**: A `visualitzacio` függvény által generált összes diagnosztikai ábrát — beleértve a szórástdiagramokat, hiba-hisztogramokat, SHAP összefoglalókat és permutációs fontossági ábrákat — a rendszer PNG formátumban menti és az adott futáshoz rendeli (`mlflow.log_artifact`).
+* **Modell archiválás**: A betanított és optimalizált modelleket `.pkl` kiterjesztésű fájlokként tároljuk, biztosítva a későbbi visszatölthetőséget és élesítést.
 
-* `RMSE` (gyöknégyzetes átlagos hiba): érzékeny a nagy eltérésekre.
-* `MAPE` (átlagos százalékos hiba): könnyen értelmezhető, de problémás lehet, ha a tényleges érték 0-hoz közeli.
-* `WMAPE` (súlyozott MAPE): stabilabb alternatíva, különösen ritka eseményeknél.
-* `Accuracy = 100 - MAPE`: csak akkor értelmezhető, ha a MAPE stabil (nem 0-val oszt).
-* `Max_Error`: a legnagyobb abszolút eltérés.
+== Kiértékelési Metrikák
+A modellek pontosságának mérésére több szempontú metrikarendszert használunk, amely segít az eltérő jellegű (gyakori vs. ritka) bűncselekménytípusok kezelésében.
+
+* **MSE (Mean Squared Error)**: A jósolt és a valós értékek különbségének négyzetes átlaga, amely érzékeny a nagyobb kilengésekre.
+* **RMSE (Root Mean Squared Error)**: Az MSE négyzetgyöke, amely a hibát az eredeti mértékegységben (bűnesetek száma) számszerűsíti.
+* **WMAPE (Weighted Mean Absolute Percentage Error)**: A bűnügyi adatok ritkasága (sok nulla vagy alacsony érték) miatt alkalmazott súlyozott százalékos hiba, amely az összesített abszolút hibát veti össze az összes valós eseményszámmal.
+* **MAPE (Mean Absolute Percentage Error)**: Az átlagos abszolút százalékos hiba, amely megmutatja, hogy a modell átlagosan hány százalékkal téved.
+* **Accuracy (Pontosság)**: A kutatásban 100 - MAPE képlettel definiált érték, amely a modell százalékos megbízhatóságát tükrözi.
+* **Max_Error**: A predikció során elkövetett legnagyobb abszolút hiba, amely rávilágít a modell számára legnehezebben előrejelezhető szélsőséges esetekre.
+
+=== Matematikai definíciók
+
+A RMSE kiszámítása:
+
+[latexmath]
+++++
+RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+++++
+
+A WMAPE kiszámítása az alábbi képlet alapján történik:
+
+[latexmath]
+++++
+WMAPE = \frac{\sum_{i=1}^{n} |y_i - \hat{y}_i|}{\sum_{i=1}^{n} |y_i|} \times 100
+++++
+
+A modell általános pontossága (Accuracy) az alábbiak szerint alakul:
+
+[latexmath]
+++++
+Accuracy = 100 - \left( \frac{100}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right| \right)
+++++
 
 A vizualizációk az interpretációt segítik:
 
@@ -295,16 +322,9 @@ A vizualizációk az interpretációt segítik:
 * *Feature importance, permutation importance*: a modell által fontosnak tartott bemeneti változók.
 * *SHAP összefoglaló*: a változók globális és lokális hatásának értelmezése.
 
-[NOTE]
-====
-Ha a tesztben sok 0 érték szerepel (pl. ritka Primary Type), a MAPE és az ebből számolt Accuracy szélsőséges (akár `-inf`) is lehet.
-Ilyen esetekben érdemes a WMAPE-re támaszkodni, vagy az értékelést olyan halmazon végezni, ahol a célváltozó nem 0.
-====
+
 
 == Eredmények vizuális értékelése (ábrák alapján)
-
-Ebben a részben az elkészült előrejelzésekhez mentett ábrák (scatter plot, hibaeloszlás, feature importance, permutation importance, SHAP) alapján értelmezem a modellek viselkedését.
-A cél nem csak a metrikák (RMSE/MAPE) számszerű összehasonlítása, hanem annak megértése is, hogy *hol* és *miért* téved a modell.
 
 === Tényérték vs. becslés (scatter plot)
 
@@ -323,8 +343,7 @@ A reziduális modell scatter ábrája akkor tekinthető előrelépésnek, ha:
 * a pontfelhő „átló körüli szórása” csökken, és
 * különösen a korábban rendszeresen alulbecsült magas értékek közelebb kerülnek az átlóhoz.
 
-image::../Images/Results_scatter.png[align=center]
-image::../Images/Residual_Model_szocdem_residuals_Results_scatter.png[align=center]
+image::../Images/RF_2024_byCommunityArea_laggedrolling_szocdem_Results_scatter.png[align=center]
 
 === Hibaeloszlás (histogram)
 
@@ -342,8 +361,8 @@ A reziduális megközelítés akkor hasznos, ha az eloszlás:
 * kevésbé aszimmetrikus (kisebb szisztematikus torzítás), és/vagy
 * a farok rövidül (kevesebb extrém hiba).
 
-image::../Images/Results_histogram.png[align=center]
-image::../Images/Residual_Model_szocdem_residuals_Results_histogram.png[align=center]
+image::../Images/RF_2024_byCommunityArea_laggedrolling_szocdem_Results_histogram.png[align=center]
+
 
 === Feature importance (Random Forest)
 
@@ -357,7 +376,7 @@ Tipikus, várható mintázat a feladathoz:
 
 Fontos korlát: az alap RF feature importance torzulhat (pl. magas kardinalitású / nagy szórású változókat preferál), ezért érdemes permutation importance-szal is ellenőrizni.
 
-image::../Images/Feature_importance.png[align=center]
+image::../Images/RF_2024_byCommunityArea_laggedrolling_szocdem_Feature_importance.png[align=center]
 
 === Reziduális modell: permutation importance és SHAP
 
