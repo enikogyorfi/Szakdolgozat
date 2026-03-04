@@ -1,0 +1,272 @@
+:title: MATHEMATICAL MODELS OF OPTION PRICING
+:author: Győrfi Enikő
+:supervisor: Maga Balázs
+:department:
+:doctype: book
+:year: 2025
+:doctype: book
+:lang: hu
+:stem: latexmath
+:toc: left
+:toc-title: Tartalomjegyzék
+:sectnums:
+:chapter-signifier: Fejezet
+:eqnums: all
+:pdf-theme: style.yml
+
+ifdef::backend-pdf[]
+[.text-center]
+{empty} +
+[.university]#EÖTVÖS LORÁND UNIVERSITY# +
+[.faculty]#FACULTY OF NATURAL SCIENCES#
+
+'''
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+
+[.text-center]
+[.author-name]#{author}#
+
+{empty} +
+{empty}
+
+[.text-center]
+[.thesis-title]#{title}#
+
+{empty} +
+
+[.text-center]
+Thesis +
+Mathematics BSc, applied mathematics specialisation
+
+{empty} +
+{empty} +
+{empty} +
+
+[.text-center]
+Supervisor: +
+[.supervisor-name]#{supervisor}# +
+{department}
+
+{empty} +
+{empty} +
+{empty} +
+
+image::elte_ttk_logo.png[ELTE Logo, 200, align="center"]
+
+{empty} +
+[.text-center]
+Budapest, 2025
+endif::[]
+
+<<<
+== Bevezetés
+
+== A Sztochasztikus Folyamatok Elméleti Alapjai
+
+==== Definíciók és alapfogalmak
+
+:definition-prefix: 2.1
+:defnum: 0
+
+[.definition]
+--
+[[def_elso]]
+*Definíció {definition-prefix}.{counter:defnum} .* _Egy valószínűségi tér stem:[(\Omega, \mathcal{F}, P)] hármasa tartalmazza:_
+
+* stem:[\Omega] _(Eseménytér): A lehetséges kimenetelek halmaza._
+* _stem:[\mathcal{F}]_ _(stem:[\sigma]-algebra)_: _stem:[\Omega]_ _részhalmazainak olyan rendszere, amely tartalmazza az stem:[\emptyset] üres halmazt; komplementer-zárt; és megszámlálható unióra zárt. Az stem:[(\Omega, \mathcal{F})] párost mérhető térnek nevezzük._
+* _stem:[P] (Valószínűségi Mérték): Egy stem:[P: \mathcal{F} \to \mathbb{R}] függvény, amely kielégíti a stem:[P(\emptyset)=0] és stem:[P(\Omega)=1] feltételeket, és megszámlálható additivitással rendelkezik diszjunkt halmazok esetén._
+--
+
+[.definition]
+--
+[[def_masodik]]
+*Definíció {definition-prefix}.{counter:defnum} .* _A függvények egy halmaza által generált σ-algebra a legkisebb σ-algebra, amelyre vonatkozóan ezen függvények mind mérhetők._
+--
+
+[.definition]
+--
+[[def_harmadik]]
+*Definíció {definition-prefix}.{counter:defnum} .* _Tegyük fel, hogy adott két valószínűségi mérték stem:[\mathcal{P}],stem:[\mathcal{Q}]: stem:[\mathcal{F}] -> [0,1] ugyanazon mérhető téren stem:[(\Omega, \mathcal{F})]. Azt mondjuk, hogy a stem:[Q] mérték abszolút folytonos a stem:[P]-re nézve, ha létezik egy integrálható véletlen változó stem:[f] stem:[\Omega \to \mathbb{R}] melyre minden A stem:[\in \mathcal{F}] esetén :_
+
+\[
+\mathcal{Q}(A) = \int_A f (\omega) \, d\mathcal{P}(\omega)
+\]
+
+_Ekkor stem:[f] a stem:[\mathcal{Q}] mérték stem:[\mathcal{P}]-re vonatkozó sűrűségfüggvénye._
+--
+**Megjegyzés**: Ebben az esetben ha stem:[E^{\mathcal{P}}] és stem:[E^{\mathcal{Q}}] a két mérték várható értékei stem:[\mathcal{P}] és stem:[\mathcal{Q}] szerint, akkor minden stem:[\mathcal{Q}]- szerint integrálható véletlen változóra stem:[X]:
+\[
+E^{\mathcal{Q}}[X] = \int_{\Omega} Xd\mathcal{Q} = \int_{\Omega} X f d\mathcal{P} = E^{\mathcal{P}}[X f]
+\]
+
+[.definition]
+--
+[[def_negyedik]]
+*Definíció {definition-prefix}.{counter:defnum}.* _Legyen stem:[(\Omega, \mathcal{F}, P)] egy valószínűségi tér és T egy rögzített pozitív szám. Ekkor az stem:[X = \{X_t : t \in [0,T\]\}] családot sztochasztikus folyamatnak nevezzük, ha minden stem:[t \in [0,T]] esetén stem:[X_t] egy valószínűségi változó_
+--
+
+[.definition]
+--
+[[def_otodik]]
+*Definíció {definition-prefix}.{counter:defnum}.* _Legyen stem:[\Omega] egy nemüres halmaz. Legyen T egy rögzített pozitív szám, és tegyük fel, hogy minden t stem:[\in [0,T]] esetén adott egy stem:[\mathcal{F}(t)] stem:[\sigma]-algebra. Tegyük fel továbbá, hogy ha stem:[s \le t], akkor minden halmaz, amely eleme stem:[\mathcal{F}(s)]-nek, eleme stem:[\mathcal{F}(t)]-nek is. Ekkor a stem:[0 \le t \le T] paraméterű stem:[\mathcal{F}(t)] stem:[\sigma]-algebrák gyűjteményét filtrációnak nevezzük._
+--
+
+[.definition]
+--
+[[def_hatodik]]
+*Definíció {definition-prefix}.{counter:defnum}.* _Legyen X egy nem üres stem:[\Omega] mintatéren értelmezett valószínűségi változó. Legyen stem:[\mathcal{G}] az stem:[\Omega] részhalmazainak egy stem:[\sigma]-algebrája. Ha a stem:[\sigma(X)] minden halmaza eleme stem:[\mathcal{G}]-nek is, akkor azt mondjuk, hogy X stem:[\mathcal{G}]-mérhető._
+--
+
+[.definition]
+--
+[[def_hetedik]]
+*Definíció {definition-prefix}.{counter:defnum}.* _Legyen stem:[(\Omega, \mathcal{F}, P)] egy valószínűségi tér és stem:[{F(t)}_{0 \le t \le T}] filtráció.
+Legyen stem:[X(t)] egy véletlen változókból álló család, amelyet
+stem:[t \in [0,T]] paraméter indexel.
+Azt mondjuk, hogy ez egy *adaptált sztochasztikus folyamat*, ha minden
+stem:[t]-re az stem:[X(t)] véletlen változó stem:[F(t)]-mérhető.
+
+=== Sztochasztikus folyamatok:
+
+:definition-prefix: 2.2
+:defnum: 0
+
+[.definition]
+--
+[[def_negyedik]]
+*Definíció {definition-prefix}.{counter:defnum}.* _Egy sztochasztikus folyamat stem:[X = \{X_t : t \ge 0\}] Markov-folyamat, ha minden stem:[0 \le s < t] és minden Borel-mérhető stem:[f : \mathbb{R} \to \mathbb{R}] függvény esetén, ahol stem:[E|f(X_t)| < \infty], teljesül a következő feltétel:
+\[E[f(X_t) | \mathcal{F}_s] = E[f(X_t) | X_s]\]
+Ahol stem:[\mathcal{F}_s] a stem:[X]-folyamat stem:[s] időpontig ismert információit tartalmazó σ-algebra._
+--
+
+**Megjegyzés**:Tehát a Markov-folyamat jövőbeli állapota csak a jelenlegi állapottól függ, és független a múltbeli állapotoktól.Ebből következik, hogy az együttes valószínűségi sűrűség feltételes formája felírható átmeneti sűrűségek szorzataként:
+\[
+p(x_n, t_n; \dots; x_2, t_2 \mid x_1, t_1) = p(x_n, t_n \mid x_{n-1}, t_{n-1}) \cdots p(x_2, t_2 \mid x_1, t_1).
+\]
+
+[.definition]
+--
+[[def_otodik]]
+*Definíció {definition-prefix}.{counter:defnum}.* _Egy folytonos Markov-folyamat időben homogén (time-homogeneous), ha az átmeneti sűrűsége csak az időbeli különbségektől függ:
+\[
+p(x,t \mid y,s) = p(x, t-s \mid y,0)
+\]_
+--
+
+=== Brown-mozgás:
+
+:definition-prefix: 2.3
+:defnum: 0
+
+[.definition]
+--
+[[def_hatodik]]
+*Definíció {definition-prefix}.{counter:defnum}.* _A standard, egydimenziós Brown-mozgás (Wiener-folyamat), amelyet gyakran stem:[W_t] vagy stem:[B_t] szimbólummal jelölnek, egy olyan időben folytonos sztochasztikus folyamat, amely az alábbi négy tulajdonságnak tesz eleget:_
+
+* _A folyamat a stem:[t=0] időpontban a nullából indul, 1 valószínűséggel, azaz stem:[B_0 = 0]._
+* _A folyamat pályái, azaz a stem:[t \mapsto W_t(\omega)] leképezések minden egyes stem:[\omega] elemi eseményre, majdnem biztosan (azaz 1 valószínűséggel) folytonosak. Ez egy kulcsfontosságú tulajdonság, amely megkülönbözteti a Wiener-folyamatot a diszkrét idejű véletlen bolyongásoktól._
+* _Bármely stem:[0 \le s_1 < t_1 \le s_2 < t_2] időpontsorozatra a stem:[B_{t_1} - B_{s_1}] és stem:[B_{t_2} - B_{s_2}] valószínűségi változók függetlenek egymástól. Ez a tulajdonság azt jelenti, hogy a folyamat jövőbeli változásai függetlenek a múltbeli változásoktól._
+* _Bármely stem:[s < t] időpontpárra a stem:[B_t - B_s] növekmény normális eloszlású, 0 várható értékkel és stem:[t-s] szórásnégyzettel. Formálisan: stem:[B_t - B_s \sim \mathcal{N}(0, t-s)]. Ez a feltétel magában foglalja, hogy a növekmények statisztikai tulajdonságai csak az időkülönbség hosszától függenek (stacionaritás), nem pedig annak abszolút helyétől az időtengelyen._
+--
+
+**Megjegyzés**: A független növekmények tulajdonságából adódóan a Brown-mozgás egy Gauss-Markov-folyamat. Továbbá, mivel az átmeneti sűrűsége csak az időbeli különbségtől függ, egyben időben homogén Markov-folyamat is.
+
+[.theorem]
+--
+[[thm_elso]]
+*Tétel {definition-prefix}.{counter:defnum}.* _A Brown-mozgás martingál folyamat._
+
+== Sztochasztikus differenciálegyenletek
+
+=== Bevezetés
+:definition-prefix: 3.1
+:defnum: 0
+
+Egy közönséges differenciálegyenlet az alábbi formában írható fel:
+\[
+\frac{dx(t)}{dt} = f(t, x(t))
+\]
+ahol stem:[x(t)] a vizsgált mennyiség időbeli változása, és stem:[f(t, x(t))] egy determinisztikus függvény, amely meghatározza a rendszer dinamikáját.
+Integrál formában és stem:[x(0) = x_0] kezdeti értékkel ez az egyenlet a következőképpen néz ki:
+\[
+x(t) = x_0 + \int_0^t f(s, x(s)) ds
+\]
+
+Egy SDE akkor jön létre, ha a differenciálegyenlet egy együtthatója determinisztikus paraméter helyett sztochasztikus paraméterré válik.
+Pédául tekintsük a következő KDE-t:
+\[
+\frac{dx(t)}{dt} = a(t)x(t)
+\]
+Amennyiben feltessük, hogy stem:[a(t)] egy sztochasztikus folyamat, akkor az egyenlet sztochasztikus differenciálegyenletté alakul.
+Ekkor az stem:[a(t)] a következő formában írható fel:
+\[
+a(t) = f(t) + h(t)\xi(t)
+\]
+ahol stem:[\xi(t)] egy fehér zaj folyamat.
+
+Ekkor az SDE a következőképpen néz ki:
+\[
+\frac{dx(t)}{dt} = \left( f(t) + h(t)\xi(t) \right) x(t)
+\]
+Legyen stem:[dW(t) = \xi(t)dt] ahol stem:[dW(t)] a Brown-mozgás differenciálját jelöli, ekkor az SDE differenciál formában a következőképpen írható fel:
+\[
+dx(t) = f(t)x(t)dt + h(t)x(t)dW(t)
+\]
+Általánosabban egy Itô-típusú sztochasztikus differenciálegyenlet a következő formában írható fel:
+\[
+dx(t,\omega) = f(t, x(t,\omega))dt + g(t, x(t,\omega))dW(t)
+\]
+
+
+Egy általános, Itô-típusú SDE a következő szimbolikus formában írható fel:
+[latexmath]
+++++
+dX(t) = \mu(t, X(t))dt + \sigma(t, X(t))dB(t)
+++++
+Ez az egyenlet valójában egy integrálegyenlet rövidítése, és két fő részből áll:
+
+* *Drift tag*: a folyamat változásának determinisztikus, előre jelezhető komponense egy infinitezimális stem:[dt] időlépés alatt.
+* *Diffúziós tag* (stem:[\sigma(X_t, t)dW_t]): Ez a tag a sztochasztikus, előre nem látható komponenst képviseli. A hatásának nagyságát a stem:[\sigma(X_t, t)] volatilitás- vagy diffúziós függvény skálázza, amely függhet a rendszer aktuális állapotától és az időtől is. Ez a tag visz véletlenszerűséget a rendszer leírásába
+
+[.definition]
+--
+[[def_hetedik]]
+*Definíció {definition-prefix}.{counter:defnum}.* _A fent leírt folyamatot Brown-mozgásnak nevezzük, ha stem:[\mu(t, X(t))] és stem:[\sigma(t, X(t))] konstansok._
+[latexmath]
+++++
+dX_t = \mu dt + \sigma dW_t
+++++
+--
+
+=== Geometriai Brown-mozgás
+:definition-prefix: 3.2
+:defnum: 0
+
+A pénzügyi modellezésben és más területeken, ahol a vizsgált mennyiségek (pl. árak, populációk mérete) nem vehetnek fel negatív értéket és a növekedésük arányos a jelenlegi méretükkel, a leggyakrabban használt modell a geometriai Brown-mozgás (GBM).
+Az SDE, amely ezt a folyamatot leíró SDE a következő :
+[latexmath]
+++++
+dS(t) = \mu S(t) dt + \sigma S(t) dB(t)
+++++
+Ahol stem:[S(t)] a vizsgált mennyiség (pl. árfolyam), stem:[\mu] a drift (várható növekedési ráta), stem:[\sigma] a volatilitás (a véletlenszerű ingadozás mértéke), és stem:[B(t)] egy standard Brown-mozgás.
+A geometriai Brown-mozgás egyenletének egyik nagy előnye, hogy létezik rá explicit, zárt alakú megoldás.
+Ez a megoldás a következőképpen néz ki:
+[latexmath]
+++++
+S(t) = S(0) \exp\left( \left(\mu - \frac{\sigma^2}{2}\right)t + \sigma B(t) \right)
+++++
+Ahol stem:[S(0)] a kezdeti érték.
+Ez a megoldás azt mutatja, hogy a folyamat logaritmusa normális eloszlású, ami azt jelenti, hogy maga a folyamat lognormális eloszlású.
+A megoldás levezetése az Itô formula alkalmazásával történik.
+
+
+
+
+<<<
+[bibliography]
+== Irodalomjegyzék
+- [[[kiss2007,1]]] KISS EMIL, _Bevezetés az algebrába_, Typotex, 2007.

@@ -210,7 +210,7 @@ dx(t) = f(t)x(t)dt + h(t)x(t)dW(t)
 \]
 Általánosabban egy Itô-típusú sztochasztikus differenciálegyenlet a következő formában írható fel:
 \[
-dx(t,\omega) = f(t, x(t,\omega))dt + \g(t, x(t,\omega))dW(t)
+dx(t,\omega) = f(t, x(t,\omega))dt + g(t, x(t,\omega))dW(t)
 \]
 
 
