@@ -439,11 +439,24 @@ Ez pontosan az Itô-Doeblin formula egy speciális esete, amelyben a függvény 
 :defnum: 0
 
 A pénzügyi modellezésben és más területeken, ahol a vizsgált mennyiségek (pl. árak, populációk mérete) nem vehetnek fel negatív értéket és a növekedésük arányos a jelenlegi méretükkel, a leggyakrabban használt modell a geometriai Brown-mozgás (GBM).
-Az SDE, amely ezt a folyamatot leíró SDE a következő :
-[latexmath]
+
+[[def_tizenötödik, {definition-prefix}.{counter:defnum}]]
+[.definition]
+--
+*Definíció {definition-prefix}.{counter:defnum}.* _Legyen stem:[W(t)] Brown-mozgás. A stem:[S(t)] folyamatot
+geometriai Brown-mozgásnak nevezzük, ha kielégíti a következő
+sztochasztikus differenciálegyenletet:_
+
+[stem]
 ++++
-dS(t) = \mu S(t) dt + \sigma S(t) dB(t)
+dS(t) = \mu S(t)dt + \sigma S(t)dW(t),
 ++++
+
+ahol stem:[\mu] és stem:[\sigma] konstansok.
+--
+
+
+
 Ahol stem:[S(t)] a vizsgált mennyiség (pl. árfolyam), stem:[\mu] a drift (várható növekedési ráta), stem:[\sigma] a volatilitás (a véletlenszerű ingadozás mértéke), és stem:[B(t)] egy standard Brown-mozgás.
 A geometriai Brown-mozgás egyenletének egyik nagy előnye, hogy létezik rá explicit, zárt alakú megoldás.
 Ez a megoldás a következőképpen néz ki:
