@@ -1,5 +1,5 @@
 :stem:
-= Szakdolgozat
+
 
 :toc:
 :toclevels: 3
@@ -156,4 +156,4 @@ A jövőbeli értékek előrejelzésére két fő stratégia létezik: a szekven
 Ezen előnyök miatt a többkimenetű stratégia általában robusztusabb és megbízhatóbb eredményeket ad, különösen hosszabb előrejelzési horizont esetén.
 
 
-include::Geometriai_Brown.adoc[]
+

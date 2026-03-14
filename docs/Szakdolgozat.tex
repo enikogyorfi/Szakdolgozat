@@ -1,0 +1,380 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[magyar]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumerate}
+
+% Definíciók és Tételek környezetének beállítása
+\newtheorem{definition}{Definíció}[subsection]
+\newtheorem{theorem}{Tétel}[subsection]
+
+\begin{document}
+
+% --- CÍMLAP ---
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+
+    {\large \scshape EÖTVÖS LORÁND UNIVERSITY \par}
+    {\large \scshape FACULTY OF NATURAL SCIENCES \par}
+
+    \vspace{1.5cm}
+    \rule{\textwidth}{0.4pt}\par
+    \vspace{2cm}
+
+    {\Large Győrfi Enikő \par}
+
+    \vspace{2cm}
+
+    {\huge \bfseries MATHEMATICAL MODELS OF OPTION PRICING \par}
+
+    \vspace{2cm}
+
+    {\large Thesis \par}
+    {\large Matematika alapszak \par}
+
+    \vspace{2cm}
+
+    {\large Supervisor: \par}
+    {\large Maga Balázs \par}
+
+    \vfill
+
+    % Ha van logód, vedd ki a kommentet az alábbi sorból:
+    % \includegraphics[width=200pt]{elte_ttk_logo.png}\par\vspace{1cm}
+
+    {\large Budapest, 2025 \par}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% --- DOKUMENTUM TÖRZSE ---
+
+\section{Bevezetés}
+% ]
+
+\section{A Sztochasztikus Folyamatok Elméleti Alapjai}
+
+\subsection{Definíciók és alapfogalmak}
+
+\begin{definition}\label{def_elso}
+Egy valószínűségi tér $(\Omega, \mathcal{F}, P)$ hármasa tartalmazza:
+\begin{itemize}
+    \item $\Omega$ (Eseménytér): A lehetséges kimenetelek halmaza.
+    \item $\mathcal{F}$ ($\sigma$-algebra): $\Omega$ részhalmazainak olyan rendszere, amely tartalmazza az $\emptyset$ üres halmazt; komplementer-zárt; és megszámlálható unióra zárt. Az $(\Omega, \mathcal{F})$ párost mérhető térnek nevezzük.
+    \item $P$ (Valószínűségi Mérték): Egy $P: \mathcal{F} \to \mathbb{R}$ függvény, amely kielégíti a $P(\emptyset)=0$ és $P(\Omega)=1$ feltételeket, és megszámlálható additivitással rendelkezik diszjunkt halmazok esetén.
+\end{itemize}
+\end{definition}
+
+\begin{definition}\label{def_masodik}
+A függvények egy halmaza által generált $\sigma$-algebra a legkisebb $\sigma$-algebra, amelyre vonatkozóan ezen függvények mind mérhetők.
+\end{definition}
+
+\begin{definition}\label{def_harmadik}
+Tegyük fel, hogy adott két valószínűségi mérték $\mathcal{P},\mathcal{Q}: \mathcal{F} \to [0,1]$ ugyanazon mérhető téren $(\Omega, \mathcal{F})$. Azt mondjuk, hogy a $Q$ mérték abszolút folytonos a $P$-re nézve, ha létezik egy integrálható véletlen változó $f: \Omega \to \mathbb{R}$ melyre minden $A \in \mathcal{F}$ esetén:
+\[
+\mathcal{Q}(A) = \int_A f (\omega) \, d\mathcal{P}(\omega)
+\]
+Ekkor $f$ a $\mathcal{Q}$ mérték $\mathcal{P}$-re vonatkozó sűrűségfüggvénye.
+\end{definition}
+
+\noindent \textbf{Megjegyzés}: Ebben az esetben ha $E^{\mathcal{P}}$ és $E^{\mathcal{Q}}$ a két mérték várható értékei $\mathcal{P}$ és $\mathcal{Q}$ szerint, akkor minden $\mathcal{Q}$-szerint integrálható véletlen változóra $X$:
+\[
+E^{\mathcal{Q}}[X] = \int_{\Omega} X d\mathcal{Q} = \int_{\Omega} X f d\mathcal{P} = E^{\mathcal{P}}[X f]
+\]
+
+\begin{definition}\label{def_negyedik}
+\cite{shreve2004} Legyen $\Omega$ egy nemüres halmaz.Legyen $T$ egy rögzített pozitív szám, és tegyük fel, hogy minden $t \in [0,T]$ esetén adott egy $\mathcal{F}(t)$ $\sigma$-algebra. Tegyük fel továbbá, hogy ha $s \le t$, akkor minden halmaz, amely eleme $\mathcal{F}(s)$-nek, eleme $\mathcal{F}(t)$-nek is. Ekkor a $0 \le t \le T$ paraméterű $\mathcal{F}(t)$ $\sigma$-algebrák gyűjteményét filtrációnak nevezzük.
+\end{definition}
+
+\begin{definition}\label{def_otodik}
+\cite{shreve2004} Legyen $X$ egy nem üres $\Omega$ mintatéren értelmezett valószínűségi változó. Legyen $\mathcal{G}$ az $\Omega$ részhalmazainak egy $\sigma$-algebrája. Ha a $\sigma(X)$ minden halmaza eleme $\mathcal{G}$-nek is, akkor azt mondjuk, hogy $X$ $\mathcal{G}$-mérhető.
+\end{definition}
+
+\subsection{Sztochasztikus folyamatok}
+
+\begin{definition}\label{def_hatodik}
+\cite{shreve2004} Legyen $(\Omega, \mathcal{F}, P)$ egy valószínűségi tér és $T$ egy rögzített pozitív szám. Ekkor az $X = \{X_t : t \in [0,T]\}$ családot sztochasztikus folyamatnak nevezzük, ha minden $t \in [0,T]$ esetén $X_t$ egy valószínűségi változó.
+\end{definition}
+
+\begin{definition}\label{def_hetedik}
+\cite{shreve2004} Legyen $(\Omega, \mathcal{F}, P)$ egy valószínűségi tér és $\{F(t)\}_{0 \le t \le T}$ filtráció.Legyen $X(t)$ egy véletlen változókból álló család, amelyet $t \in [0,T]$ paraméter indexel. Azt mondjuk, hogy ez egy adaptált sztochasztikus folyamat, ha minden $t$-re az $X(t)$ véletlen változó $F(t)$-mérhető.
+\end{definition}
+
+\begin{definition}\label{def_nyolcadik}
+\cite{shreve2004} Legyen $(\Omega, \mathcal{F}, P)$ egy valószínűségi mező, legyen $T$ egy rögzített pozitív szám, és legyen $\mathcal{F}(t), 0 \le t \le T$ a $\mathcal{F}$ szigma-algebrák egy filtrációja. Tekintsünk egy adaptált sztochasztikus folyamatot $M(t), 0 \le t \le T$.
+
+(i) Ha $\mathbb{E}[M(t)\mid \mathcal{F}(s)] = M(s) \quad \forall 0 \le s \le t \le T$ akkor a folyamatot martingálnak nevezzük.
+
+(ii) Ha $\mathbb{E}[M(t)\mid \mathcal{F}(s)] \ge M(s) \quad \forall 0 \le s \le t \le T$ akkor a folyamat szubmartingál.
+
+(iii) Ha $\mathbb{E}[M(t)\mid \mathcal{F}(s)] \le M(s) \quad \forall 0 \le s \le t \le T$ akkor a folyamat szupermartingál.
+\end{definition}
+
+\begin{definition}\label{def_kilencedik}
+Egy sztochasztikus folyamat $X = \{X_t : t \ge 0\}$ Markov-folyamat, ha minden $0 \le s < t$ és minden Borel-mérhető $f : \mathbb{R} \to \mathbb{R}$ függvény esetén, ahol $E|f(X_t)| < \infty$,teljesül a következő feltétel:
+\[
+E[f(X_t) \mid \mathcal{F}_s] = E[f(X_t) \mid X_s]
+\]
+Ahol $\mathcal{F}_s$ a $X$-folyamat $s$ időpontig ismert információit tartalmazó $\sigma$-algebra.
+\end{definition}
+
+\noindent\textbf{Megjegyzés}: Tehát a Markov-folyamat jövőbeli állapota csak a jelenlegi állapottól függ, és független a múltbeli állapotoktól. Ebből következik, hogy az együttes valószínűségi sűrűség feltételes formája felírható átmeneti sűrűségek szorzataként:
+\[
+p(x_n, t_n; \dots; x_2, t_2 \mid x_1, t_1) = p(x_n, t_n \mid x_{n-1}, t_{n-1}) \cdots p(x_2, t_2 \mid x_1, t_1).
+\]
+
+\begin{definition}\label{def_tizedik}
+Egy folytonos Markov-folyamat időben homogén (time-homogeneous), ha az átmeneti sűrűsége csak az időbeli különbségektől függ:
+\[
+p(x,t \mid y,s) = p(x, t-s \mid y,0)
+\]
+\end{definition}
+
+\subsection{Brown-mozgás}
+
+\begin{definition}\label{def_tizenegyedik}
+\cite{pitera2020} Egy $B = (B_t)_{t \ge 0}$ sztochasztikus folyamatot Brown-mozgásnak (vagy Wiener-folyamatnak) nevezünk, ha az alábbi négy tulajdonságnak tesz eleget:
+\begin{itemize}
+    \item A folyamat a $t=0$ időpontban a nullából indul, 1 valószínűséggel, azaz $B_0 = 0$.
+    \item A folyamat pályái, azaz a $t \mapsto B_t(\omega)$ leképezések minden egyes $\omega$ elemi eseményre, majdnem biztosan (azaz 1 valószínűséggel) folytonosak.
+    \item Bármely $0 \le s_1 < t_1 \le s_2 < t_2$ időpontsorozatra a $B_{t_1} - B_{s_1}$ 9] és $B_{t_2} - B_{s_2}$ valószínűségi változók függetlenek egymástól.
+    \item Bármely $s < t$ időpontpárra a $B_t - B_s$ növekmény normális eloszlású, 0 várható értékkel és $t-s$ szórásnégyzettel.Formálisan: $B_t - B_s \sim \mathcal{N}(0, t-s)$.
+\end{itemize}
+\end{definition}
+
+\textbf{Megjegyzés}: A független növekmények tulajdonságából adódóan a Brown-mozgás egy Gauss-Markov-folyamat. Továbbá, mivel az átmeneti sűrűsége csak az időbeli különbségtől függ, egyben időben homogén Markov-folyamat is.
+
+\begin{definition}\label{def_tizenkettedik}
+\cite{shreve2004} Legyen $(\Omega, \mathcal{A}, P)$ egy valószínűségi mező, amelyen a $B(t), t \ge 0$ Brown-mozgás definiálva van. A $B(t)$-hez tartozó filtráció egy $\mathcal{F}(t)$ szigma-algebrákból álló család, amelyre a következő feltételek teljesülnek:
+\begin{itemize}
+    \item Az információ halmozódik: $\mathcal{F}(s) \subset \mathcal{F}(u) \quad \forall\, 0 \le s < u$ vagyis az idő előrehaladtával az elérhető információ mennyisége nem csökken.
+    \item Adaptivitás: Minden $t \ge 0$ esetén a $B(t)$ $\mathcal{F}(t)$-mérhető.
+    \item A jövőbeli növekmények függetlensége: Minden $0 \le s < u$ esetén a $B(u)-B(s)$ növekmény független $\mathcal{F}(s)$-től.
+\end{itemize}
+\end{definition}
+
+\begin{theorem}\label{thm_elso}
+\cite{shreve2004} Legyen $(\Omega, \mathcal{A}, P)$ egy valószínűségi mező, amelyen a $B(t), t \ge 0$ Brown-mozgás definiálva van. Ekkor a következő állítások teljesülnek:
+\begin{itemize}
+    \item $B(t)$ martingál
+    \item $B(t)$ filtrációja a \ref{def_tizenkettedik} definícióban leírt filtráció.
+\end{itemize}
+\end{theorem}
+
+\begin{proof}
+Elég azt bizonyítani, hogy a $B(t)$ folyamat martingál. Legyen $0 \le s < t$ adott és tekintsük a következő várható értéket:
+\[
+E[B(t) \mid \mathcal{F}(s)] = E[B(t) - B(s) + B(s) \mid \mathcal{F}(s)]
+\]
+Mivel a Brown-mozgás növekményei függetlenek a múltbeli információtól, ezért a következő egyenlőség teljesül:
+\[
+E[B(t) - B(s) \mid \mathcal{F}(s)] = E[B(t) - B(s)] = 0
+\]
+Ezenkívül, mivel $B(s)$ már ismert a $\mathcal{F}(s)$-ben, ezért:
+\[
+E[B(s) \mid \mathcal{F}(s)] = B(s)
+\]
+Ezeket az eredményeket összevonva kapjuk, hogy:
+\[
+E[B(t) \mid \mathcal{F}(s)] = E[B(t) - B(s) \mid \mathcal{F}(s)] + E[B(s) \mid \mathcal{F}(s)] = 0 + B(s) = B(s)
+\]
+Ez pontosan a martingál feltétel, így a $B(t)$ folyamat martingál.Ezzel a tétel bizonyítása befejeződött.
+\end{proof}
+\newpage
+
+\section{Sztochasztikus differenciálegyenletek}
+
+\subsection{Bevezetés}
+
+Egy közönséges differenciálegyenlet az alábbi formában írható fel:
+\[
+\frac{dx(t)}{dt} = f(t, x(t))
+\]
+ahol $x(t)$ a vizsgált mennyiség időbeli változása, és $f(t, x(t))$ egy determinisztikus függvény, amely meghatározza a rendszer dinamikáját.Integrál formában és $x(0) = x_0$ kezdeti értékkel ez az egyenlet a következőképpen néz ki:
+\[
+x(t) = x_0 + \int_0^t f(s, x(s)) ds
+\]
+
+Egy SDE akkor jön létre, ha a differenciálegyenlet egy együtthatója determinisztikus paraméter helyett sztochasztikus paraméterré válik.  Pédául tekintsük a következő KDE-t:
+\[
+\frac{dx(t)}{dt} = a(t)x(t)
+\]
+Amennyiben feltessük, hogy $a(t)$ egy sztochasztikus folyamat, akkor az egyenlet sztochasztikus differenciálegyenletté alakul. Ekkor az $a(t)$ a következő formában írható fel:
+\[
+a(t) = f(t) + h(t)\xi(t)
+\]
+ahol $\xi(t)$ egy fehér zaj folyamat. Ekkor az SDE a következőképpen néz ki:
+\[
+\frac{dx(t)}{dt} = \left( f(t) + h(t)\xi(t) \right) x(t)
+\]
+Legyen $dW(t) = \xi(t)dt$ ahol $dW(t)$ a Brown-mozgás differenciálját jelöli, ekkor az SDE differenciál formában a következőképpen írható fel:
+\[
+dx(t) = f(t)x(t)dt + h(t)x(t)dW(t)
+\]
+Általánosabban egy Itô-típusú sztochasztikus differenciálegyenlet a következő formában írható fel:
+\[
+dx(t,\omega) = f(t, x(t,\omega))dt + g(t, x(t,\omega))dW(t)
+\]
+
+Egy általános, Itô-típusú SDE a következő szimbolikus formában írható fel:
+\[
+dX(t) = \mu(t, X(t))dt + \sigma(t, X(t))dB(t)
+\]
+Ez az egyenlet valójában egy integrálegyenlet rövidítése, és két fő részből áll:
+\begin{itemize}
+    \item \textbf{Drift tag}: a folyamat változásának determinisztikus, előre jelezhető komponense egy infinitezimális $dt$ időlépés alatt.
+    \item \textbf{Diffúziós tag} ($\sigma(X_t, t)dB_t$): Ez a tag a sztochasztikus, előre nem látható komponenst képviseli. A hatásának nagyságát a $\sigma(X_t, t)$ volatilitás- vagy diffúziós függvény skálázza, amely függhet a rendszer aktuális állapotától és az időtől is. Ez a tag visz véletlenszerűséget a rendszer leírásába
+\end{itemize}
+\newpage
+
+\subsection{Ito integrál}
+
+Amikor a modellezett rendszerben véletlen hatások jelennek meg, a klasszikus integrálfogalom már nem elegendő. Számos alkalmazási területen, például pénzügyi matematikában, fizikai rendszerek leírásában vagy biológiai folyamatok vizsgálatában, a modellek természetes módon vezetnek sztochasztikus folyamatokhoz. A Brown-mozgás pályái 1 valószínűséggel folytonosak, de sehol sem differenciálhatók, így nem rendelkeznek jól definiált deriváltakkal. Emiatt a hagyományos Riemann- vagy Lebesgue-integrál közvetlenül nem alkalmazható olyan kifejezésekre, mint például
+
+\begin{equation}\label{eq:1}
+\int_0^t X(s) dB(s)
+\end{equation}
+
+Az ilyen típusú integrálok értelmezéséhez egy új integrálfogalom bevezetése szükséges. Az Itô-integrál lehetővé teszi, hogy Brown-mozgásra vonatkozóan értelmezzük a sztochasztikus integrálokat. Az \ref{eq:1} kifejezésben az integrál egyik összetevője egy $B(t), t\ge0$ Brown-mozgás, valamint az ehhez tartozó $\mathcal{F}(t), t\ge0$ filtráció. Az integrandus $X(t)$ egy adaptált sztochasztikus folyamat, amely azt jelenti, hogy minden $t\ge0$ esetén $X(t)$ $\mathcal{F}(t)$-mérhető. Az adaptáltság biztosítja, hogy $X(t)$ értéke csak a $t$ időpontig ismert információtól függ.
+
+\begin{definition}\label{def_tizenharmadik}
+\cite{shreve2004} Legyen a $0 = t_0 < t_1 < \dots < t_n = T$ egy partíciója a $[0, T]$ intervallumnak, és legyen $\Delta(t)$ konstans minden $t \in [t_i, t_{i+1})$. Ekkor $\Delta(t)$-t elemi folyamatnak nevezzük.
+\end{definition}
+
+Ez analóg a Lebesgue-integrál lépcsős függvényeivel, ahol a függvény értéke egy adott intervallumon állandó.
+
+\begin{definition}\label{def_tizennegyedik}
+\cite{shreve2004} Egy elemi folyamat Itô-integrálja a következőképpen definiálható:
+\[
+I(t) = \int_0^T \Delta(s) dB(s) = \sum_{i=1}^{n} \Delta(t_i) (B(t_{i}) - B(t_i)) + \Delta(t_n) (B(T) - B(t_n)))
+\]
+\end{definition}
+
+\begin{theorem}\label{thm_ito_isometry}
+\cite{shreve2004} Legyen $\Delta(t)$ elemi folyamat.Ekkor:
+\[
+\mathbb{E}\left[
+\left(
+\int_0^t \Delta(s)dW(s)
+\right)^2
+\right]
+=
+\mathbb{E}\left[
+\int_0^t \Delta(s)^2 ds
+\right].
+\]
+\end{theorem}
+
+Az elemi folyamatok integráljának felhasználásával az Itô-integrál kiterjeszthető általános adaptált sztochasztikus folyamatokra, amelyek kielégítik a megfelelő feltételeket, amelyek a következőek:
+\begin{itemize}
+    \item $X(t)$ adaptált az $\mathcal{F}(t)$ filtrációhoz.
+    \item $X(t)$ kvadratikusan integrálható, azaz $\int_0^t \mathbb{E}[X(s)^2] ds < \infty$ minden $t \ge 0$ esetén.
+\end{itemize}
+
+Az integrál definiálásához az $X(t)$ folyamatot elemi folyamatokkal közelítjük, úgy, hogy vesszük a $[0,T]$ intervallum egy partícióját: $0 = t_0 < t_1 < \dots < t_n = T$, és a $[t_j, t_{j+1}]$ intervallumon a közelítő $\Delta(t)$ elemi folyamat értékét a $X(t_j)$ értékére állítjuk. Így a felosztás finomításával az elemi folyamat egyre jobb közelítést ad a $X(t)$ folyamatnak.:
+Tehát választható elemi folyamatok sorozata $\Delta_n(t)$ úgy, hogy a következő konvergencia teljesüljön, ha $n \to \infty$ :
+\[
+\mathbb{E} \int_0^t |(X(s) - \Delta_n(s))|^2 ds \to 0
+\]
+Ekkor az Itô-integrál a következőképpen definiálható:
+\[
+\int_0^t X(s) dB(s) = \lim_{n \to \infty} \int_0^t \Delta_n(s) dB(s), \quad 0\le t \le T
+\]
+
+\begin{theorem}\label{thm_ito_integral_properties}
+\cite{shreve2004} Legyen $T$ egy pozitív konstans, és legyen $X(t), 0 \leq t \leq T$ egy adaptált sztochasztikus folyamat,amely kielégíti a fentebb írt feltételeket. Ekkor a
+\[
+I(t)=\int_0^t X(s)\,dB(s)
+\]
+folyamat a következő tulajdonságokkal rendelkezik:
+\begin{itemize}
+    \item Folytonosság: Mint az integrálás felső határának, azaz $t$-nek a függvénye,$I(t)$ pályái folytonosak.
+    \item Adaptáltság:Minden $t$-re a $I(t)$ folyamat $\mathcal{F}(t)$-mérhető.
+    \item Linearitás: Ha $I(t)=\int_0^t X(s)\,dB(s)$ és $J(t)=\int_0^t Y(s)\,dB(s)$, akkor $I(t)+J(t)=\int_0^t (X(s)+Y(s))\,dB(s)$. Továbbá minden $c$ konstansra $cI(t)=\int_0^t cX(s)\,dB(s)$.
+    \item Martingál tulajdonság: A $I(t)$ folyamat martingál.
+    \item Itô-izometria: $\mathbb{E}[I^2(t)] = \mathbb{E}\left[\int_0^t X^2(u)\,du\right]$
+    \item Kvadratikus variáció: $[I,I](t)=\int_0^t X^2(u)\,du$
+\end{itemize}
+\end{theorem}
+
+Eddig azt vizsgáltuk, hogyan lehet értelmezni egy Brown-mozgásra vonatkozó integrált, és milyen tulajdonságokkal rendelkezik ez az integrál. Most vizsgáljuk meg, hogyan lehet értelmezni egy Brown-mozgás deriváltját. Tehát tekintsük a következő kifejezést:
+\[
+\frac{d}{dt}f(B(t))
+\]
+Ez a kifejezés nem értelmezhető a hagyományos, a klasszikus analízisben használt láncszabály szerint, mivel a Brown-mozgás pályái sehol sem differenciálhatók. Ennek értelmezéséhez az Itô-Doeblin formula alkalmazására van szükség, amely egy sztochasztikus változókra vonatkozó általánosított láncszabály.
+
+\begin{theorem}\label{thm_ito_doeblin}
+\cite{shreve2004} Legyen $f(t,x)$ függvény, melynek parciális deriváltjai $f_t$, $f_x$, és $f_{xx}$ léteznek és folytonosak. Legyen továbbá $B(t)$ egy Brown-mozgás. Ekkor minden $T \ge 0$ esetén teljesül a következő egyenlőség:
+\[
+f(T, B(T)) = f(0, B(0)) + \int_0^T f_t(t, B(t)) dt + \int_0^T f_x(t, B(t)) dB(t) + \frac{1}{2} \int_0^T f_{xx}(t, B(t)) dt
+\]
+\end{theorem}
+
+Ahhoz, hogy megértsük az Itô-Doeblin formula jelentőségét, tekintsük a következő példát: Legyen $f(x) = \frac{1}{2}x^2$, ekkor $f$ nem függ az időtől, így $f_t = 0$, és a parciális deriváltak $f_x(x) = x$ és $f_{xx}(x) = 1$. Legyen $x_{j-1}$ és $x_{j}$ két szomszédos pont egy partícióban, és tekintsük a Taylor-sor első két tagját:
+\[
+f(x_j) - f(x_{j-1}) = f_x(x_{j-1})(x_j - x_{j-1}) + \frac{1}{2}f_{xx}(x_{j-1})(x_j - x_{j-1})^2
+\]
+Továbbá legyen $T > 0$ egy rögzített pozitív szám, és legyen a $[0,T]$ intervallum egy partíciója a $\mathcal{P}= \{t_0, t_1  \dots,t_n\}$. Az $f(B(t))$ folyamat változását $0$ és $T$ között a következőképpen írhatjuk fel:
+\[
+f(B(T)) - f(B(0)) = \sum_{j=1}^n f_x(B(t_{j-1}))(B(t_j) - B(t_{j-1})) + \frac{1}{2} \sum_{j=1}^n f_{xx}(B(t_{j-1}))(B(t_j) - B(t_{j-1}))^2
+\]
+Ha ebbe behelyettesítjük a parciális deriváltak értékét, akkor a következő egyenlőséget kapjuk:
+\[
+f(B(T)) - f(B(0)) = \sum_{j=1}^n B(t_{j-1})(B(t_j) - B(t_{j-1})) + \frac{1}{2} \sum_{j=1}^n (B(t_j) - B(t_{j-1}))^2
+\]
+A partíció finomításával, azaz ha $||\mathcal{P}|| \to 0$, akkor a következő konvergencia teljesül:
+\[
+\sum_{j=1}^n B(t_{j-1})(B(t_j) - B(t_{j-1})) \to \int_0^T B(t) dB(t)
+\]
+és
+\[
+\sum_{j=1}^n (B(t_j) - B(t_{j-1}))^2 \to [B,B](T) = T
+\]
+Ezeket az eredményeket összevonva kapjuk, hogy:
+\[
+f(B(T)) - f(B(0)) = \int_0^T B(t) dB(t) + \frac{1}{2}T
+\]
+Ez pontosan az Itô-Doeblin formula egy speciális esete, amelyben a függvény csak a Brown-mozgás értékétől függ, és nem függ az időtől. Ez a példa jól szemlélteti, hogy az Itô-Doeblin formula hogyan általánosítja a klasszikus láncszabályt.
+
+\subsection{Geometriai Brown-mozgás}
+
+A pénzügyi modellezésben és más területeken, ahol a vizsgált mennyiségek (pl. árak, populációk mérete) nem vehetnek fel negatív értéket és a növekedésük arányos a jelenlegi méretükkel, a leggyakrabban használt modell a geometriai Brown-mozgás (GBM).
+
+\begin{definition}\label{def_tizenotodik}
+Legyen $W(t)$ Brown-mozgás. A $S(t)$ folyamatot geometriai Brown-mozgásnak nevezzük, ha kielégíti a következő sztochasztikus differenciálegyenletet:
+\[
+dS(t) = \mu S(t)dt + \sigma S(t)dW(t),
+\]
+ahol $\mu$ és $\sigma$ konstansok.
+\end{definition}
+
+Ahol $S(t)$ a vizsgált mennyiség (pl. árfolyam), $\mu$ a drift (várható növekedési ráta), $\sigma$ a volatilitás (a véletlenszerű ingadozás mértéke), és $B(t)$ egy standard Brown-mozgás. A geometriai Brown-mozgás egyenletének egyik nagy előnye, hogy létezik rá explicit, zárt alakú megoldás.Ez a megoldás a következőképpen néz ki:
+\[
+S(t) = S(0) \exp\left( \left(\mu - \frac{\sigma^2}{2}\right)t + \sigma B(t) \right)
+\]
+Ahol $S(0)$ a kezdeti érték. Ez a megoldás azt mutatja, hogy a folyamat logaritmusa normális eloszlású, ami azt jelenti, hogy maga a folyamat lognormális eloszlású. A megoldás levezetése az Itô formula alkalmazásával történik.
+
+% --- IRODALOMJEGYZÉK ---
+\begin{thebibliography}{9}
+
+\bibitem{shreve2004}
+Steven E. Shreve. \textit{Stochastic Calculus for Finance II: Continuous-Time Models}. Springer, 2004.
+
+\bibitem{pitera2020}
+Marcin Pitera. \textit{Stochastic Processes – Lecture Notes}. Jagiellonian University, November 29, 2020.
+
+\bibitem{oksendal2003}
+Bernt Øksendal. \textit{Stochastic Differential Equations: An Introduction with Applications}. Springer, 2003.
+
+\bibitem{herzog2013}
+Florian Herzog. \textit{Stochastic Differential Equations}. Lecture Notes, 2013.
+
+\end{thebibliography}
+
+\end{document}

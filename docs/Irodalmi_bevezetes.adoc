@@ -1,3 +1,5 @@
+:pdf-themesdir: {docdir}/themes
+
 :title: MATHEMATICAL MODELS OF OPTION PRICING
 :author: Győrfi Enikő
 :supervisor: Maga Balázs
@@ -13,6 +15,7 @@
 :chapter-signifier: Fejezet
 :eqnums: //<1>
 :pdf-theme: style.yml
+
 
 ifdef::backend-pdf[]
 [.text-center]
@@ -75,7 +78,7 @@ endif::[]
 --
 [[def_elso]]
 
-*Definíció {definition-prefix}.{counter:defnum}.* _Egy valószínűségi tér stem:[(\Omega, \mathcal{F}, P)] hármasa tartalmazza:_
+*Definíció {definition-prefix}.{counter:defnum}.* _Egy valószínűségi tér latexmath:[(\Omega, \mathcal{F}, P)] hármasa tartalmazza:_
 
 * stem:[\Omega] _(Eseménytér): A lehetséges kimenetelek halmaza._
 * _stem:[\mathcal{F}]_ _(stem:[\sigma]-algebra)_: _stem:[\Omega]_ _részhalmazainak olyan rendszere, amely tartalmazza az stem:[\emptyset] üres halmazt; komplementer-zárt; és megszámlálható unióra zárt. Az stem:[(\Omega, \mathcal{F})] párost mérhető térnek nevezzük._
@@ -93,9 +96,12 @@ endif::[]
 [[def_harmadik]]
 *Definíció {definition-prefix}.{counter:defnum} .* _Tegyük fel, hogy adott két valószínűségi mérték stem:[\mathcal{P}],stem:[\mathcal{Q}]: stem:[\mathcal{F}] -> [0,1] ugyanazon mérhető téren stem:[(\Omega, \mathcal{F})]. Azt mondjuk, hogy a stem:[Q] mérték abszolút folytonos a stem:[P]-re nézve, ha létezik egy integrálható véletlen változó stem:[f] stem:[\Omega \to \mathbb{R}] melyre minden A stem:[\in \mathcal{F}] esetén :_
 
+[latexmath]
+++++
 \[
 \mathcal{Q}(A) = \int_A f (\omega) \, d\mathcal{P}(\omega)
 \]
+++++
 
 _Ekkor stem:[f] a stem:[\mathcal{Q}] mérték stem:[\mathcal{P}]-re vonatkozó sűrűségfüggvénye._
 --
