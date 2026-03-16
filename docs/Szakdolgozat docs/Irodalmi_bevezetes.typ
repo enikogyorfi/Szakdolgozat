@@ -13,6 +13,7 @@
 
 #let stmt = counter("stmt")
 #let def = counter("def")
+#let prop = counter("prop")
 
 #let stmt-number() = {
   stmt.step()
@@ -36,15 +37,27 @@
   }
 }
 
+#let prop-number() = {
+  prop.step()
+  context {
+    let h = counter(heading).get()
+    let s = prop.get().last()
+    let prefix = h.map(x => str(x)).join(".")
+    [#prefix.#s]
+  }
+}
+
 #show heading.where(level: 2): it => {
   stmt.update(0)
   def.update(0)
+  prop.update(0)
   it
 }
 
 #show heading.where(level: 3): it => {
   stmt.update(0)
   def.update(0)
+  prop.update(0)
   it
 }
 
@@ -76,19 +89,10 @@
 #let year-text = "2026"
 
 #set heading(numbering: "1.1.1")
-#let definition = definition.with(breakable: false, number: "1.1.1")
+#let definition = definition.with(breakable: false)
 #let theorem = theorem.with(breakable: false)
 #let proof = proof.with(breakable: false)
-
-// Numbering for theorem-like environments.
-// Goal: include the current heading up to subsection level (e.g. 1.2.3)
-// and then a local running number inside that subsection (e.g. 1.2.3.1).
-
-// Resets the local counters whenever we enter a new subsection.
-
-
-// Helper that returns the current heading numbering (up to level 3).
-
+#let proposition = proposition.with(breakable: false)
 
 #let orig-definition = theoretic.presets.colorbox.definition.with(
   supplement: "Definíció",
@@ -125,6 +129,14 @@
 
 #let proof = theoretic.presets.colorbox.proof.with(
   supplement: "Bizonyítás",
+)
+#let proposition = theoretic.presets.colorbox.proposition.with(
+  supplement: "Állítás",
+  number: context(prop-number()),
+ options: (
+    color: navy,
+    icon: "",
+  ),
 )
 
 
@@ -183,7 +195,7 @@
 ] <def_masodik>
 
 #definition[
-  Tegyük fel, hogy adott két valószínűségi mérték $cal(P)$ és $cal(Q)$ ugyanazon mérhető téren $(Omega, cal(F))$. Azt mondjuk, hogy a $cal(Q)$ mérték abszolút folytonos a $cal(P)$-re nézve, ha létezik egy integrálható véletlen változó $f: Omega -> RR$, melyre minden $A in cal(F)$ esetén
+  @shreve2004 Tegyük fel, hogy adott két valószínűségi mérték $cal(P)$ és $cal(Q)$ ugyanazon mérhető téren $(Omega, cal(F))$. Azt mondjuk, hogy a $cal(Q)$ mérték abszolút folytonos a $cal(P)$-re nézve, ha létezik egy integrálható véletlen változó $f: Omega -> RR$, melyre minden $A in cal(F)$ esetén
   $
     cal(Q)(A) = integral_A f(omega) dif cal(P)(omega)
   $
@@ -198,27 +210,27 @@ $
 $
 
 #definition[
-  Legyen $Omega$ egy nemüres halmaz. Legyen $T$ egy rögzített pozitív szám, és tegyük fel, hogy minden $t in [0,T]$ esetén adott egy $cal(F)(t)$ $sigma$-algebra. Tegyük fel továbbá, hogy ha $s <= t$, akkor minden halmaz, amely eleme $cal(F)(s)$-nek, eleme $cal(F)(t)$-nek is. Ekkor a $0 <= t <= T$ paraméterű $cal(F)(t)$ $sigma$-algebrák gyűjteményét filtrációnak nevezzük.
+ @shreve2004 Legyen $Omega$ egy nemüres halmaz. Legyen $T$ egy rögzített pozitív szám, és tegyük fel, hogy minden $t in [0,T]$ esetén adott egy $cal(F)(t)$ $sigma$-algebra. Tegyük fel továbbá, hogy ha $s <= t$, akkor minden halmaz, amely eleme $cal(F)(s)$-nek, eleme $cal(F)(t)$-nek is. Ekkor a $0 <= t <= T$ paraméterű $cal(F)(t)$ $sigma$-algebrák gyűjteményét filtrációnak nevezzük.
 ] <def_negyedik>
 
 #definition[
-  Legyen $X$ egy nem üres $Omega$ mintatéren értelmezett valószínűségi változó. Legyen $cal(G)$ az $Omega$ részhalmazainak egy $sigma$-algebrája. Ha a $sigma(X)$ minden halmaza eleme $cal(G)$-nek is, akkor azt mondjuk, hogy $X$ $cal(G)$-mérhető.
+  @shreve2004 Legyen $X$ egy nem üres $Omega$ mintatéren értelmezett valószínűségi változó. Legyen $cal(G)$ az $Omega$ részhalmazainak egy $sigma$-algebrája. Ha a $sigma(X)$ minden halmaza eleme $cal(G)$-nek is, akkor azt mondjuk, hogy $X$ $cal(G)$-mérhető.
 ] <def_otodik>
 
 == Sztochasztikus folyamatok
 
 #definition[
-  Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $T$ egy rögzített pozitív szám. Ekkor az
+  @shreve2004 Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $T$ egy rögzített pozitív szám. Ekkor az
   #box($X = (X_t)_(t in [0,T])$)
   családot sztochasztikus folyamatnak nevezzük, ha minden $t in [0,T]$ esetén $X_t$ egy valószínűségi változó.
 ] <def_hatodik>
 
 #definition[
-  Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $(cal(F)(t))_(0 <= t <= T)$ filtráció. Legyen $X(t)$ egy valószínűségi változókból álló család, amelyet $t in [0,T]$ paraméter indexel. Azt mondjuk, hogy ez egy adaptált sztochasztikus folyamat, ha minden $t$-re az $X(t)$ valószínűségi változó $cal(F)(t)$-mérhető.
+  @shreve2004 Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $(cal(F)(t))_(0 <= t <= T)$ filtráció. Legyen $X(t)$ egy valószínűségi változókból álló család, amelyet $t in [0,T]$ paraméter indexel. Azt mondjuk, hogy ez egy adaptált sztochasztikus folyamat, ha minden $t$-re az $X(t)$ valószínűségi változó $cal(F)(t)$-mérhető.
 ] <def_hetedik>
 
 #definition[
-  Legyen $(Omega, cal(F), P)$ egy valószínűségi mező, legyen $T$ egy rögzített pozitív szám, és legyen $(cal(F)(t))_(0 <= t <= T)$ a $cal(F)$ $sigma$-algebráinak egy filtrációja. Tekintsünk egy adaptált sztochasztikus folyamatot $M(t)$-t, $0 <= t <= T$.
+  @shreve2004 Legyen $(Omega, cal(F), P)$ egy valószínűségi mező, legyen $T$ egy rögzített pozitív szám, és legyen $(cal(F)(t))_(0 <= t <= T)$ a $cal(F)$ $sigma$-algebráinak egy filtrációja. Tekintsünk egy adaptált sztochasztikus folyamatot $M(t)$-t, $0 <= t <= T$.
 
   (i) Ha $E[M(t) | cal(F)(s)] = M(s)$ minden $0 <= s <= t <= T$ esetén, akkor a folyamatot *martingálnak* nevezzük.
 
@@ -228,7 +240,7 @@ $
 ] <def_nyolcadik>
 
 #definition[
-  Egy sztochasztikus folyamat $X = (X_t)_(t >= 0)$ Markov-folyamat, ha minden $0 <= s < t$ és minden Borel-mérhető $f: RR -> RR$ függvény esetén, ahol $EE abs(f(X_t)) < infinity$, teljesül a következő feltétel:
+  Egy sztochasztikus folyamat $X = (X_t)_(t >= 0)$ Markov-folyamat, ha minden $0 <= s < t$ és minden Borel-mérhető $f: RR -> RR$ függvény esetén, ahol $E |f(X_t)| < infinity$, teljesül a következő feltétel:
   $
     E[f(X_t) | cal(F)_s] = E[f(X_t) | X_s].
   $
@@ -458,19 +470,120 @@ Ez pontosan az Itô–Doeblin-formula egy speciális esete, amelyben a függvén
 A pénzügyi modellezésben és más területeken, ahol a vizsgált mennyiségek (például árak vagy populációk mérete) nem vehetnek fel negatív értéket, és a növekedésük arányos a jelenlegi méretükkel, a leggyakrabban használt modell a geometriai Brown-mozgás (GBM).
 
 #definition[
-   Legyen $W(t)$ Brown-mozgás. Az $S(t)$ folyamatot geometriai Brown-mozgásnak nevezzük, ha kielégíti a következő sztochasztikus differenciálegyenletet:
+   @shreve2004 Legyen $B(t)$ Brown-mozgás. Az $S(t)$ folyamatot geometriai Brown-mozgásnak nevezzük, ha kielégíti a következő sztochasztikus differenciálegyenletet:
   $
-    dif S(t) = mu S(t) dif t + sigma S(t) dif W(t),
+    dif S(t) = mu S(t) dif t + sigma S(t) dif B(t),
   $
-  ahol $mu$ és $sigma$ konstansok. @shreve2004
+  ahol $mu$ és $sigma$ konstansok. 
 ] <def_tizenotodik>
 
-Ahol $S(t)$ a vizsgált mennyiség (például árfolyam), $mu$ a drift (várható növekedési ráta), $sigma$ a volatilitás (a véletlenszerű ingadozás mértéke), és $B(t)$ egy standard Brown-mozgás. A geometriai Brown-mozgás egyenletének egyik nagy előnye, hogy létezik rá explicit, zárt alakú megoldás:
+A következő tétel megmutatja, hogy a geometriai Brown-mozgás explicit megoldással rendelkezik, amely egy exponenciális függvény formájában írható fel.
+#theorem[
+  @herzog2013 Legyen $S(t)$ egy geometriai Brown-mozgás, amely kielégíti a következő SDE-t:
+  $
+    dif S(t) = mu S(t) dif t + sigma S(t) dif B(t),
+  $
+  ahol $mu$ és $sigma$ konstansok. Ekkor az $S(t)$ folyamat explicit megoldása a következőképpen írható fel:
+  $
+    S(t) = S(0) exp((mu - 1/2 sigma^2)t + sigma B(t)).
+  $
+] <thm_gbm_solution>
+
+#proof[
+  Legyen $Y(t) = Phi(t,S(t)) = ln(S(t))$. A parciális deriváltak a következők:
 $
-  S(t) = S(0) exp( (mu - sigma^2/2) t + sigma B(t) ).$
-Ahol $S(0)$ a kezdeti érték. Ez a megoldás azt mutatja, hogy a folyamat logaritmusa normális eloszlású, ami azt jelenti, hogy maga a folyamat lognormális eloszlású. A megoldás levezetése az Itô-formula alkalmazásával történik.
+(diff Phi(t.S)) / (diff S) = 1/S, quad (diff^2 Phi(t.S)) / (diff S^2) = -1/S^2, quad (diff Phi(t.S)) / (diff t) = 0.
+$
+Ekkor az Itô–Doeblin-formula alkalmazásával kapjuk, hogy:
+$
+  dif Y(t) = ((diff Phi(t,S)) / (diff t) + mu S(t) (diff Phi(t,S)) / (diff S) + 1/2 sigma^2 S^2(t) (diff^2 Phi(t,S)) / (diff S^2)) dif t \
+  + sigma S(t) (diff Phi(t,S)) / (diff S) dif B(t). #<equate:revoke>
+$
+\
+Ebbe a parciális deriváltak értékét behelyettesítve kapjuk, hogy
+$  dif Y(t) = (mu - 1/2 sigma^2) dif t + sigma dif B(t).
+$
+Integrálva ezt az egyenletet $0$ és $t$ között kapjuk, hogy:
+$
+  Y(t) = Y_(0) + integral_0^t (mu - 1/2 sigma^2) dif s + integral_0^t sigma dif B ,\
+  
+  Y(t) = Y_(0) + (mu - 1/2 sigma^2)t + sigma B(t).
+$
+Visszahelyettesítve $Y(t) = ln(S(t))$, kapjuk az $S(t)$ folyamat explicit megoldását:
+$
+  ln(S(t)) = ln(S(0)) + (mu - 1/2 sigma^2)t + sigma B(t), \
+  
+  S(t) = S(0) exp((mu - 1/2 sigma^2)t + sigma B(t)).
+$
+]
+Mivel $ln S(t)$ normális eloszlású, ezért a geometriai Brown.mozgás eloszlásáról a következő állítás tehető:
+
+#proposition[A geometriai Brown-mozgás $S(t)$ minden $t > 0$ esetén
+lognormális eloszlású.]
+
+#proposition()[
+  Legyen $S(t)$ egy geometriai Brown-mozgás, amely kielégíti a következő SDE-t:
+  $
+    dif S(t) = mu S(t) dif t + sigma S(t) dif B(t),
+  $
+  ahol $mu$ és $sigma$ konstansok. Ekkor az $S(t)$ folyamat várható értéke a következőképpen írható fel:
+  $
+    E[S(t)] = S(0) exp(mu t).
+  $
+] <lemma_gbm_expectation>
+
+#proof[
+  Az $S(t)$ folyamat explicit megoldása a következőképpen írható fel:
+  $
+    S(t) = S(0) exp((mu - 1/2 sigma^2)t + sigma B(t)).
+  $
+  Mivel $B(t)$ normális eloszlású, ezért $sigma B(t)$ is normális eloszlású, 0 várható értékkel és $sigma^2 t$ szórásnégyzettel. Ezért a következő egyenlőség teljesül:
+  $
+    E[exp(sigma B(t))] = exp(1/2 sigma^2 t).
+  $
+  Ezt az eredményt felhasználva kapjuk, hogy
+  $
+    E[S(t)] = S(0) exp((mu - 1/2 sigma^2)t) E[exp(sigma B(t))] = S(0) exp(mu t).
+  $
+]
+
+#proposition[
+  Legyen $S(t)$ egy geometriai Brown-mozgás, amely kielégíti a következő SDE-t:
+  $
+    dif S(t) = mu S(t) dif t + sigma S(t) dif B(t),
+  $
+  ahol $mu$ és $sigma$ konstansok. Ekkor az $S(t)$ folyamat varianciája a következőképpen írható fel:
+  $
+    op("Var")[S(t)] = S^2(0) exp(2 mu t)(exp(sigma^2 t) - 1).
+  $
+] <prop_gbm_variance>
+
+#proof[
+A másdik momentum kiszámításához felhasználjuk:
+$  S^2(t) = S^2(0) exp(2(mu - 1/2 sigma^2)t + 2 sigma B(t)).
+$
+Ekkor:
+$
+    E[S^2(t)] = S^2(0) exp(2(mu - 1/2 sigma^2)t) E[exp(2 sigma B(t))].
+$
+Mivel $2 sigma B(t)$ normális eloszlású, 0 várható értékkel és $4 sigma^2 t$ szórásnégyzettel, ezért
+$  E[exp(2 sigma B(t))] = exp(2 sigma^2 t).
+$
+Ezt felhasználva kapjuk, hogy
+$  E[S^2(t)] = S^2(0) exp(2(mu - 1/2 sigma^2)t) E[exp(2 sigma B(t))] = S^2(0) exp(2 mu t + sigma^2 t).
+$
+A variancia definíciója szerint?
+$
+op("Var")[S(t)] = E[S^2(t)] - (E[S(t)])^2 = \
+ S^2(0) exp(2 mu t + sigma^2 t) - (S(0) exp(mu t))^2 = #<equate:revoke>
+ \  
+ S^2(0) exp(2 mu t)(exp(sigma^2 t) - 1).
+ #<equate:revoke>
+$
+]
+
 
 #pagebreak()
 = Irodalomjegyzék
 
-#bibliography("reference.bib", full: true)
+#bibliography("reference.bib", full: true, title:none)
