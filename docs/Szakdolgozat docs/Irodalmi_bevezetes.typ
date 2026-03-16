@@ -9,8 +9,44 @@
 #show ref: theoretic.show-ref
 #show: equate.with(breakable: false, sub-numbering: false)
 #set math.equation(numbering: "(1)")
-
 #show: scribe
+
+#let stmt = counter("stmt")
+#let def = counter("def")
+
+#let stmt-number() = {
+  stmt.step()
+  context {
+    let h = counter(heading).get()
+    let s = stmt.get().last()
+
+    let prefix = h.map(x => str(x)).join(".")
+    [#prefix.#s]
+  }
+}
+
+#let def-number() = {
+  def.step()
+  context {
+    let h = counter(heading).get()
+    let s = def.get().last()
+
+    let prefix = h.map(x => str(x)).join(".")
+    [#prefix.#s]
+  }
+}
+
+#show heading.where(level: 2): it => {
+  stmt.update(0)
+  def.update(0)
+  it
+}
+
+#show heading.where(level: 3): it => {
+  stmt.update(0)
+  def.update(0)
+  it
+}
 
 #set text(lang: "hu", size: 12pt)
 #set text(font: "Latin Modern Roman")
@@ -34,42 +70,67 @@
 #show heading.where(level: 3): set text(size: 14pt, weight: "bold")
 #set par(justify: true)
 
-#let title-text = "MATHEMATICAL MODELS OF OPTION PRICING"
+#let title-text = "BŰNÖZÉSI GYAKORISÁG MODELLEZÉSE"
 #let author-text = "Győrfi Enikő"
 #let supervisor-text = "Maga Balázs"
 #let year-text = "2026"
 
-#set heading(numbering: "1.1")
-#let definition = definition.with(breakable: false)
+#set heading(numbering: "1.1.1")
+#let definition = definition.with(breakable: false, number: "1.1.1")
 #let theorem = theorem.with(breakable: false)
 #let proof = proof.with(breakable: false)
-#let orig-definition = definition
-#let orig-theorem = theorem
+
+// Numbering for theorem-like environments.
+// Goal: include the current heading up to subsection level (e.g. 1.2.3)
+// and then a local running number inside that subsection (e.g. 1.2.3.1).
+
+// Resets the local counters whenever we enter a new subsection.
 
 
+// Helper that returns the current heading numbering (up to level 3).
+
+
+#let orig-definition = theoretic.presets.colorbox.definition.with(
+  supplement: "Definíció",
+  number: context(def-number()),
+  options: (
+    color: rgb("#4169e1"),
+    icon: "",
+  ),
+)
 #let definition(..args) = block(
   width: 100%,
-  breakable: false, // Ez tartja egyben az egészet
-  above: 2em,       // Térköz a definíció ELŐTT (a 2em egy kényelmes, dupla sorköznyi méret)
-  below: 2em        // Térköz a definíció UTÁN
+  breakable: false,
+  above: 3em,
+  below: 3em,
 )[
   #orig-definition(..args)
 ]
 
+#let orig-theorem = theoretic.presets.colorbox.theorem.with(
+  supplement: "Tétel",
+  number: context(stmt-number()),
+  options: (
+    icon: "",
+  ),
+)
 #let theorem(..args) = block(
   width: 100%,
-  breakable: false, // Ez tartja egyben az egészet
-  above: 2em,       // Térköz a tétel ELŐTT
-  below: 2em        // Térköz a tétel UTÁN
+  breakable: false,
+  above: 3em,
+  below: 3em,
 )[
   #orig-theorem(..args)
 ]
 
+#let proof = theoretic.presets.colorbox.proof.with(
+  supplement: "Bizonyítás",
+)
 
 
 #align(center)[
-  #text(size: 15pt, weight: "bold")[EÖTVÖS LORÁND UNIVERSITY] \
-  #text(size: 13pt)[FACULTY OF NATURAL SCIENCES]
+  #text(size: 15pt, weight: "bold")[EÖTVÖS LORÁND TUDOMÁNYEGYETEM] \
+  #text(size: 15pt)[Természettudományi Kar]
 ]
 
 #v(2.5cm)
@@ -81,15 +142,17 @@
 #v(1.5cm)
 
 #align(center)[
-  #text(size: 20pt, weight: "bold")[#title-text] \
-  Thesis \
+  #text(size: 18pt, weight: "bold")[#title-text] \
+  #v(0.5cm) \
+  #text(size: 14pt)[
+  Szakdolgozat \
   Matematika alapszak
-]
+]]
 
 #v(2cm)
 
 #align(center)[
-  Supervisor: \
+  Témavezető: \
   #supervisor-text
 ]
 
@@ -120,7 +183,7 @@
 ] <def_masodik>
 
 #definition[
-  Tegyük fel, hogy adott két valószínűségi mérték $cal(P)$ és $cal(Q)$ ugyanazon mérhető téren $(Omega, cal(F))$. Azt mondjuk, hogy a $Q$ mérték abszolút folytonos a $P$-re nézve, ha létezik egy integrálható véletlen változó $f: Omega -> RR$, melyre minden $A in cal(F)$ esetén
+  Tegyük fel, hogy adott két valószínűségi mérték $cal(P)$ és $cal(Q)$ ugyanazon mérhető téren $(Omega, cal(F))$. Azt mondjuk, hogy a $cal(Q)$ mérték abszolút folytonos a $cal(P)$-re nézve, ha létezik egy integrálható véletlen változó $f: Omega -> RR$, melyre minden $A in cal(F)$ esetén
   $
     cal(Q)(A) = integral_A f(omega) dif cal(P)(omega)
   $
@@ -142,39 +205,39 @@ $
   Legyen $X$ egy nem üres $Omega$ mintatéren értelmezett valószínűségi változó. Legyen $cal(G)$ az $Omega$ részhalmazainak egy $sigma$-algebrája. Ha a $sigma(X)$ minden halmaza eleme $cal(G)$-nek is, akkor azt mondjuk, hogy $X$ $cal(G)$-mérhető.
 ] <def_otodik>
 
-=== Sztochasztikus folyamatok
+== Sztochasztikus folyamatok
 
 #definition[
   Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $T$ egy rögzített pozitív szám. Ekkor az
-  $X = (X_t)_(t in [0,T])$
+  #box($X = (X_t)_(t in [0,T])$)
   családot sztochasztikus folyamatnak nevezzük, ha minden $t in [0,T]$ esetén $X_t$ egy valószínűségi változó.
 ] <def_hatodik>
 
 #definition[
-  Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $(cal(F)(t))_(0 <= t <= T)$ filtráció. Legyen $X(t)$ egy véletlen változókból álló család, amelyet $t in [0,T]$ paraméter indexel. Azt mondjuk, hogy ez egy adaptált sztochasztikus folyamat, ha minden $t$-re az $X(t)$ véletlen változó $cal(F)(t)$-mérhető.
+  Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $(cal(F)(t))_(0 <= t <= T)$ filtráció. Legyen $X(t)$ egy valószínűségi változókból álló család, amelyet $t in [0,T]$ paraméter indexel. Azt mondjuk, hogy ez egy adaptált sztochasztikus folyamat, ha minden $t$-re az $X(t)$ valószínűségi változó $cal(F)(t)$-mérhető.
 ] <def_hetedik>
 
 #definition[
   Legyen $(Omega, cal(F), P)$ egy valószínűségi mező, legyen $T$ egy rögzített pozitív szám, és legyen $(cal(F)(t))_(0 <= t <= T)$ a $cal(F)$ $sigma$-algebráinak egy filtrációja. Tekintsünk egy adaptált sztochasztikus folyamatot $M(t)$-t, $0 <= t <= T$.
 
-  (i) Ha $EE(M(t) | cal(F)(s)) = M(s)$ minden $0 <= s <= t <= T$ esetén, akkor a folyamatot *martingálnak* nevezzük.
+  (i) Ha $E[M(t) | cal(F)(s)] = M(s)$ minden $0 <= s <= t <= T$ esetén, akkor a folyamatot *martingálnak* nevezzük.
 
-  (ii) Ha $EE(M(t) | cal(F)(s)) >= M(s)$ minden $0 <= s <= t <= T$ esetén, akkor a folyamat *szubmartingál*.
+  (ii) Ha $E[M(t) | cal(F)(s)] >= M(s)$ minden $0 <= s <= t <= T$ esetén, akkor a folyamat *szubmartingál*.
 
-  (iii) Ha $EE(M(t) | cal(F)(s)) <= M(s)$ minden $0 <= s <= t <= T$ esetén, akkor a folyamat *szupermartingál*.
+  (iii) Ha $E[M(t) | cal(F)(s)] <= M(s)$ minden $0 <= s <= t <= T$ esetén, akkor a folyamat *szupermartingál*.
 ] <def_nyolcadik>
 
 #definition[
   Egy sztochasztikus folyamat $X = (X_t)_(t >= 0)$ Markov-folyamat, ha minden $0 <= s < t$ és minden Borel-mérhető $f: RR -> RR$ függvény esetén, ahol $EE abs(f(X_t)) < infinity$, teljesül a következő feltétel:
   $
-    EE(f(X_t) | cal(F)_s) = EE(f(X_t) | X_s).
+    E[f(X_t) | cal(F)_s] = E[f(X_t) | X_s].
   $
   Ahol $cal(F)_s$ az $X$-folyamat $s$ időpontig ismert információit tartalmazó $sigma$-algebra.
 ] <def_kilencedik>
 
 *Megjegyzés.* Tehát a Markov-folyamat jövőbeli állapota csak a jelenlegi állapottól függ, és független a múltbeli állapotoktól. Ebből következik, hogy az együttes valószínűségi sűrűség feltételes formája felírható átmeneti sűrűségek szorzataként:
 $
-  p(x_n, t_n; dots; x_2, t_2 | x_1, t_1) = p(x_n, t_n | x_(n-1), t_(n-1))p(x_2, t_2 | x_1, t_1).
+  p(x_n, t_n dots x_2, t_2 | x_1, t_1) = p(x_n, t_n | x_(n-1), t_(n-1)) dots p(x_2, t_2 | x_1, t_1).
 $
 
 #definition[
@@ -190,7 +253,7 @@ $
   Egy $B = (B_t)_(t >= 0)$ sztochasztikus folyamatot Brown-mozgásnak (vagy Wiener-folyamatnak) nevezünk, ha az alábbi négy tulajdonságnak tesz eleget:
 
   - A folyamat a $t=0$ időpontban a nullából indul, 1 valószínűséggel, azaz $B_0 = 0$.
-  - A folyamat pályái, azaz a $t mapsto B_t(omega)$ leképezések minden egyes $omega$ elemi eseményre, majdnem biztosan folytonosak.
+  - A folyamat pályái, azaz a $t mapsto B_t (omega)$ leképezések minden egyes $omega$ elemi eseményre, majdnem biztosan folytonosak.
   - Bármely $0 <= s_1 < t_1 <= s_2 < t_2$ időpontsorozatra a $B_(t_1) - B_(s_1)$ és $B_(t_2) - B_(s_2)$ valószínűségi változók függetlenek egymástól.
   - Bármely $s < t$ időpontpárra a $B_t - B_s$ növekmény normális eloszlású, 0 várható értékkel és $t-s$ szórásnégyzettel. Formálisan: $B_t - B_s ~ N(0, t-s)$.
 ] <def_tizenegyedik>
@@ -203,34 +266,37 @@ $
   - Az információ halmozódik: $cal(F)(s) subset cal(F)(u)$ minden $0 <= s < u$ esetén, vagyis az idő előrehaladtával az elérhető információ mennyisége nem csökken.
   - Adaptivitás: minden $t >= 0$ esetén a $B(t)$ $cal(F)(t)$-mérhető.
   - A jövőbeli növekmények függetlensége: minden $0 <= s < u$ esetén a $B(u)-B(s)$ növekmény független $cal(F)(s)$-től.
-] <def_tizenkettedik>
+]
+
 
 #theorem[
   Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. Ekkor a következő állítások teljesülnek:
 
   - $B(t)$ martingál.
-  - $B(t)$ filtrációja a  definícióban leírt filtráció.
-] <thm_elso>
+  - $B(t)$ filtrációja a definiált filtráció.
+]
+
 
 #proof[
   Elég azt bizonyítani, hogy a $B(t)$ folyamat martingál. Legyen $0 <= s < t$ adott, és tekintsük a következő várható értéket:
   $
-    EE(B(t) | cal(F)(s)) = EE(B(t) - B(s) + B(s) | cal(F)(s)).
+    E[B(t) | cal(F)(s)] = E[B(t) - B(s) + B(s) | cal(F)(s)].
   $
   Mivel a Brown-mozgás növekményei függetlenek a múltbeli információtól, ezért
   $
-    EE(B(t) - B(s) | cal(F)(s)) = EE(B(t) - B(s)) = 0.
+    E[B(t) - B(s) | cal(F)(s)] = E[B(t) - B(s)] = 0.
   $
   Ezenkívül, mivel $B(s)$ már ismert a $cal(F)(s)$-ben, ezért
   $
-    EE(B(s) | cal(F)(s)) = B(s).
+    E[B(s) | cal(F)(s)] = B(s).
   $
   Ezeket az eredményeket összevonva kapjuk, hogy
   $
-    EE(B(t) | cal(F)(s)) = 0 + B(s) = B(s).
+    E[B(t) | cal(F)(s)] = 0 + B(s) = B(s).
   $
   Ez pontosan a martingál feltétel, így a $B(t)$ folyamat martingál.
 ]
+#pagebreak()
 
 = Sztochasztikus differenciálegyenletek
 
@@ -238,7 +304,7 @@ $
 
 Egy közönséges differenciálegyenlet az alábbi formában írható fel:
 $
-  diff x(t) / diff t = f(t, x(t)).
+  (d x(t))  / (d t)  = f(t, x(t)).
 $
 ahol $x(t)$ a vizsgált mennyiség időbeli változása, és $f(t, x(t))$ egy determinisztikus függvény, amely meghatározza a rendszer dinamikáját.
 
@@ -249,7 +315,7 @@ $
 
 Egy SDE akkor jön létre, ha a differenciálegyenlet egy együtthatója determinisztikus paraméter helyett sztochasztikus paraméterré válik. Például tekintsük a következő KDE-t:
 $
-  diff x(t) / diff t = a(t)x(t).
+  (d x(t)) / (d t) = a(t)x(t).
 $
 Amennyiben feltesszük, hogy $a(t)$ egy sztochasztikus folyamat, akkor az egyenlet sztochasztikus differenciálegyenletté alakul. Ekkor az $a(t)$ a következő formában írható fel:
 $
@@ -259,15 +325,16 @@ ahol $xi(t)$ egy fehér zaj folyamat.
 
 Ekkor az SDE a következőképpen néz ki:
 $
-  diff x(t) / diff t = (f(t) + h(t)xi(t)) x(t).
+  (d x(t)) / (d t) = (f(t) + h(t)xi(t)) x(t)
 $
-Legyen $dif W(t) = xi(t) dif t$, ahol $dif W(t)$ a Brown-mozgás differenciálját jelöli, ekkor az SDE differenciál formában a következőképpen írható fel:
+
+Legyen $dif B(t) = xi(t) dif t$, ahol $dif B(t)$ a Brown-mozgás differenciálját jelöli, ekkor az SDE differenciál formában a következőképpen írható fel:
 $
-  dif x(t) = f(t)x(t) dif t + h(t)x(t) dif W(t).
+  dif x(t) = f(t)x(t) dif t + h(t)x(t) dif B(t).
 $
 Általánosabban egy Itô-típusú sztochasztikus differenciálegyenlet a következő formában írható fel:
 $
-  dif x(t, omega) = f(t, x(t, omega)) dif t + g(t, x(t, omega)) dif W(t).
+  dif x(t, omega) = f(t, x(t, omega)) dif t + g(t, x(t, omega)) dif B(t).
 $
 
 Egy általános, Itô-típusú SDE a következő szimbolikus formában írható fel:
@@ -277,9 +344,9 @@ $
 Ez az egyenlet valójában egy integrálegyenlet rövidítése, és két fő részből áll:
 
 - *Drift tag*: a folyamat változásának determinisztikus, előre jelezhető komponense egy infinitezimális $dif t$ időlépés alatt.
-- *Diffúziós tag* ($sigma(X_t, t) dif W_t$): ez a sztochasztikus, előre nem látható komponenst képviseli. A hatásának nagyságát a $sigma(X_t, t)$ volatilitás- vagy diffúziós függvény skálázza, amely függhet a rendszer aktuális állapotától és az időtől is. Ez a tag visz véletlenszerűséget a rendszer leírásába.
+- *Diffúziós tag* ($sigma(X_t, t) dif B_t$): ez a sztochasztikus, előre nem látható komponenst képviseli. A hatásának nagyságát a $sigma(X_t, t)$ volatilitás- vagy diffúziós függvény skálázza, amely függhet a rendszer aktuális állapotától és az időtől is. Ez a tag visz véletlenszerűséget a rendszer leírásába.
 
-=== Itô-integrál
+== Itô-integrál
 
 Amikor a modellezett rendszerben véletlen hatások jelennek meg, a klasszikus integrálfogalom már nem elegendő. Számos alkalmazási területen, például pénzügyi matematikában, fizikai rendszerek leírásában vagy biológiai folyamatok vizsgálatában, a modellek természetes módon vezetnek sztochasztikus folyamatokhoz. A Brown-mozgás pályái 1 valószínűséggel folytonosak, de sehol sem differenciálhatók, így nem rendelkeznek jól definiált deriváltakkal. Emiatt a hagyományos Riemann- vagy Lebesgue-integrál közvetlenül nem alkalmazható olyan kifejezésekre, mint például
 $
@@ -305,20 +372,24 @@ Ez analóg a Lebesgue-integrál lépcsős függvényeivel, ahol a függvény ér
 ] <def_tizennegyedik>
 
 #theorem[
+  Legyen $Delta(t)$ egy elemi folyamat, ekkor az Itô-izometria a következőképpen írható fel:
+  $
+    E[(integral^t Delta(s) dif B(s))^2] = E[integral^t Delta^2(s) dif s].
+  $
 ] <thm_ito_isometry>
 
 Az elemi folyamatok integráljának felhasználásával az Itô-integrál kiterjeszthető általános adaptált sztochasztikus folyamatokra, amelyek kielégítik a megfelelő feltételeket:
 
 - $X(t)$ adaptált a $cal(F)(t)$ filtrációhoz.
-- $X(t)$ kvadratikusan integrálható, azaz $integral_0^t EE[X(s)^2] dif s < infinity$ minden $t >= 0$ esetén.
+- $X(t)$ kvadratikusan integrálható, azaz $integral_0^t E[X^2(s)] dif s < infinity$ minden $t >= 0$ esetén.
 
-Az integrál definiálásához az $X(t)$ folyamatot elemi folyamatokkal közelítjük. Vesszük a $[0,T]$ intervallum egy partícióját: $0 = t_0 < t_1 < dots < t_n = T$, és a $[t_j, t_(j+1)]$ intervallumon a közelítő $Delta(t)$ elemi folyamat értékét az $X(t_j)$ értékére állítjuk. Így a felosztás finomításával az elemi folyamat egyre jobb közelítést ad az $X(t)$ folyamatnak. Választható tehát elemi folyamatok sorozata $Delta_n(t)$ úgy, hogy a következő konvergencia teljesüljön, ha $n -> infinity$:
+Az integrál definiálásához az $X(t)$ folyamatot elemi folyamatokkal közelítjük. Vesszük a $[0,T]$ intervallum egy partícióját: $0 = t_0 < t_1 < dots < t_n = T$, és a $[t_j, t_(j+1)]$ intervallumon a közelítő $Delta(t)$ elemi folyamat értékét az $X(t_j)$ értékére állítjuk. Így a felosztás finomításával az elemi folyamat egyre jobb közelítést ad az $X(t)$ folyamatnak. Választható tehát elemi folyamatok sorozata $Delta_n (t)$ úgy, hogy a következő konvergencia teljesüljön, ha $n -> infinity$:
 $
-  EE integral_0^t abs(X(s) - Delta_n(s))^2 dif s -> 0.
+  E integral_0^t abs(X(s) - Delta_n (s))^2 dif s -> 0.
 $
 Ekkor az Itô-integrál a következőképpen definiálható:
 $
-  integral_0^t X(s) dif B(s) = lim_(n -> infinity) integral_0^t Delta_n(s) dif B(s), quad 0 <= t <= T.
+  integral_0^t X(s) dif B(s) = lim_(n -> infinity) integral_0^t Delta_n (s) dif B(s), quad 0 <= t <= T.
 $
 Az integrál tulajdonságait a következő tétel foglalja össze:
 
@@ -331,7 +402,7 @@ Az integrál tulajdonságait a következő tétel foglalja össze:
 
   - *Folytonosság:* $I(t)$ pályái folytonosak.
   - *Adaptáltság:* minden $t$-re az $I(t)$ folyamat $cal(F)(t)$-mérhető.
-  - *Linearitás:* ha $I(t)=integral_0^t X(s) dif B(s)$ és $J(t)=integral_0^t Y(s) dif B(s)$, akkor $I(t)+J(t)=integral_0^t (X(s)+Y(s)) dif B(s)$. Továbbá minden $c$ konstansra $I(t)=integral_0^t X(s) dif B(s)$.
+  - *Linearitás:* ha $I(t)=integral_0^t X(s) dif B(s)$ és $J(t)=integral_0^t Y(s) dif B(s)$, akkor #box($I(t)+J(t)=integral_0^t (X(s)+Y(s)) dif B(s)$). Továbbá minden $c$ konstansra #box($I(t)=integral_0^t X(s) dif B(s)$).
   - *Martingál tulajdonság:* az $I(t)$ folyamat martingál.
   - *Itô-izometria:* $EE[I^2(t)] = EE[integral_0^t X^2(u) dif u]$.
   - *Kvadratikus variáció:* $[I,I](t)=integral_0^t X^2(u) dif u$.
@@ -351,7 +422,7 @@ Ez a kifejezés nem értelmezhető a klasszikus analízisben használt láncszab
   #<equate:revoke> $
 ] <thm_ito_doeblin>
 
-Ahhoz, hogy megértsük az Itô–Doeblin-formula jelentőségét, tekintsük a következő példát. Legyen $f(x) = 1/2 x^2$, ekkor $f$ nem függ az időtől, így $f_t = 0$, és a parciális deriváltak $f_x(x) = x$ és $f_(x)(x) = 1$. Legyen $x_(j-1)$ és $x_j$ két szomszédos pont egy partícióban, és tekintsük a Taylor-sor első két tagját:
+Ahhoz, hogy megértsük az Itô–Doeblin-formula jelentőségét, tekintsük a következő példát. Legyen $f(x) = 1/2 x^2$, ekkor $f$ nem függ az időtől, így $f_t = 0$, és a parciális derivátak $f_x(x) = x$ és $f_(x)(x) = 1$. Legyen $x_(j-1)$ és $x_j$ két szomszédos pont egy partícióban, és tekintsük a Taylor-sor első két tagját:
 $
   f(x_j) - f(x_(j-1)) = f_x(x_(j-1))(x_j - x_(j-1)) + 1/2 f_(x)(x_(j-1))(x_j - x_(j-1))^2.
 $
@@ -360,7 +431,7 @@ $
   f(B(T)) - f(B(0)) = sum_(j=1)^n f_x(B(t_(j-1)))(B(t_j) - B(t_(j-1))) + \
   1/2 sum_(j=1)^n f_(x)(B(t_(j-1)))(B(t_j) - B(t_(j-1)))^2.
 $
-Ha ebbe behelyettesítjük a parciális deriváltak értékét, akkor a következő egyenlőséget kapjuk:
+Ha ebbe behelyettesítjük a parciális derivátak értékét, akkor a következő egyenlőséget kapjuk:
 $
   f(B(T)) - f(B(0)) = sum_(j=1)^n B(t_(j-1))(B(t_j) - B(t_(j-1))) + 1/2 sum_(j=1)^n (B(t_j) - B(t_(j-1)))^2.
 $
@@ -383,11 +454,11 @@ Ez pontosan az Itô–Doeblin-formula egy speciális esete, amelyben a függvén
 A pénzügyi modellezésben és más területeken, ahol a vizsgált mennyiségek (például árak vagy populációk mérete) nem vehetnek fel negatív értéket, és a növekedésük arányos a jelenlegi méretükkel, a leggyakrabban használt modell a geometriai Brown-mozgás (GBM).
 
 #definition[
-  Legyen $W(t)$ Brown-mozgás. Az $S(t)$ folyamatot geometriai Brown-mozgásnak nevezzük, ha kielégíti a következő sztochasztikus differenciálegyenletet:
+   Legyen $W(t)$ Brown-mozgás. Az $S(t)$ folyamatot geometriai Brown-mozgásnak nevezzük, ha kielégíti a következő sztochasztikus differenciálegyenletet:
   $
     dif S(t) = mu S(t) dif t + sigma S(t) dif W(t),
   $
-  ahol $mu$ és $sigma$ konstansok.
+  ahol $mu$ és $sigma$ konstansok. @shreve2004
 ] <def_tizenotodik>
 
 Ahol $S(t)$ a vizsgált mennyiség (például árfolyam), $mu$ a drift (várható növekedési ráta), $sigma$ a volatilitás (a véletlenszerű ingadozás mértéke), és $B(t)$ egy standard Brown-mozgás. A geometriai Brown-mozgás egyenletének egyik nagy előnye, hogy létezik rá explicit, zárt alakú megoldás:
@@ -398,7 +469,4 @@ Ahol $S(0)$ a kezdeti érték. Ez a megoldás azt mutatja, hogy a folyamat logar
 #pagebreak()
 = Irodalomjegyzék
 
-- Steven E. Shreve: /Stochastic Calculus for Finance II: Continuous-Time Models/. Springer, 2004.
-- Marcin Pitera: /Stochastic Processes – Lecture Notes/. Jagiellonian University, 2020.
-- Bernt Øksendal: /Stochastic Differential Equations: An Introduction with Applications/. Springer, 2003.
-- Florian Herzog: /Stochastic Differential Equations/. Lecture Notes, 2013.
+#bibliography("reference.bib", full: true)
