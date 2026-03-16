@@ -167,8 +167,9 @@
   Témavezető: \
   #supervisor-text
 ]
-
-#v(4cm)
+#align(center)[
+#image("elte_ttk_logo.png", width: 7cm)
+]
 
 #align(center)[Budapest, #year-text]
 
@@ -587,7 +588,40 @@ $
 
 #pagebreak()
 = A gépi tanulás elméleti háttere
+
+A gépi tanulás fontos szerepet játszik a tudomány, a gazdaság és a technológia számos területén. Például az orvostudományban a gépi tanulás segíthet a betegségek korai felismerésében és betegségekkel járó kockázatok azonosításában. A pénzügyi szektorban a gépi tanulás alkalmazható a kockázatkezelésben, a csalásfelderítésben és a kereskedési stratégiák optimalizálásában.
+\
+A gépi tanulás lehetővé teszi a nagy adathalmazok elemzését és a mintázatok felismerését ezért bűnügyi adatok elemzésére is használható, például a bűnözési mintázatik felismerésére és  bűnügyi előrejelzések készítésére.
+
 == A gépi tanulás alapjai
+
+A gépi tanulás algoritmusait három fő csoportba sorolhatjuk:
+- Felügyelt tanulás: ahol a modell egy címkézett adathalmazon tanul, azaz minden bemeneti adathoz (X) tartozik egy kimeneti címke (y). A modell célja, egy olyan függvény megtanulása. amely képes egy új, ismeretlen bemeneti adat (X) alapján helyesen megjósolni a hozzá tartozó kimeneti címkét (y).
+- Felügyelet nélküli tanulás: ahol a modell egy címkézetlen adathalmazon tanul, azaz csak bemeneti adatok (X) állnak rendelkezésre, de nincs hozzájuk tartozó kimeneti címke (y). A modell célja, hogy feltárja az adat szerkezetét, megtalálja a rejtett mintázatokat.
+- Megerősítéses tanulás: ahol a modell egy környezetben tanul, és a tanulási folyamat során visszajelzést kap a környezettől, amely alapján maximalizálni igyekszik egy célfüggvényt.
+
+A szakdolgozat keretein belül elsősorban a felügyelt tanulás alapjaival foglalkozunk, különös tekintettel a regressziós problémákra, ahol a cél egy folytonos kimeneti érték előrejelzése.
+\
+A felügyelt tanulás esetén formálisan a következőképpen tekinthetünk az adatra:
+$
+D = {(x_1, y_1), (x_2, y_2), dots, (x_n, y_n)}.
+$
+ahol $x_i in RR$ a bemeneti változókat tartalmazó vektor és $y_i in RR$ a hozzá tartozó célváltozó értéke.
+A statisztikai tanulási modell áltanos alakja a következőképpen írható fel:
+$
+Y = f(X) + epsilon,
+$
+ahol $f$ az ismeretlen függvény, amit becsülni szeretnénk, míg $epsilon$ egy véletlen zaj, amely a modell hibáját reprezentálja és függelen a bemeneti változóktól. Továbbá feltételezzük, hogy $E[epsilon] = 0$.
+
+#box([
+Két fő kérdésre keresünk választ a gépi tanulás során:
+- Egy új bemeneti adat (x) esetén mennyi lesz a célváltozó (y) értéke?\
+  Ez a predikciós kérdés. Ebben az esetben a függvény úgynevezett "fekete doboz" modellként működik, ahol nem a függvény pontos alakja a lényeg, hanem a predikciós teljesítménye.
+- Hogyan befolyásolja a bemeneti változó (X) értéke a célváltozó (Y) értékét?\
+  Ez a magyarázó kérdés.Vizsgálhatjuk, hogy a bemeneti változók közül melyik az néhány legfontosabb, amely a legnagyobb hatással van a célváltozó értékére.
+  Ilyenkor a függvény pontos alakja is fontos, nem viselkedhet "fekete doboz" modellként. 
+
+])
 
 #pagebreak()
 = Irodalomjegyzék
