@@ -367,7 +367,8 @@ Ez analóg a Lebesgue-integrál lépcsős függvényeivel, ahol a függvény ér
   Egy elemi folyamat Itô-integrálja a következőképpen definiálható:
   $
     I(t) = integral_0^T Delta(s) dif B(s)
-      = sum_(i=0)^(n-1) Delta(t_i) (B(t_(i+1)) - B(t_i)).
+      = \
+      sum_(j=0)^(n) Delta(t_j) (B(t_(j)) - B(t_(j-1))) + Delta(t_n) (B(T)- B(t_n)). #<equate:revoke>
   $
 ] <def_tizennegyedik>
 
@@ -404,7 +405,7 @@ Az integrál tulajdonságait a következő tétel foglalja össze:
   - *Adaptáltság:* minden $t$-re az $I(t)$ folyamat $cal(F)(t)$-mérhető.
   - *Linearitás:* ha $I(t)=integral_0^t X(s) dif B(s)$ és $J(t)=integral_0^t Y(s) dif B(s)$, akkor #box($I(t)+J(t)=integral_0^t (X(s)+Y(s)) dif B(s)$). Továbbá minden $c$ konstansra #box($I(t)=integral_0^t X(s) dif B(s)$).
   - *Martingál tulajdonság:* az $I(t)$ folyamat martingál.
-  - *Itô-izometria:* $EE[I^2(t)] = EE[integral_0^t X^2(u) dif u]$.
+  - *Itô-izometria:* $E[I^2(t)] = E[integral_0^t X^2(u) dif u]$.
   - *Kvadratikus variáció:* $[I,I](t)=integral_0^t X^2(u) dif u$.
 ] <thm_ito_integral_properties>
 
@@ -415,25 +416,27 @@ $
 Ez a kifejezés nem értelmezhető a klasszikus analízisben használt láncszabály szerint, mivel a Brown-mozgás pályái sehol sem differenciálhatók. Ennek értelmezéséhez az Itô–Doeblin-formula alkalmazására van szükség, amely egy sztochasztikus változókra vonatkozó általánosított láncszabály.
 
 #theorem[
-  Legyen $f(t,x)$ függvény, melynek parciális deriváltjai $f_t$, $f_x$ és $f_(x)$ léteznek és folytonosak. Legyen továbbá $B(t)$ egy Brown-mozgás. Ekkor minden $T >= 0$ esetén teljesül a következő egyenlőség:
+  Legyen $f(t,x)$ függvény, melynek parciális deriváltjai $f_t$, $f_x$ és $f_(x x)$ léteznek és folytonosak. Legyen továbbá $B(t)$ egy Brown-mozgás. Ekkor minden $T >= 0$ esetén teljesül a következő egyenlőség:
   $
     f(T, B(T)) = f(0, B(0)) + integral_0^T f_t(t, B(t)) dif t \
-    + integral_0^T f_x(t, B(t)) dif B(t) + 1/2 integral_0^T f_(x)(t, B(t)) dif t.
-  #<equate:revoke> $
+    + integral_0^T f_x(t, B(t)) dif B(t) + 1/2 integral_0^T f_(x x)(t, B(t)) dif t.
+  #<equate:revoke>
+  $
 ] <thm_ito_doeblin>
 
-Ahhoz, hogy megértsük az Itô–Doeblin-formula jelentőségét, tekintsük a következő példát. Legyen $f(x) = 1/2 x^2$, ekkor $f$ nem függ az időtől, így $f_t = 0$, és a parciális derivátak $f_x(x) = x$ és $f_(x)(x) = 1$. Legyen $x_(j-1)$ és $x_j$ két szomszédos pont egy partícióban, és tekintsük a Taylor-sor első két tagját:
+Ahhoz, hogy megértsük az Itô–Doeblin-formula jelentőségét, tekintsük a következő példát. Legyen $f(x) = 1/2 x^2$, ekkor $f$ nem függ az időtől, így $f_t = 0$, és a parciális derivátak $f_(x) = x$ és $f_(x x) = 1$. Legyen $x_(j-1)$ és $x_j$ két szomszédos pont egy partícióban, és tekintsük a Taylor-sor első két tagját:
 $
-  f(x_j) - f(x_(j-1)) = f_x(x_(j-1))(x_j - x_(j-1)) + 1/2 f_(x)(x_(j-1))(x_j - x_(j-1))^2.
+  f(x_j) - f(x_(j-1)) = f_x (x_(j-1))(x_j - x_(j-1)) + 1/2 f_(x x)(x_(j-1))(x_j - x_(j-1))^2.
 $
 Továbbá legyen $T > 0$ egy rögzített pozitív szám, és legyen a $[0,T]$ intervallum egy partíciója $cal(P)= {t_0, t_1, dots, t_n}$. Az $f(B(t))$ folyamat változását $0$ és $T$ között a következőképpen írhatjuk fel:
 $
   f(B(T)) - f(B(0)) = sum_(j=1)^n f_x(B(t_(j-1)))(B(t_j) - B(t_(j-1))) + \
-  1/2 sum_(j=1)^n f_(x)(B(t_(j-1)))(B(t_j) - B(t_(j-1)))^2.
+  1/2 sum_(j=1)^n f_(x x)(B(t_(j-1)))(B(t_j) - B(t_(j-1)))^2.  #<equate:revoke>
 $
 Ha ebbe behelyettesítjük a parciális derivátak értékét, akkor a következő egyenlőséget kapjuk:
 $
-  f(B(T)) - f(B(0)) = sum_(j=1)^n B(t_(j-1))(B(t_j) - B(t_(j-1))) + 1/2 sum_(j=1)^n (B(t_j) - B(t_(j-1)))^2.
+  f(B(T)) - f(B(0)) = sum_(j=1)^n B(t_(j-1))(B(t_j) - B(t_(j-1))) + \
+  1/2 sum_(j=1)^n (B(t_j) - B(t_(j-1)))^2. #<equate:revoke>
 $
 A partíció finomításával, azaz ha $norm(cal(P)) -> 0$, akkor a következő konvergencia teljesül:
 $
@@ -448,8 +451,9 @@ $
   f(B(T)) - f(B(0)) = integral_0^T B(t) dif B(t) + 1/2 T.
 $
 Ez pontosan az Itô–Doeblin-formula egy speciális esete, amelyben a függvény csak a Brown-mozgás értékétől függ, és nem függ az időtől.
+#pagebreak()
 
-=== Geometriai Brown-mozgás
+== Geometriai Brown-mozgás
 
 A pénzügyi modellezésben és más területeken, ahol a vizsgált mennyiségek (például árak vagy populációk mérete) nem vehetnek fel negatív értéket, és a növekedésük arányos a jelenlegi méretükkel, a leggyakrabban használt modell a geometriai Brown-mozgás (GBM).
 
