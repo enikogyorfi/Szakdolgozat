@@ -559,7 +559,7 @@ lognormális eloszlású.]
 ] <prop_gbm_variance>
 
 #proof[
-A másdik momentum kiszámításához felhasználjuk:
+A második momentum kiszámításához felhasználjuk:
 $  S^2(t) = S^2(0) exp(2(mu - 1/2 sigma^2)t + 2 sigma B(t)).
 $
 Ekkor:
@@ -584,6 +584,10 @@ op("Var")[S(t)] = E[S^2(t)] - (E[S(t)])^2 = \
 $
 ]
 
+
+#pagebreak()
+= A gépi tanulás elméleti háttere
+== A gépi tanulás alapjai
 
 #pagebreak()
 = Irodalomjegyzék
