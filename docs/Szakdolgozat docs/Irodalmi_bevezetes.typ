@@ -570,9 +570,11 @@ Mivel $2 sigma B(t)$ normális eloszlású, 0 várható értékkel és $4 sigma^
 $  E[exp(2 sigma B(t))] = exp(2 sigma^2 t).
 $
 Ezt felhasználva kapjuk, hogy
-$  E[S^2(t)] = S^2(0) exp(2(mu - 1/2 sigma^2)t) E[exp(2 sigma B(t))] = S^2(0) exp(2 mu t + sigma^2 t).
+$  E[S^2(t)] = S^2(0) exp(2(mu - 1/2 sigma^2)t) E[exp(2 sigma B(t))] =
+ \
+ S^2(0) exp(2 mu t + sigma^2 t). #<equate:revoke>
 $
-A variancia definíciója szerint?
+A variancia definíciója szerint:
 $
 op("Var")[S(t)] = E[S^2(t)] - (E[S(t)])^2 = \
  S^2(0) exp(2 mu t + sigma^2 t) - (S(0) exp(mu t))^2 = #<equate:revoke>
