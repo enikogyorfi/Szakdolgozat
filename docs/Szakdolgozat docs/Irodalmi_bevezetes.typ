@@ -726,6 +726,58 @@ caption: [\Túlillesztés illusztrációja],
 gap: 0.5cm,
 ) <overfitting>
 
+A gyakorlatban a tanító adaton az MSE értékét meg tudjuk határozni, de a teszt adaton az MSE értékét nem, mivel a teszt adaton a valódi értékek nem ismertek. A minimumpont meghatározására a gyakorlatban az egyik legelterjedtebb módszer a keresztvalidáció, amely során a tanító adatot több részre osztjuk, és a modell teljesítményét ezekre a részekre értékeljük. Ez lehetővé teszi, hogy becslést kapjunk a modell új adatokon való teljesítményére, és segítséget nyújt a megfelelő modell komplexitásának kiválasztásában.
+
+#pagebreak()
+
+== Döntési fák
+
+A fa-alapú módszerek egy jelentős és széles körben használt osztálya a gépi tanulási algoritmusoknak. Ezek a módszerek könnyen értelmezhető modelleket hoznak létre, amelyek jól teljesítenek mind klasszifikációs, mind regressziós problémák esetén.
+ Ezek a módszerek a bementeti változók terét egyszerű, jellemzően téglalap alakú régókra osztják fel, rétegzik azokat. Ha egy új megfigyelést szeretnénk osztályozni vagy a hozzá tartozó értéket előrejelezni, akkor a modell megvizsgálja, hogy a megfigyelés melyik régióba esik, és a régióba eső tanuló adatok között előforduló leggyakoribb osztályt vagy a régióba eső tanuló adatok átlagát használja a predikcióhoz.
+A modell struktúrája:
+- Gyökércsomópont: A legfelső szint, ami a teljes adatot reprezentálja.
+- Belső csomópontok: Egy-egy bemeneti változó (feature) alapján végzett döntést reprezentálnak, amelyek az adatot két vagy több részre osztják.
+- Élek: A tesztek eredményét reprezentálják, amelyek a bemeneti változó értékétől függően vezetnek a következő csomóponthoz.
+- Levélcsomópontok: Az osztályokat vagy a regressziós értékeket reprezentálják, amelyek a modell végső döntését adják meg.
+ 
+#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge, shapes
+#figure(
+  diagram(
+    node-stroke: 1pt + black,
+    edge-stroke: 1pt + black,
+
+    node((0, 0), [Időjárás], shape: shapes.diamond, fill: blue.lighten(80%), name: <outlook>, inset: 1em),
+
+    node((-1.5, 1), [Páratartalom], shape: shapes.diamond, fill: blue.lighten(80%), name: <humidity>, inset: 1em),
+    node((0, 1.5), [Igen], shape: shapes.pill, fill: green.lighten(80%), name: <yes_overcast>, inset: 1em),
+    node((1.5, 1.3), [Szél], shape: shapes.diamond,fill: blue.lighten(80%), name: <wind>, inset: 1em),
+
+    node((-2.5, 2.3), [Nem], shape: shapes.pill, fill: red.lighten(80%), name: <no_high>, inset: 1em),
+    node((-1, 2.3), [Igen], shape: shapes.pill, fill: green.lighten(80%), name: <yes_normal>, inset: 1em),
+    node((1, 2.3), [Nem], shape: shapes.pill, fill: red.lighten(80%), name: <no_strong>, inset: 1em),
+    node((2.6, 2.3), [Igen], shape: shapes.pill, fill: green.lighten(80%), name: <yes_weak>, inset: 1em),
+
+
+    edge(<outlook>, <humidity>,  [Napos], label-pos: 0.5, "-|>"),
+    edge(<outlook>, <yes_overcast>,  [Borult], label-pos: 0.5, "-|>"),
+    edge(<outlook>, <wind>,  [Eső], label-pos: 0.5, "-|>"),
+
+    edge(<humidity>, <no_high>,  [Magas], label-pos: 0.5, "-|>"),
+    edge(<humidity>, <yes_normal>,  [Normál], label-pos: 0.5, "-|>"),
+
+    edge(<wind>, <no_strong>,  [Erős], label-pos: 0.5, "-|>"),
+    edge(<wind>, <yes_weak>,  [Gyenge], label-pos: 0.5, "-|>"),
+   
+
+  ),
+    caption: [Döntési fa példa],
+    gap: 0.5cm,
+    )<decision_tree_example>
+A @decision_tree_example egy döntési fa példát mutata be: el kell dönteni, hogy egy adott napon játszunk-e a szabadban az időjárás alapján. A döntési fa struktúrája a következő:
+ - A gyökércsomópontban az időjárás szerepel, ez a döntési folyamat kiindulópontja. A modell a tanítás során ezt a változót találta a legfontosabbnak, ez bontja fel legjobban az adatokat.
+ - Élek: A lehetséges állapotokat jelölik.
+- Belső csomópontok: Ha az "időjárás" értéke alapján nem tudunk dönteni, további változókat kell vizsgálnunk. Például, ha az időjárás "Napos", akkor a következő változó, amit megvizsgálunk, a "Páratartalom".
+- Levélcsomópontok: Ezek a végső döntéseket jelölik, például ha az időjárás "Napos" és a páratartalom "Magas", akkor a modell azt javasolja, hogy ne játsszunk a szabadban ("Nem").
 
 
 #pagebreak()
