@@ -5,7 +5,11 @@
 #import "@preview/rich-counters:0.2.1": *
 #import "@preview/theoretic:0.3.1" as theoretic
 #import theoretic.presets.colorbox: *
+#import "@preview/simple-plot:0.3.0": *
+#import "@preview/simple-plot:0.3.0": plot
+#import "@preview/lilaq:0.6.0" as lq
 // this will automatically load predefined styled environments
+
 #show ref: theoretic.show-ref
 #show: equate.with(breakable: false, sub-numbering: false)
 #set math.equation(numbering: "(1)")
@@ -81,6 +85,21 @@
   below: 2em  // Térköz a fejezetcím UTÁN
 )
 #show heading.where(level: 3): set text(size: 14pt, weight: "bold")
+
+#show figure.caption: it => context [
+  #counter(figure).display(). Ábra: #it.body
+]
+
+#show ref: it => {
+  let el = it.element
+  if el != none and el.func() == figure {
+    // Lekéri a hivatkozott ábra sorszámát
+    let num = counter(figure).at(el.location()).first()
+    link(el.location())[#num. Ábra]
+  } else {
+    it
+  }
+}
 #set par(justify: true)
 
 #let title-text = "BŰNÖZÉSI GYAKORISÁG MODELLEZÉSE"
@@ -113,7 +132,7 @@
 
 #let orig-theorem = theoretic.presets.colorbox.theorem.with(
   supplement: "Tétel",
-  number: context(stmt-number()),
+  number: context(def-number()),
   options: (
     icon: "",
   ),
@@ -132,7 +151,7 @@
 )
 #let proposition = theoretic.presets.colorbox.proposition.with(
   supplement: "Állítás",
-  number: context(prop-number()),
+  number: context(def-number()),
  options: (
     color: navy,
     icon: "",
@@ -263,7 +282,7 @@ $
 == Brown-mozgás
 
 #definition[
-  Egy $B = (B_t)_(t >= 0)$ sztochasztikus folyamatot Brown-mozgásnak (vagy Wiener-folyamatnak) nevezünk, ha az alábbi négy tulajdonságnak tesz eleget:
+  @pitera2020 Egy $B = (B_t)_(t >= 0)$ sztochasztikus folyamatot Brown-mozgásnak (vagy Wiener-folyamatnak) nevezünk, ha az alábbi négy tulajdonságnak tesz eleget:
 
   - A folyamat a $t=0$ időpontban a nullából indul, 1 valószínűséggel, azaz $B_0 = 0$.
   - A folyamat pályái, azaz a $t mapsto B_t (omega)$ leképezések minden egyes $omega$ elemi eseményre, majdnem biztosan folytonosak.
@@ -274,7 +293,7 @@ $
 *Megjegyzés.* A független növekmények tulajdonságából adódóan a Brown-mozgás egy Gauss–Markov-folyamat. Továbbá, mivel az átmeneti sűrűsége csak az időbeli különbségtől függ, egyben időben homogén Markov-folyamat is.
 
 #definition[
-  Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. A $B(t)$-hez tartozó filtráció egy $cal(F)(t)$ szigma-algebrákból álló család, amelyre a következő feltételek teljesülnek:
+  @shreve2004 Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. A $B(t)$-hez tartozó filtráció egy $cal(F)(t)$ szigma-algebrákból álló család, amelyre a következő feltételek teljesülnek:
 
   - Az információ halmozódik: $cal(F)(s) subset cal(F)(u)$ minden $0 <= s < u$ esetén, vagyis az idő előrehaladtával az elérhető információ mennyisége nem csökken.
   - Adaptivitás: minden $t >= 0$ esetén a $B(t)$ $cal(F)(t)$-mérhető.
@@ -283,12 +302,10 @@ $
 
 
 #theorem[
-  Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. Ekkor a következő állítások teljesülnek:
+  @shreve2004 Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. Ekkor a következő állítások teljesülnek:
 
-  - $B(t)$ martingál.
-  - $B(t)$ filtrációja a definiált filtráció.
-]
-
+  - $B(t)$ martingál a fenti definícióban definiált filtrációval.
+  ]
 
 #proof[
   Elég azt bizonyítani, hogy a $B(t)$ folyamat martingál. Legyen $0 <= s < t$ adott, és tekintsük a következő várható értéket:
@@ -371,13 +388,13 @@ Az ilyen típusú integrálok értelmezéséhez egy új integrálfogalom bevezet
 Az előbbi kifejezésben az integrál egyik összetevője egy $B(t)$, $t >= 0$ Brown-mozgás, valamint az ehhez tartozó $cal(F)(t)$, $t >= 0$ filtráció. Az integrandus $X(t)$ egy adaptált sztochasztikus folyamat, amely azt jelenti, hogy minden $t >= 0$ esetén $X(t)$ $cal(F)(t)$-mérhető. Az adaptáltság biztosítja, hogy $X(t)$ értéke csak a $t$ időpontig ismert információtól függ.
 
 #definition[
-  Legyen a $0 = t_0 < t_1 < dots < t_n = T$ egy partíciója a $[0, T]$ intervallumnak, és legyen $Delta(t)$ konstans minden $t in [t_i, t_(i+1))$ intervallumon. Ekkor $Delta(t)$-t elemi folyamatnak nevezzük.
+  @shreve2004 Legyen a $0 = t_0 < t_1 < dots < t_n = T$ egy partíciója a $[0, T]$ intervallumnak, és legyen $Delta(t)$ konstans minden $t in [t_i, t_(i+1))$ intervallumon. Ekkor $Delta(t)$-t elemi folyamatnak nevezzük.
 ] <def_tizenharmadik>
 
 Ez analóg a Lebesgue-integrál lépcsős függvényeivel, ahol a függvény értéke egy adott intervallumon állandó.
 
 #definition[
-  Egy elemi folyamat Itô-integrálja a következőképpen definiálható:
+  @shreve2004 Egy elemi folyamat Itô-integrálja a következőképpen definiálható:
   $
     I(t) = integral_0^T Delta(s) dif B(s)
       = \
@@ -386,7 +403,7 @@ Ez analóg a Lebesgue-integrál lépcsős függvényeivel, ahol a függvény ér
 ] <def_tizennegyedik>
 
 #theorem[
-  Legyen $Delta(t)$ egy elemi folyamat, ekkor az Itô-izometria a következőképpen írható fel:
+  @shreve2004 Legyen $Delta(t)$ egy elemi folyamat, ekkor az Itô-izometria a következőképpen írható fel:
   $
     E[(integral^t Delta(s) dif B(s))^2] = E[integral^t Delta^2(s) dif s].
   $
@@ -408,7 +425,7 @@ $
 Az integrál tulajdonságait a következő tétel foglalja össze:
 
 #theorem[
-  Legyen $T$ egy pozitív konstans, és legyen $X(t)$, $0 <= t <= T$ egy adaptált sztochasztikus folyamat, amely kielégíti a fentebb írt feltételeket. Ekkor az
+  @shreve2004 Legyen $T$ egy pozitív konstans, és legyen $X(t)$, $0 <= t <= T$ egy adaptált sztochasztikus folyamat, amely kielégíti a fentebb írt feltételeket. Ekkor az
   $
     I(t) = integral_0^t X(s) dif B(s)
   $
@@ -429,15 +446,15 @@ $
 Ez a kifejezés nem értelmezhető a klasszikus analízisben használt láncszabály szerint, mivel a Brown-mozgás pályái sehol sem differenciálhatók. Ennek értelmezéséhez az Itô–Doeblin-formula alkalmazására van szükség, amely egy sztochasztikus változókra vonatkozó általánosított láncszabály.
 
 #theorem[
-  Legyen $f(t,x)$ függvény, melynek parciális deriváltjai $f_t$, $f_x$ és $f_(x x)$ léteznek és folytonosak. Legyen továbbá $B(t)$ egy Brown-mozgás. Ekkor minden $T >= 0$ esetén teljesül a következő egyenlőség:
+   @shreve2004 Legyen $f(t,x)$ függvény, melynek parciális deriváltjai $f_t$, $f_x$ és $f_(x x)$ léteznek és folytonosak. Legyen továbbá $B(t)$ egy Brown-mozgás. Ekkor minden $T >= 0$ esetén teljesül a következő egyenlőség:
   $
-    f(T, B(T)) = f(0, B(0)) + integral_0^T f_t(t, B(t)) dif t \
-    + integral_0^T f_x(t, B(t)) dif B(t) + 1/2 integral_0^T f_(x x)(t, B(t)) dif t.
+    f(T, B(T)) = f(0, B(0)) + integral_0^T f_t (t, B(t)) dif t \
+    + integral_0^T f_x (t, B(t)) dif B(t) + 1/2 integral_0^T f_(x x)(t, B(t)) dif t.
   #<equate:revoke>
   $
 ] <thm_ito_doeblin>
 
-Ahhoz, hogy megértsük az Itô–Doeblin-formula jelentőségét, tekintsük a következő példát. Legyen $f(x) = 1/2 x^2$, ekkor $f$ nem függ az időtől, így $f_t = 0$, és a parciális derivátak $f_(x) = x$ és $f_(x x) = 1$. Legyen $x_(j-1)$ és $x_j$ két szomszédos pont egy partícióban, és tekintsük a Taylor-sor első két tagját:
+Ahhoz, hogy megértsük az Itô–Doeblin-formula jelentőségét, tekintsük a következő példát. Legyen $f(x) = 1/2 x^2$, ekkor $f$ nem függ az időtől, így $f_t = 0$, és a parciális deriváltakak $f_(x) = x$ és $f_(x x) = 1$. Legyen $x_(j-1)$ és $x_j$ két szomszédos pont egy partícióban, és tekintsük a Taylor-sor első két tagját:
 $
   f(x_j) - f(x_(j-1)) = f_x (x_(j-1))(x_j - x_(j-1)) + 1/2 f_(x x)(x_(j-1))(x_j - x_(j-1))^2.
 $
@@ -446,7 +463,7 @@ $
   f(B(T)) - f(B(0)) = sum_(j=1)^n f_x(B(t_(j-1)))(B(t_j) - B(t_(j-1))) + \
   1/2 sum_(j=1)^n f_(x x)(B(t_(j-1)))(B(t_j) - B(t_(j-1)))^2.  #<equate:revoke>
 $
-Ha ebbe behelyettesítjük a parciális derivátak értékét, akkor a következő egyenlőséget kapjuk:
+Ha ebbe behelyettesítjük a parciális deriváltakak értékét, akkor a következő egyenlőséget kapjuk:
 $
   f(B(T)) - f(B(0)) = sum_(j=1)^n B(t_(j-1))(B(t_j) - B(t_(j-1))) + \
   1/2 sum_(j=1)^n (B(t_j) - B(t_(j-1)))^2. #<equate:revoke>
@@ -519,11 +536,12 @@ $
 ]
 Mivel $ln S(t)$ normális eloszlású, ezért a geometriai Brown.mozgás eloszlásáról a következő állítás tehető:
 
-#proposition[A geometriai Brown-mozgás $S(t)$ minden $t > 0$ esetén
+#proposition[
+@herzog2013 A geometriai Brown-mozgás $S(t)$ minden $t > 0$ esetén
 lognormális eloszlású.]
 
 #proposition()[
-  Legyen $S(t)$ egy geometriai Brown-mozgás, amely kielégíti a következő SDE-t:
+  @herzog2013 Legyen $S(t)$ egy geometriai Brown-mozgás, amely kielégíti a következő SDE-t:
   $
     dif S(t) = mu S(t) dif t + sigma S(t) dif B(t),
   $
@@ -549,7 +567,7 @@ lognormális eloszlású.]
 ]
 
 #proposition[
-  Legyen $S(t)$ egy geometriai Brown-mozgás, amely kielégíti a következő SDE-t:
+   @herzog2013 Legyen $S(t)$ egy geometriai Brown-mozgás, amely kielégíti a következő SDE-t:
   $
     dif S(t) = mu S(t) dif t + sigma S(t) dif B(t),
   $
@@ -616,12 +634,99 @@ ahol $f$ az ismeretlen függvény, amit becsülni szeretnénk, míg $epsilon$ eg
 #box([
 Két fő kérdésre keresünk választ a gépi tanulás során:
 - Egy új bemeneti adat (x) esetén mennyi lesz a célváltozó (y) értéke?\
-  Ez a predikciós kérdés. Ebben az esetben a függvény úgynevezett "fekete doboz" modellként működik, ahol nem a függvény pontos alakja a lényeg, hanem a predikciós teljesítménye.
+  Ez a predikciós kérdés. Ebben az esetben a függvény úgynevezett "fekete doboz" modellként működik, ahol nem a függvény pontos alakja a lényeg, hanem a predikciós teljesítménye. Az előrejelzés pontossága két hibatényezőtől függ, egy csökkenthető hibától, amely a függvény becslésének pontosságából adódik, és egy nem csökkenthető hibától, amely egy felső korlátot szab az előrejelzés pontosságának.
 - Hogyan befolyásolja a bemeneti változó (X) értéke a célváltozó (Y) értékét?\
   Ez a magyarázó kérdés.Vizsgálhatjuk, hogy a bemeneti változók közül melyik az néhány legfontosabb, amely a legnagyobb hatással van a célváltozó értékére.
   Ilyenkor a függvény pontos alakja is fontos, nem viselkedhet "fekete doboz" modellként. 
 
 ])
+
+#v(0.3cm)
+A változóknak két fő típusát különböztetjük meg, lehetnek kvalitatív (minőségi) vagy kvantitatív (mennyiségi) változók. A kvalitatív változók kategóriákba, osztályokba sorolhatóak, például a nem, a szín vagy a márka. Ezzel szemben a kvantitatív változók számszerű értékeket vesznek fel, ilyen például a magasság, a súly vagy az ár. A célváltozó típusa alapján a gépi tanulási problémák lehetnek klasszifikációs vagy regressziós problémák.  Klasszifikáció esetén a célváltozó kvalitatív, és a modell célja, hogy egy adott bemeneti adat alapján megállapítsa a hozzá tartozó kategóriát. Regresszió esetén a célváltozó kvantitatív, és a modell célja, hogy egy adott bemeneti adat alapján megjósolja a hozzá tartozó számértéket.
+A határvonal a klasszifikációs és regressziós módszerek között azonaban nem mindig éles. A legkisebb négyzetek módszerét mennyiségi meghatározásra használjuk, a logisztikus regressziót pedig kvalitatív meghatározásra, de a KNN algoritmust, a döntési fákat mind a két probléma esetén használhatjuk.
+
+Mindkét probléma esetén fontos vizsgálni a modell teljesítményét, hibáját. A várható hiba egy $x_0$ pontban a következőképpen írható fel:
+$
+E[(y_0 - hat(f)(x_0))^2] = op("Var")[hat(f)(x_0)] + (E[hat(f)(x_0)] - f(x_0))^2 + op("Var")[epsilon].
+$,
+ahol $hat(f)(x_0)$ a modell által adott előrejelzés, $f(x_0)$ a valódi értéke, és $epsilon$ a nem csökkenthető hiba. Tehát a várható hiba három összetevőből épül fel: a becslés varianciájából ($op("Var")[hat(f)(x_0)]$), a becslés torzításának négyzetéből ($(E[hat(f)(x_0)] - f(x_0))^2$) és a hibatag varianciájából ($op("Var")[epsilon]$).
+Ahhoz, hogy a várható hiba értékét minimalizáljuk, olyan módszert kell választanunk, amely egyszerre biztosít alacsonmy varianciát és alacsony torzítást.
+ A variancia azt mutatja meg, hogy a modell előrejelzése mennyire érzékeny a tanító adathalmaz változásaira. Általánosságban elmondható, hogy a komplexebb modellek nagyobb varianciával rendelkeznek. A torzítás pedig abból fakad, hogy a modell nem képes pontosan megragadni a valódi függvény alakját, ez akkor fordulhat elő ha egy bonyolult problémát egy egyszerűbb modellel közelítünk. Például ha a változók közötti kapcsolat erősen nemlineáris, de egy lineáris modellt használunk, akkor a modell torzított lesz.
+  Általában a kevésbé komplex modellek nagyobb torzítással rendelkeznek.
+  Tehát láthatjuk, hogy a modell komplexitásának növelése csökkenti a torzítást, de növeli a varianciát. Ez az úgynevezett torzítás-variancia kompromisszum.
+  
+
+#show: lq.set-diagram(width: 12cm, height: 8cm)
+#show lq.selector(lq.title): set align(center)
+#let x = lq.linspace(0, 10)
+#show: lq.set-diagram(
+  xaxis: (format-ticks: none),
+  yaxis: (format-ticks: none)
+)
+#show: lq.set-diagram(
+  xaxis: (mirror: false),
+  yaxis: (mirror: false),
+)
+
+
+#figure(
+  lq.diagram(
+    xlabel: "Model komplexitása",
+    xaxis: (ticks: none),
+    yaxis: (ticks: none),
+    legend: (position: right, dy: 4em),
+    lq.plot(x, x => 8 * calc.exp(-0.4 * x) + 0.5,label: "Torzítás", stroke:(thickness: 2pt), mark:none),
+    lq.plot(x, x => 0.12 * calc.pow(x - 1, 2) + 0.3, label: "Variancia", stroke:(thickness: 2pt), mark:none),
+    lq.plot(x, x => 8 * calc.exp(-0.4 * x) + 0.5 + 0.12 * calc.pow(x - 1, 2) + 0.3, label: "Hiba", stroke:(thickness: 2pt), mark:none),
+    lq.plot((3.86, 3.86), (0, 10), stroke: (dash: "dashed", paint: green, thickness: 1pt), mark:none),
+    lq.scatter((3.86,), (3.49,), mark: "o", label: "Optimum pont"),
+),
+caption: [Torzítás-variancia kompromisszum illusztrációja],
+placement: top,
+gap: 0.5cm,
+) <bias_variance_tradeoff>
+
+Az @bias_variance_tradeoff alapján látható, hogy a modell komplexitásának növelésével a torzítás csökken, de a variancia nő. Az ábrán is látható, hogy kezdetben a modell komplexitásának növelésével a torzítás gyorsabban csökken, mint ahogy a variancia nő, így a teljes hiba csökken. Azonban egy bizonyos pont után a variancia növekedése gyorsabb lesz, mint a torzítás csökkenése, így a teljes hiba növekedni kezd.
+ Az optimális pont ott van, ahol a teljes hiba minimális. Valós helyzetben, mivel a valódi függvény nem ismert, nem tudjuk explicit módon kiszámolni a torzítást és a varianciát, ezért gyakran keresztvalidációs módszereket alkalmazunk a modell teljesítményének értékelésére.
+#v(0.3cm)
+Ahhoz, hogy kiértékeljük egy modell teljesítményét, szükségünk van egy mérőszámra, amely megmutatja, hogy a modell mennyire jól teljesít a tanító adathalmazon vagy egy új, ismeretlen adathalmazon. A regressziós problémák esetén a leggyakrabban használt mérőszámok közé tartozik a négyzetes hiba (MSE):
+$
+op("MSE") = sum_(i=1)^n (y_i - hat(f)(x_i))^2 / n
+$
+
+ahol $y_i$ a valódi érték, $hat(f)(x_i)$ a modell által adott előrejelzés, és $n$ a minta mérete. Minél kisebb az MSE értéke, annál jobb a modell teljesítménye. Ezt az értéket a tanító adatra tudjuk kiszámolni, de a modell választásánál az új, ismeretlen adatokon való teljesítmény a fontosabb. Mivel a tanító adaton való teljesítmény nem feltétlenül tükrözi az új adatokon való teljesítményt, nem választhatjuk a legkisebb MSE-vel rendelkező módszert. Sőt, ha a tanító adaton túl jól teljesít egy módszer, akkor fennáll a veszélye annak, hogy a modell túltanult (overfitting), vagyis a modell nemcsak a valódi mintázatot tanulta meg, hanem a tanító adathalmaz zaját is, így az új adatokon való teljesítménye gyenge lesz.
+\
+
+Tehát ebben az esetben is fennáll a torzítás-variancia kompromisszum esetéhez hasonló összefüggés: a modell komplexitásának növelésével a tanító adaton az MSE monoton csökken, azonban a teszt adaton az MSE egy bizonyos pont után növekedni kezd, mivel a modell túltanul. (@overfitting)
+
+#show: lq.set-diagram(width: 12cm, height: 8cm)
+#show: lq.set-diagram(
+  xaxis: (format-ticks: none),
+  yaxis: (format-ticks: none)
+)
+#show: lq.set-diagram(
+  xaxis: (mirror: false),
+  yaxis: (mirror: false),
+)
+
+
+#figure(
+  lq.diagram(
+    xlabel: "Model komplexitása",
+    ylabel: "Hiba",
+    xaxis: (ticks: none),
+    yaxis: (ticks: none),
+    legend: (position: right, dy: 4em),
+    lq.plot(x, x => 8 * calc.exp(-0.4 * x) + 0.5, label: "Tanító adat MSE", stroke:(thickness: 2pt), mark:none),
+    lq.plot(x, x => 8 * calc.exp(-0.4 * x) + 0.5 + 0.12 * calc.pow(x - 1, 2) + 0.3, label: "Teszt adat MSE", stroke:(thickness: 2pt), mark:none),
+    lq.plot((3.86, 3.86), (0, 10), stroke: (dash: "dashed", paint: green, thickness: 1pt), mark:none),
+    lq.scatter((3.86,), (3.49,), mark: "o", label: "Optimum pont"),
+),
+caption: [\Túlillesztés illusztrációja],
+gap: 0.5cm,
+) <overfitting>
+
+
 
 #pagebreak()
 = Irodalomjegyzék
