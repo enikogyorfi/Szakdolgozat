@@ -779,6 +779,14 @@ A @decision_tree_example egy döntési fa példát mutata be: el kell dönteni, 
 - Belső csomópontok: Ha az "időjárás" értéke alapján nem tudunk dönteni, további változókat kell vizsgálnunk. Például, ha az időjárás "Napos", akkor a következő változó, amit megvizsgálunk, a "Páratartalom".
 - Levélcsomópontok: Ezek a végső döntéseket jelölik, például ha az időjárás "Napos" és a páratartalom "Magas", akkor a modell azt javasolja, hogy ne játsszunk a szabadban ("Nem").
 
+=== A döntési fák tanítása
+
+A fák építése mind a klasszifikációs, mind a regressziós problémák esetében rekurzív módon történik. A fák építése "mohó" módon történik, felülről lefelé haladva választjuk ki a legjobb vágást, amely az adott pillanatban a legjobban szétválasztja az adatokat. A legjobb vágás kiválasztásához különböző mérőszámokat használunk, ezek a következők lehetnek:
+- _Gini-index_: Klasszifikációs problémák esetén használju. Azt méri, hogy mekkora eséllyel osztályoznánk félre egy véletlenszerűen kiválasztott elemet, ha a részhalmaz eloszlása alapján osztályoznánk. Minél kisebb a Gini-index, annál tisztább a részhalmaz.
+$
+G(m) = sum_(k=1)^K p_(m k) (1 - p_(m k)) = 1 - sum_(k=1)^K p_(m k)^2,
+$
+- _Entrópia_: Szintén klasszifikációs problémák esetén használjuk.
 
 #pagebreak()
 = Irodalomjegyzék
