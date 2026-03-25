@@ -786,6 +786,7 @@ A fák építése mind a klasszifikációs, mind a regressziós problémák eset
 $
 G(m) = sum_(k=1)^K p_(m k) (1 - p_(m k)) = 1 - sum_(k=1)^K p_(m k)^2,
 $
+ahol $p_(m k)$ a $k$-adik osztályba tartozó elemek aránya a $m$-edik részhalmazban.
 - _Entrópia_: Szintén klasszifikációs problémák esetén használjuk.
 
 #pagebreak()
