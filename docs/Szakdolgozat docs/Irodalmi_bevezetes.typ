@@ -8,6 +8,8 @@
 #import "@preview/simple-plot:0.3.0": *
 #import "@preview/simple-plot:0.3.0": plot
 #import "@preview/lilaq:0.6.0" as lq
+#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge, shapes
+
 // this will automatically load predefined styled environments
 
 #show ref: theoretic.show-ref
@@ -787,7 +789,113 @@ $
 G(m) = sum_(k=1)^K p_(m k) (1 - p_(m k)) = 1 - sum_(k=1)^K p_(m k)^2,
 $
 ahol $p_(m k)$ a $k$-adik osztályba tartozó elemek aránya a $m$-edik részhalmazban.
-- _Entrópia_: Szintén klasszifikációs problémák esetén használjuk.
+- _Entrópia_: Szintén klasszifikációs problémák esetén használjuk. Azt méri, hogy mekkora információt nyerünk egy adott vágással. Minél nagyobb az entrópia csökkenése, annál jobb a vágás.
+$
+H(m) = - sum_(k=1)^K p_(m k) log(p_(m k)),
+$
+ahol $p_(m k)$ a $k$-adik osztályba tartozó elemek aránya a $m$-edik részhalmazban.
+- _Négyzetes hiba_: Regressziós problémák esetén használjuk. Azt mérjük, hogy a vágás utáni részhalmazban mekkora az a tényleges válaszértékek és a részhalmaz átlaga közötti eltérések negyzetösszege. Minél kisebb ez az érték, annál jobb a vágás.
+$
+op("MSE(m)") = 1/n_m sum_(i=1)^m (y_i - hat(y)_m)^2,
+$
+ahol $n_m$ a $m$-edik részhalmazban lévő elemek száma, $y_i$ a tényleges válaszérték, és $hat(y)_m$ a részhalmaz átlaga.
+
+A döntési fák esetén ügyelni kell arra, hogy a fa ne nőjön túl mélyre, mert ez túltanuláshoz vezethet. Erre megoldás lehet a fa vágása (pruning). Kétfő vágási módszert alkalmaznak a gyakorlatban:
+- _Előmetszés (prepruning)_: A fa építése során már a vágás kiválasztásánál figyelembe vesszük a vágás utáni részhalmazok méretét, és csak akkor hajtjuk végre a vágást, ha a részhalmazok mérete egy bizonyos küszöbérték fölött van.
+- _Utólagos metszés (postpruning)_: Először egy teljes fát építünk, majd utólagosan, alulról felfelé haladva metszük vissza a fát.
+
+== Ensemble módszerek
+
+Az ensemble módszerek használata során több gyenge modellt kombinálunk egy erősebb modell lérehozásához. Két fő típusát különböztetjük meg:
+- _Bagging_: A bagging során a tanító adatból bootstrap (visszatevéses mintavétellel) több új adathalmazt hounk létre, majd mindegyiket tanítunk egy gyenge modellt (példáil egy metszés nélküli döntési fát). Majd egyesítjük a modellek előrejelzéseit, klasszifikáció esetén többségi szavazással, regresszió esetén pedig átlagolással. Mivel egy mély fának alacsony a torzítása, de magas a varianciája, ezért a bagging segítségével csökkenthetjük a varianciát anélkül, hogy a torzítást növelnénk.
+- _Boosting_: Míg a bagging egymástól függetlenül, párhuzamosan épít fákat, addig a boosting során szekvenciálisan építjük a fákat. Minden új fa a korábbi fák információit használja fel és a a korábbi fák által helytelenül osztályzott vagy előrejelzett megfigyelésekre helyezi a hangsúlyt, azaz ezeket a megfigyeléseket nagyobb súllyal veszi figyelembe a tanítás során. 
+
+
+=== Random Forest
+
+Ensemble módszer, amely a bagging elvén alapul és nagyszámú, egymástól független döntési fát épít. A módszer regressziós és klasszifikációs problémák esetén is használható. A Random Forest során minden egyes fa építésekor a változók egy véletlenszerű részhalmazát választjuk ki, és csak ezek közül választjuk ki a legjobb vágást. 
+
+#let dt-icon(label) = align(center, {
+  diagram(
+    spacing: 0.65em,
+    node-stroke: none,
+    edge-stroke: 0.8pt + black,
+
+    node((0, 0), [], shape: shapes.circle, fill: black, name: <r>, width: 3.5pt, height: 3.5pt),
+    node((-0.7, 0.7), [], shape: shapes.circle, fill: black, name: <l1>, width: 3.5pt, height: 3.5pt),
+    node((0.7, 0.7), [], shape: shapes.circle, fill: black, name: <r1>, width: 3.5pt, height: 3.5pt),
+
+    node((-1, 1.4), [], shape: shapes.circle, fill: black, name: <l2>, width: 3pt, height: 3.5pt),
+    node((-0.4, 1.4), [], shape: shapes.circle, fill: black, name: <r2>, width: 3pt, height: 3.5pt),
+    node((1, 1.4), [], shape: shapes.circle, fill: black, name: <r3>, width: 3pt, height: 3.5pt),
+
+    edge(<r>, <l1>, "-"),
+    edge(<r>, <r1>, "-"),
+    edge(<l1>, <l2>, "-"),
+    edge(<l1>, <r2>, "-"),
+    edge(<r1>, <r3>, "-"),
+  )
+  text(size: 10pt, weight: "bold")[#label]
+})
+
+#figure(
+diagram(
+  spacing: 2em,
+  node-stroke: 0.7pt + black,
+  edge-stroke: 0.7pt + black,
+
+
+  node((-2, 0), text(size: 12pt, style: "italic")[Tanító\ Adat], stroke: none),
+  node((-1, 0), [D], shape: shapes.cylinder, fill: blue.lighten(90%), name: <D>),
+  node((0, 0), text(size:12pt)[Bagging /\ Randomizáció], shape: shapes.hexagon, fill: yellow.lighten(90%), name: <random>),
+
+  edge(<D>, <random>, "->"),
+
+  // A szétágazási pont
+  node((0, 0.6), [], stroke: none, fill: none, name: <split>),
+  edge(<random>, <split>, "-"),
+
+  // Dataset nodes
+  node((-3.5, 1), text(size: 12pt, style: "italic")[Bootstrap\ Minták], stroke: none),
+  node((-2.2, 1), [$D_1$], shape: shapes.cylinder, fill: blue.lighten(90%), name: <D1>),
+  node((-0.7, 1), [$D_2$], shape: shapes.cylinder, fill: blue.lighten(90%), name: <D2>),
+  node((0.4,1 ), text(size:18pt)[...], stroke: none, name: <dots-d>),
+  node((2.3, 1), [$D_t$], shape: shapes.cylinder, fill: blue.lighten(90%), name: <D3>),
+
+  // Élek a szétágazástól a Dataset-ekig
+  edge(<split>, <D1>, "->", corner-radius: 0.4em),
+  edge(<split>, <D2>, "->", corner-radius: 0.4em),
+  edge(<split>, <D3>, "->", corner-radius: 0.4em),
+
+  // Modell (fa) nodes
+  node((-3.5, 2.4), text(size: 12pt, style: "italic")[Modellek], stroke: none),
+  node((-2.2, 2.4), dt-icon($T_1$), shape: shapes.hexagon, fill: green.lighten(90%), name: <T1>, width: 4em, height: 3.6em),
+  node((-0.7, 2.4), dt-icon($T_2$), shape: shapes.hexagon, fill: green.lighten(90%), name: <T2> , width: 4em, height: 3.6em),
+  node((0.4, 2.4), text(size:18pt)[...], stroke: none, name: <dots-t>),
+  node((2.3, 2.4), dt-icon($T_t$), shape: shapes.hexagon, fill: green.lighten(90%), name: <T3> , width: 3.8em, height: 3.6em),
+
+  // Dataset -> Modell élek
+  edge(<D1>, <T1>, "->"),
+  edge(<D2>, <T2>, "->"),
+  edge(<D3>, <T3>, "->"),
+
+  // Aggregation/Majority vote rész
+  node((-3.5, 4), text(size: 12pt, style: "italic")[Aggregáció], stroke: none),
+  node((0.1, 4), text(size: 12pt)[Többségi szavazás /\ Átlag], shape: shapes.hexagon, fill: orange.lighten(90%), name: <vote>, width: 10em, height: 2.4em),
+
+  edge(<T1>, <vote>, "->", corner-radius: 0.4em),
+  edge(<T2>, <vote>, "->", corner-radius: 0.4em),
+  edge(<T3>, <vote>, "->", corner-radius: 0.4em),
+
+  node((0.1, 5), text(size: 12pt)[Osztályozás /\ Előrejelzés], shape: shapes.hexagon, fill: orange.lighten(90%),  name: <pred>, width: 7em, height: 2.8em),
+  edge(<vote>, <pred>, "->"),
+),
+caption: [Random Forest módszer vázlatos ábrája],
+gap: 0.5cm,
+)
+
+== Idősorok elemzése
+
 
 #pagebreak()
 = Irodalomjegyzék
