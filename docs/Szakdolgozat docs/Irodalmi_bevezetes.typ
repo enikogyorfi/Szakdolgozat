@@ -813,7 +813,7 @@ Az ensemble módszerek használata során több gyenge modellt kombinálunk egy 
 
 === Random Forest
 
-Ensemble módszer, amely a bagging elvén alapul és nagyszámú, egymástól független döntési fát épít. A módszer regressziós és klasszifikációs problémák esetén is használható. A Random Forest során minden egyes fa építésekor a változók egy véletlenszerű részhalmazát választjuk ki, és csak ezek közül választjuk ki a legjobb vágást. 
+Ensemble módszer, amely a bagging elvén alapul és nagyszámú, egymástól független döntési fát épít. A módszer regressziós és klasszifikációs problémák esetén is használható. A Random Forest során minden egyes fa építésekor a változók egy véletlenszerű részhalmazát választjuk ki, és csak ezek közül választjuk ki a legjobb vágást. (@random_forest)
 
 #let dt-icon(label) = align(center, {
   diagram(
@@ -892,8 +892,15 @@ diagram(
 ),
 caption: [Random Forest módszer vázlatos ábrája],
 gap: 0.5cm,
-)
+)<random_forest>
 
+Minden fát a lehető legnagyobbra növesztünk, azaz metszés nélkül építjük. A bagging esetében előfordulhat, hogyha van egy nagyon erős változó, akkor a tanított fák közül sok ezt az erős változót fogja választani a legelső vágáshoz, így a fák hasonlóak lesznek egymáshoz, nem lesznek függetlenek, így a variancia csökkentése sem lesz olyan hatékony. A Random Forest esetében viszon csak csak egy véletlen $m$ elemű részhalmazt választunk a $p$ változoból, így a vágások $(p-m)/(p)$ arányában a legerősebb változó nem lesz kiválasztva, így a fák nagyobb mértékben lesznek különbözőekés és függetlenek, így a variancia csökkentése is hatékonyabb lesz.
+A modell hiperparaméterei közé tartozik a minimális csomópontok száma és a változókból kiválasztott részhalmaz mérete. Az m paraméter értékét gyakran a gyakorlatban $sqrt(p)$-re (klasszifikációs problémák esetén) vagy $p/3$-ra (regressziós problémák esetén) állítják be, de ez a probléma jellegétől függően változhat. A minimális csomópontok számát klasszifikációs problémák esetén gyakran 1-re, regressziós problémák esetén pedig 5-re állítják be, de ez is a probléma jellegétől függően változhat. A Random Forest módszer nagy előnye, hogy nem érzékeny a fák számára, így általában a nagy számú fa építése nem vezet túltanuláshoz, ahogy egyre több fát adunk a modellhez, a hibaartás csökken, és egy bizonyos pont után stabilizálódik.
+\
+Random Forest esetén, mivel minden fa egy bootstrap mintán tanul, a tanító adathalmaz körülbelül egyharmada minden fa esetében kimarad a tanításból, ezeket a kimaradt pontokat nevezzük out-of-bag (OOB) pontoknak. Ezt felhasználva a modell teljesítményét is értékelhetjük, anélkül, hogy külön teszt adathalmazt kellene fenntartanunk. A hibabecsléshez minden egyes megfigyelés esetén kiszámoljuk a fák előrejelzését, amelyek nem tanultak az adott megfigyelésen (azaz azok a fák, amelyeknél az adott megfigyelés OOB pont), majd ezeket az előrejelzéseket átlagoljuk (regresszió esetén) vagy többségi szavazással egyesítjük (klasszifikáció esetén), és összehasonlítjuk a valódi értékekkel.
+A hagyományos döntési fákkal szemben a Random Forest kevésbé átlátható, de többféle mutatóval is értékelhetjük a változók fontosságát, például a csomópontok tisztaságának növekedése alapján, vagy az OOB hibabecslés alapján, amely megmutatja, hogy egy adott változó kizárása hogyan befolyásolja a modell teljesítményét.
+
+ 
 == Idősorok elemzése
 
 
