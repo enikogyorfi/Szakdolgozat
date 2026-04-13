@@ -9,6 +9,7 @@
 #import "@preview/simple-plot:0.3.0": plot
 #import "@preview/lilaq:0.6.0" as lq
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge, shapes
+#import "@preview/cetz:0.3.4": canvas, draw
 
 // this will automatically load predefined styled environments
 
@@ -799,7 +800,7 @@ A gyakorlatban a tanító adaton az MSE értékét meg tudjuk határozni, de a t
 == Döntési fák
 
 A fa-alapú módszerek egy jelentős és széles körben használt osztálya a gépi tanulási algoritmusoknak. Ezek a módszerek könnyen értelmezhető modelleket hoznak létre, amelyek jól teljesítenek mind klasszifikációs, mind regressziós problémák esetén.
- Ezek a módszerek a bementeti változók terét egyszerű, jellemzően téglalap alakú régókra osztják fel, rétegzik azokat. Ha egy új megfigyelést szeretnénk osztályozni vagy a hozzá tartozó értéket előrejelezni, akkor a modell megvizsgálja, hogy a megfigyelés melyik régióba esik, és a régióba eső tanuló adatok között előforduló leggyakoribb osztályt vagy a régióba eső tanuló adatok átlagát használja a predikcióhoz.
+ Ezek a módszerek a bementeti változók terét egyszerű, jellemzően tégla alakú régókra osztják fel, rétegzik azokat. Ha egy új megfigyelést szeretnénk osztályozni vagy a hozzá tartozó értéket előrejelezni, akkor a modell megvizsgálja, hogy a megfigyelés melyik régióba esik, és a régióba eső tanuló adatok között előforduló leggyakoribb osztályt vagy a régióba eső tanuló adatok átlagát használja a predikcióhoz.
 A modell struktúrája:
 - Gyökércsomópont: A legfelső szint, ami a teljes adatot reprezentálja.
 - Belső csomópontok: Egy-egy bemeneti változó (feature) alapján végzett döntést reprezentálnak, amelyek az adatot két vagy több részre osztják.
@@ -812,38 +813,117 @@ A modell struktúrája:
     node-stroke: 1pt + black,
     edge-stroke: 1pt + black,
 
-    node((0, 0), [Időjárás], shape: shapes.diamond, fill: blue.lighten(80%), name: <outlook>, inset: 1em),
+    node((0, 0), [Elhelyezkedés], shape: shapes.diamond, fill: blue.lighten(80%), name: <outlook>, inset: 1em),
 
-    node((-1.5, 1), [Páratartalom], shape: shapes.diamond, fill: blue.lighten(80%), name: <humidity>, inset: 1em),
-    node((0, 1.5), [Igen], shape: shapes.pill, fill: green.lighten(80%), name: <yes_overcast>, inset: 1em),
-    node((1.5, 1.3), [Szél], shape: shapes.diamond,fill: blue.lighten(80%), name: <wind>, inset: 1em),
+    node((-1.5, 1), [Méret], shape: shapes.diamond, fill: blue.lighten(80%), name: <humidity>, inset: 1em),
+    node((0, 1.5), [58], shape: shapes.pill, fill: rgb("#fff2cc"), name: <yes_overcast>, inset: 1em),
+    node((1.5, 1.3), [Állapot], shape: shapes.diamond,fill: blue.lighten(80%), name: <wind>, inset: 1em),
 
-    node((-2.5, 2.3), [Nem], shape: shapes.pill, fill: red.lighten(80%), name: <no_high>, inset: 1em),
-    node((-1, 2.3), [Igen], shape: shapes.pill, fill: green.lighten(80%), name: <yes_normal>, inset: 1em),
-    node((1, 2.3), [Nem], shape: shapes.pill, fill: red.lighten(80%), name: <no_strong>, inset: 1em),
-    node((2.6, 2.3), [Igen], shape: shapes.pill, fill: green.lighten(80%), name: <yes_weak>, inset: 1em),
+    node((-2.5, 2.3), [65], shape: shapes.pill, fill: green.lighten(80%), name: <no_high>, inset: 1em),
+    node((-1, 2.3), [95], shape: shapes.pill, fill: blue.lighten(80%), name: <yes_normal>, inset: 1em),
+    node((1, 2.3), [40], shape: shapes.pill, fill: red.lighten(80%), name: <no_strong>, inset: 1em),
+    node((2.6, 2.3), [70], shape: shapes.pill, fill: rgb("#d9d2e9"), name: <yes_weak>, inset: 1em),
 
 
-    edge(<outlook>, <humidity>,  [Napos], label-pos: 0.5, "-|>"),
-    edge(<outlook>, <yes_overcast>,  [Borult], label-pos: 0.5, "-|>"),
-    edge(<outlook>, <wind>,  [Eső], label-pos: 0.5, "-|>"),
+    edge(<outlook>, <humidity>,  [Belváros], label-pos: 0.5, "-|>"),
+    edge(<outlook>, <yes_overcast>,  [Külváros], label-pos: 0.5, "-|>"),
+    edge(<outlook>, <wind>,  [Vidék], label-pos: 0.5, "-|>"),
 
-    edge(<humidity>, <no_high>,  [Magas], label-pos: 0.5, "-|>"),
-    edge(<humidity>, <yes_normal>,  [Normál], label-pos: 0.5, "-|>"),
+    edge(<humidity>, <no_high>,  [Kicsi], label-pos: 0.5, "-|>"),
+    edge(<humidity>, <yes_normal>,  [Nagy], label-pos: 0.5, "-|>"),
 
-    edge(<wind>, <no_strong>,  [Erős], label-pos: 0.5, "-|>"),
-    edge(<wind>, <yes_weak>,  [Gyenge], label-pos: 0.5, "-|>"),
+    edge(<wind>, <no_strong>,  [Rossz], label-pos: 0.5, "-|>"),
+    edge(<wind>, <yes_weak>,  [Jó], label-pos: 0.5, "-|>"),
    
 
   ),
     caption: [Döntési fa példa],
     gap: 0.5cm,
     )<decision_tree_example>
-A @decision_tree_example egy döntési fa példát mutata be: el kell dönteni, hogy egy adott napon játszunk-e a szabadban az időjárás alapján. A döntési fa struktúrája a következő:
- - A gyökércsomópontban az időjárás szerepel, ez a döntési folyamat kiindulópontja. A modell a tanítás során ezt a változót találta a legfontosabbnak, ez bontja fel legjobban az adatokat.
+A @decision_tree_example egy döntési fa példáját mutatja be: lakások árát becsüli meg különböző jellemzők alapján. A döntési fa struktúrája a következő:
+ - A gyökércsomópontban az elhelyezkedés szerepel, ez a döntési folyamat kiindulópontja. A modell a tanítás során ezt a változót találta a legfontosabbnak, ez bontja fel legjobban az adatokat.
  - Élek: A lehetséges állapotokat jelölik.
-- Belső csomópontok: Ha az "időjárás" értéke alapján nem tudunk dönteni, további változókat kell vizsgálnunk. Például, ha az időjárás "Napos", akkor a következő változó, amit megvizsgálunk, a "Páratartalom".
-- Levélcsomópontok: Ezek a végső döntéseket jelölik, például ha az időjárás "Napos" és a páratartalom "Magas", akkor a modell azt javasolja, hogy ne játsszunk a szabadban ("Nem").
+- Belső csomópontok: Ha az "elhelyezkedés" értéke alapján nem tudunk dönteni, további változókat kell vizsgálnunk. Például, ha a lakás a belvárosban helyezkedik el, akkor a következő változó, amit megvizsgálunk, a "Méret".
+- Levélcsomópontok: Ezek a végső döntéseket jelölik, például ha a lakás a belvárosban helyezkedi el és a mérete "Nagy", akkor a modell szerint a lakás ára 95 millió forint.
+
+#figure(
+  canvas({
+    import draw: *
+
+    let x0 = 0
+    let x1 = 4
+    let x2 = 8
+    let x3 = 12
+
+    let y0 = 0
+    let y1 = 3
+    let y2 = 6
+    let y3 = 9
+
+    // Külső keret
+    rect((x0, y0), (x3, y3), stroke: 1pt + black)
+
+    // Régiók
+    // Belváros + kicsi -> 65
+    rect((x0, y0), (x1, y1), fill: rgb("#d9ead3"), stroke: 0.8pt + black)
+
+    // Belváros + nagy -> 95
+    rect((x1, y0), (x3, y1), fill: rgb("#cfe2f3"), stroke: 0.8pt + black)
+
+    // Külváros -> 58
+    rect((x0, y1), (x3, y2), fill: rgb("#fff2cc"), stroke: 0.8pt + black)
+
+    // Vidék + rossz -> 40
+    rect((x0, y2), (x2, y3), fill: rgb("#f4cccc"), stroke: 0.8pt + black)
+
+    // Vidék + jó -> 70
+    rect((x2, y2), (x3, y3), fill: rgb("#d9d2e9"), stroke: 0.8pt + black)
+
+    // Osztóvonalak
+    line((x0, y1), (x3, y1), stroke: 1pt + black)
+    line((x0, y2), (x3, y2), stroke: 1pt + black)
+
+    // Belváros sávon belüli vágás: Méret
+    line((x1, y0), (x1, y1), stroke: 1pt + black)
+
+    // Vidék sávon belüli vágás: Állapot
+    line((x2, y2), (x2, y3), stroke: 1pt + black)
+
+    // Tengelyek
+    line((x0, y0), (x3 + 1, y0), mark: (end: ">"), stroke: 1pt + black)
+    line((x0, y0), (x0, y3 + 1), mark: (end: ">"), stroke: 1pt + black)
+
+    // Tengelyfeliratok
+    content((x3 + 1.1, y0 - 0.5), [Másodlagos változó])
+    content((x0 - 0.2, y3 + 1.1), [Elhelyezkedés])
+
+    // Y-tengely kategóriacímkék
+    content((x0 - 1.2, 1.5), [Belváros])
+    content((x0 - 1.1, 4.5), [Külváros])
+    content((x0 - 0.7, 7.5), [Vidék])
+
+    // X-tengely szakaszcímkék
+    content((2, y0 - 0.6), [kicsi / rossz])
+    content((8, y0 - 0.6), [nagy / jó])
+
+    // Csomópont-logika jelzése
+    content((4.48, y1 - 0.2), [Méret szerinti bontás Belvárosban])
+    content((8, y2 + 0.25), [Állapot szerinti bontás Vidéken])
+
+    // Régióértékek
+    content((2, 1.5), [*65*])
+    content((8, 1.5), [*95*])
+    content((6, 4.5), [*58*])
+    content((4, 7.5), [*40*])
+    content((10, 7.5), [*70*])
+
+  }),
+  caption: [A bemeneti tér régiókra bontása a regressziós döntési fa szerint.],
+  gap: 0.5cm
+) <dontesi_fa_regio>
+
+A @dontesi_fa_regio a regressziós döntési fa által létrehozott régiókat szemlélteti. Minden színezett tartomány egy levélcsomópontnak felel meg, és az ott szereplő szám az adott régióhoz rendelt becsült célérték. 
+#pagebreak()
 
 === A döntési fák tanítása
 
