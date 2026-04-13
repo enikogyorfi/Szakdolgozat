@@ -17,6 +17,7 @@
 #set math.equation(numbering: "(1)")
 #show: scribe
 
+
 #let stmt = counter("stmt")
 #let def = counter("def")
 #let prop = counter("prop")
@@ -69,7 +70,7 @@
 
 #set text(lang: "hu", size: 12pt)
 #set text(font: "Latin Modern Roman")
-#set page(numbering: "1")
+
 #set page("a4")
 #set heading(numbering: "1.1")
 #show heading.where(level: 1): set block(
@@ -197,7 +198,12 @@
 #pagebreak()
 #outline(title: [Tartalomjegyzék])
 #pagebreak()
-
+#set page(
+  footer: context [
+    #align(center, counter(page).display("1"))
+  ]
+)
+#counter(page).update(1)
 = Bevezetés
 
 = A Sztochasztikus Folyamatok Elméleti Alapjai
@@ -213,7 +219,8 @@
 ] <def_elso>
 
 #definition[
-  A függvények egy halmaza által generált $sigma$-algebra a legkisebb $sigma$-algebra, amelyre vonatkozóan ezen függvények mind mérhetők.
+  Legyen $X$ egy $Omega$-n értelmezett függvényekből álló halmaz.
+  Az $X$ által generált $sigma$-algebra a legkisebb $sigma$-algebra, amelyre vonatkozóan ezen függvények mind mérhetők. Jelölése: $sigma(X)$.
 ] <def_masodik>
 
 #definition[
@@ -239,6 +246,14 @@ $
   @shreve2004 Legyen $X$ egy nem üres $Omega$ mintatéren értelmezett valószínűségi változó. Legyen $cal(G)$ az $Omega$ részhalmazainak egy $sigma$-algebrája. Ha a $sigma(X)$ minden halmaza eleme $cal(G)$-nek is, akkor azt mondjuk, hogy $X$ $cal(G)$-mérhető.
 ] <def_otodik>
 
+#definition[
+  @shreve2004 Legyen $f(t)$ egy $[0,T]$ intervallumon értelmezett függvény. Az $f$ kvadratikus variációját a $[0,T$ intervallumon a következő határértékkel definiáljuk:
+$
+    [f,f](T) = lim_(||Pi|| -> infinity) sum_(i=0)^(n-1) (f(t_(i+1)) - f(t_i))^2,
+$
+ahol $Pi = {0 = t_0 < t_1 < dots < t_n = T}$ egy partíciója a $[0,T]$ intervallumnak, és $||Pi|| = max_(0 <= i <= n-1) (t_(i+1) - t_i)$.
+]
+
 == Sztochasztikus folyamatok
 
 #definition[
@@ -248,7 +263,7 @@ $
 ] <def_hatodik>
 
 #definition[
-  @shreve2004 Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $(cal(F)(t))_(0 <= t <= T)$ filtráció. Legyen $X(t)$ egy valószínűségi változókból álló család, amelyet $t in [0,T]$ paraméter indexel. Azt mondjuk, hogy ez egy adaptált sztochasztikus folyamat, ha minden $t$-re az $X(t)$ valószínűségi változó $cal(F)(t)$-mérhető.
+  @shreve2004 Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $(cal(F)(t))_(0 <= t <= T)$ filtráció. Legyen $X(t)$ egy valószínűségi változókból álló család, amelyet $t in [0,T]$ paraméter indexel. Azt mondjuk, hogy $X(t)$ egy adaptált sztochasztikus folyamat az $cal(F(t))$-re nézve, ha minden $t$-re az $X(t)$ valószínűségi változó $cal(F)(t)$-mérhető.
 ] <def_hetedik>
 
 #definition[
@@ -262,11 +277,11 @@ $
 ] <def_nyolcadik>
 
 #definition[
-  Egy sztochasztikus folyamat $X = (X_t)_(t >= 0)$ Markov-folyamat, ha minden $0 <= s < t$ és minden Borel-mérhető $f: RR -> RR$ függvény esetén, ahol $E |f(X_t)| < infinity$, teljesül a következő feltétel:
-  $
-    E[f(X_t) | cal(F)_s] = E[f(X_t) | X_s].
-  $
-  Ahol $cal(F)_s$ az $X$-folyamat $s$ időpontig ismert információit tartalmazó $sigma$-algebra.
+@shreve2004 Legyen $(Omega, cal(F), P)$ egy valószínűségi mező, legyen $T$ egy rögzített pozitív szám és legyen $(cal(F)(t))_(0 <= t <= T)$ a $cal(F)$ $sigma$-algebráinak egy filtrációja. Az $X(t)_(0 <= t <= T)$ adaptált sztochasztikus folyamatot Markov-folyamatnak nevezzük, ha minden $0 <= s < t <= T$ és minden nemnegatív, Borel-mérhető $f$ függvény esetén létezik egy $g$ Borel-mérhető függvény, amelyre teljesül:
+$
+E[f(X(t)) | cal(F)(s)] = g(X(s))
+$
+
 ] <def_kilencedik>
 
 *Megjegyzés.* Tehát a Markov-folyamat jövőbeli állapota csak a jelenlegi állapottól függ, és független a múltbeli állapotoktól. Ebből következik, hogy az együttes valószínűségi sűrűség feltételes formája felírható átmeneti sűrűségek szorzataként:
@@ -441,7 +456,7 @@ Az integrál tulajdonságait a következő tétel foglalja össze:
   - *Kvadratikus variáció:* $[I,I](t)=integral_0^t X^2(u) dif u$.
 ] <thm_ito_integral_properties>
 
-Eddig azt vizsgáltuk, hogyan lehet értelmezni egy Brown-mozgásra vonatkozó integrált, és milyen tulajdonságokkal rendelkezik ez az integrál. Most vizsgáljuk meg, hogyan lehet értelmezni egy Brown-mozgás deriváltját. Tekintsük a következő kifejezést:
+Eddig azt vizsgáltuk, hogyan lehet értelmezni egy Brown-mozgásra vonatkozó integrált, és milyen tulajdonságokkal rendelkezik ez az integrál. Most vizsgáljuk meg, hogyan lehet értelmezni egy Brown-mozgás által meghatározott folyamat megváltozását. Tekintsük a következő kifejezést:
 $
   dif / (dif t) f(B(t)).
 $
@@ -483,6 +498,44 @@ $
   f(B(T)) - f(B(0)) = integral_0^T B(t) dif B(t) + 1/2 T.
 $
 Ez pontosan az Itô–Doeblin-formula egy speciális esete, amelyben a függvény csak a Brown-mozgás értékétől függ, és nem függ az időtől.
+\
+
+Eddig az Itô–Doeblin-formulát egy speciális esetre vizsgáltuk, nevezetesen a Brown-mozgásra.Azonban ez a formula általánosítható tetszőleges Itô- folyamatokre is.
+
+#definition[
+    @shreve2004 Legyen $B(t)$ egy Brown mozgás és $cal(F)$ a $B(t)$-hez tartozó filtráció. Az $X(t)$ folyamatot Itô-folyamatnak nevezzük, ha felírható a következő alapkban:
+$  X(t) = X(0) + integral_0^t mu(s) dif s + integral_0^t sigma(s) dif B(s), $
+ahol $mu(s)$ és $sigma(s)$ adaptált sztochasztikus folyamatok, amelyek kielégítik a megfelelő integrálhatósági feltételeket, és $X(0)$ egy adott kezdeti érték.
+] <def_tizenotodik>
+
+Tekintsünk egy általános Itô-folyamatot $X(t)$-t, amely kielégíti a következő SDE-t:
+$
+dif X(t) = mu(t) dif t + sigma(t) dif B(t).
+$
+Ekkor az Itô–Doeblin-formula kiterjeszthető az $X(t)$ folyamatra is, és a következőképpen írható fel:
+#theorem[
+  @shreve2004 Legyen $X(t)$ egy Itô-folyamat, amely kielégíti a következő SDE-t:
+  $
+    dif X(t) = mu(t, X(t)) dif t + sigma(t, X(t)) dif B(t),
+  $
+ és legyen $f(t,x) in C^2([0,infinity) times RR) $. Ekkor az $Y(t) = f(t, X(t))$ folyamatra teljesül a következő egyenlőség:
+$
+dif Y(t) = (diff f(t,X(t))) / (diff t) dif t + (diff f(t,X(t))) / (diff x) dif X(t) + 1/2 (diff^2 f(t,X(t))) / (diff x^2) (dif X(t))^2.
+$
+
+] <thm_ito_doeblin_general>
+
+A fenti tételben a $(dif X(t))^2$ kifejezés a következőképpen értelmezendő:
+$  (dif X(t))^2 = (mu(t, X(t)) dif t + sigma(t, X(t)) dif B(t))^2. $
+A következő egyenlőségek teljesülnek:
+- $(dif t)^2 = 0$,
+- $dif t dif B(t) = 0$,
+- $(dif B(t))^2 = dif t$.
+Ezeket az eredményeket összevonva kapjuk, hogy
+$  (dif X(t))^2 = sigma^2(t, X(t)) dif t. $
+Ezt az eredményt visszahelyettesítve a tétel állításába kapjuk, hogy
+$  dif Y(t) = (diff f(t,X(t))) / (diff t) dif t + (diff f(t,X(t))) / (diff x) dif X(t) + 1/2 (diff^2 f(t,X(t))) / (diff x^2) sigma^2(t, X(t)) dif t. $
+
 #pagebreak()
 
 == Geometriai Brown-mozgás
@@ -506,7 +559,7 @@ A következő tétel megmutatja, hogy a geometriai Brown-mozgás explicit megold
   ahol $mu$ és $sigma$ konstansok. Ekkor az $S(t)$ folyamat explicit megoldása a következőképpen írható fel:
   $
     S(t) = S(0) exp((mu - 1/2 sigma^2)t + sigma B(t)).
-  $
+  $ <exp_megoldas>
 ] <thm_gbm_solution>
 
 #proof[
@@ -580,7 +633,7 @@ lognormális eloszlású.]
 ] <prop_gbm_variance>
 
 #proof[
-A második momentum kiszámításához felhasználjuk:
+A második momentum kiszámításához felhasználjuk a @exp_megoldas[]. egyenlet szerinti $S(t)$ explicit megoldást:
 $  S^2(t) = S^2(0) exp(2(mu - 1/2 sigma^2)t + 2 sigma B(t)).
 $
 Ekkor:
@@ -645,17 +698,28 @@ Két fő kérdésre keresünk választ a gépi tanulás során:
 
 #v(0.3cm)
 A változóknak két fő típusát különböztetjük meg, lehetnek kvalitatív (minőségi) vagy kvantitatív (mennyiségi) változók. A kvalitatív változók kategóriákba, osztályokba sorolhatóak, például a nem, a szín vagy a márka. Ezzel szemben a kvantitatív változók számszerű értékeket vesznek fel, ilyen például a magasság, a súly vagy az ár. A célváltozó típusa alapján a gépi tanulási problémák lehetnek klasszifikációs vagy regressziós problémák.  Klasszifikáció esetén a célváltozó kvalitatív, és a modell célja, hogy egy adott bemeneti adat alapján megállapítsa a hozzá tartozó kategóriát. Regresszió esetén a célváltozó kvantitatív, és a modell célja, hogy egy adott bemeneti adat alapján megjósolja a hozzá tartozó számértéket.
-A határvonal a klasszifikációs és regressziós módszerek között azonaban nem mindig éles. A legkisebb négyzetek módszerét mennyiségi meghatározásra használjuk, a logisztikus regressziót pedig kvalitatív meghatározásra, de a KNN algoritmust, a döntési fákat mind a két probléma esetén használhatjuk.
+A határvonal a klasszifikációs és regressziós módszerek között azonaban nem mindig éles. A legkisebb négyzetek módszerét mennyiségi meghatározásra használjuk, a logisztikus regressziót pedig kvalitatív meghatározásra, de a KNN (K-Nearest Neighbors) algoritmust, a döntési fákat mind a két probléma esetén használhatjuk.
 
 Mindkét probléma esetén fontos vizsgálni a modell teljesítményét, hibáját. A várható hiba egy $x_0$ pontban a következőképpen írható fel:
 $
-E[(y_0 - hat(f)(x_0))^2] = op("Var")[hat(f)(x_0)] + (E[hat(f)(x_0)] - f(x_0))^2 + op("Var")[epsilon].
-$,
+E[(y_0 - hat(f)(x_0))^2] = E[(f(x_0) + epsilon - hat(f)(x_0))^2] = #<equate:revoke>
+\
+E[(f(x_0) - hat(f)(x_0))^2 + epsilon^2 + 2 (f(x_0) - hat(f)(x_0)) epsilon]=
+#<equate:revoke>\
+E[(f(x_0) - hat(f)(x_0))^2] + E[epsilon^2] + 2 E[(f(x_0) - hat(f)(x_0)) epsilon]= 
+\
+E[(f(x_0) - hat(f)(x_0))^2] + op("Var")[epsilon] + 2 E[epsilon] E[f(x_0)-hat(f)(x_0)]= #<equate:revoke> \
+E[(f(x_0)- E[hat(f)(x_0)] + E[hat(f)(x_0)] - hat(f)(x_0))^2] + op("Var")[epsilon] = #<equate:revoke>\
+E[(f(x_0) - E[hat(f)(x_0)])^2] + E[(E[hat(f)(x_0)] - hat(f)(x_0))^2] + op("Var")[epsilon] = #<equate:revoke> \
+ (E[hat(f)(x_0)] - f(x_0))^2 +op("Var")[hat(f)(x_0)]+ op("Var")[epsilon]
+  #<equate:revoke> \
+$
 ahol $hat(f)(x_0)$ a modell által adott előrejelzés, $f(x_0)$ a valódi értéke, és $epsilon$ a nem csökkenthető hiba. Tehát a várható hiba három összetevőből épül fel: a becslés varianciájából ($op("Var")[hat(f)(x_0)]$), a becslés torzításának négyzetéből ($(E[hat(f)(x_0)] - f(x_0))^2$) és a hibatag varianciájából ($op("Var")[epsilon]$).
+
 Ahhoz, hogy a várható hiba értékét minimalizáljuk, olyan módszert kell választanunk, amely egyszerre biztosít alacsonmy varianciát és alacsony torzítást.
  A variancia azt mutatja meg, hogy a modell előrejelzése mennyire érzékeny a tanító adathalmaz változásaira. Általánosságban elmondható, hogy a komplexebb modellek nagyobb varianciával rendelkeznek. A torzítás pedig abból fakad, hogy a modell nem képes pontosan megragadni a valódi függvény alakját, ez akkor fordulhat elő ha egy bonyolult problémát egy egyszerűbb modellel közelítünk. Például ha a változók közötti kapcsolat erősen nemlineáris, de egy lineáris modellt használunk, akkor a modell torzított lesz.
   Általában a kevésbé komplex modellek nagyobb torzítással rendelkeznek.
-  Tehát láthatjuk, hogy a modell komplexitásának növelése csökkenti a torzítást, de növeli a varianciát. Ez az úgynevezett torzítás-variancia kompromisszum.
+  Tehát láthatjuk, hogy a modell komplexitásának növelése csökkenti a torzítást, de növeli a varianciát. Ez az úgynevezett torzítás-variancia kompromisszum (bias-variance tradeoff).
   
 
 #show: lq.set-diagram(width: 12cm, height: 8cm)
@@ -684,14 +748,14 @@ Ahhoz, hogy a várható hiba értékét minimalizáljuk, olyan módszert kell v�
     lq.scatter((3.86,), (3.49,), mark: "o", label: "Optimum pont"),
 ),
 caption: [Torzítás-variancia kompromisszum illusztrációja],
-placement: top,
+
 gap: 0.5cm,
 ) <bias_variance_tradeoff>
 
 Az @bias_variance_tradeoff alapján látható, hogy a modell komplexitásának növelésével a torzítás csökken, de a variancia nő. Az ábrán is látható, hogy kezdetben a modell komplexitásának növelésével a torzítás gyorsabban csökken, mint ahogy a variancia nő, így a teljes hiba csökken. Azonban egy bizonyos pont után a variancia növekedése gyorsabb lesz, mint a torzítás csökkenése, így a teljes hiba növekedni kezd.
  Az optimális pont ott van, ahol a teljes hiba minimális. Valós helyzetben, mivel a valódi függvény nem ismert, nem tudjuk explicit módon kiszámolni a torzítást és a varianciát, ezért gyakran keresztvalidációs módszereket alkalmazunk a modell teljesítményének értékelésére.
 #v(0.3cm)
-Ahhoz, hogy kiértékeljük egy modell teljesítményét, szükségünk van egy mérőszámra, amely megmutatja, hogy a modell mennyire jól teljesít a tanító adathalmazon vagy egy új, ismeretlen adathalmazon. A regressziós problémák esetén a leggyakrabban használt mérőszámok közé tartozik a négyzetes hiba (MSE):
+Ahhoz, hogy kiértékeljük egy modell teljesítményét, szükségünk van egy mérőszámra, amely megmutatja, hogy a modell mennyire jól teljesít a tanító adathalmazon vagy egy új, ismeretlen adathalmazon. A regressziós problémák esetén a leggyakrabban használt mérőszámok közé tartozik az átlagos négyzetes hiba (MSE):
 $
 op("MSE") = sum_(i=1)^n (y_i - hat(f)(x_i))^2 / n
 $
