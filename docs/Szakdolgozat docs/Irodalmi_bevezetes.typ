@@ -1,3 +1,4 @@
+
 #import "@preview/scribe:0.2.0": *
 #import "@preview/mannot:0.3.2": *
 #import "@preview/physica:0.9.8": *
@@ -234,10 +235,12 @@
   Ekkor $f$ a $cal(Q)$ mérték $cal(P)$-re vonatkozó sűrűségfüggvénye.
 ] <def_harmadik>
 
+#box[
 *Megjegyzés.* Ebben az esetben, ha $E^(cal(P))$ és $E^(cal(Q))$ a két mérték szerinti várható értékek, akkor minden $cal(Q)$ szerint integrálható véletlen változóra $X$:
 $
   E^(cal(Q))[X] = integral_Omega X dif cal(Q) = integral_Omega X f dif cal(P) = E^(cal(P))[X f].
 $
+]
 
 #definition[
  @shreve2004 Legyen $Omega$ egy nemüres halmaz. Legyen $T$ egy rögzített pozitív szám, és tegyük fel, hogy minden $t in [0,T]$ esetén adott egy $cal(F)(t)$ $sigma$-algebra. Tegyük fel továbbá, hogy ha $s <= t$, akkor minden halmaz, amely eleme $cal(F)(s)$-nek, eleme $cal(F)(t)$-nek is. Ekkor a $0 <= t <= T$ paraméterű $cal(F)(t)$ $sigma$-algebrák gyűjteményét filtrációnak nevezzük.
@@ -1046,6 +1049,63 @@ A hagyományos döntési fákkal szemben a Random Forest kevésbé átlátható,
 
  
 == Idősorok elemzése
+
+Idősornak tekinthetünk minden olyan adatot, amelyet időpontokhoz renelünk és a megfigyelések között időbeli függés van, például a bűnügyi statisztikák is jellemzően idősorok.
+Az idősorok elemzése olyan módszereket foglal magában, amelyekkel az adatokból mintázatokat, trendeket lehet felismerni, valamint előrejelzéseket kézíthetünk.
+ Az idősorok elemzésének két fő célja van: a múltbeli adatok megértése és a jövőbeli értékek előrejelzése.
+Az idősorok egyik legfontosabb jellemzője, hogy az egymást követő megfigelések nem függetlenek. Ez a függőség lehet rövid távú, amikor a közelmúlt megfigyelései befolyásolják a jövőbeli értékeket, vagy hosszútávú, amikor trendek vagy szezonális mintázatok figyelhetők meg az adatokban. Akkor beszélhetünk trendről, ha az adatokban hosszú távú növekedés vagy csökkenés figyelhető meg, míg szezonális mintázat esetében az adatsort valamilyen ismétlődő ciklus jellemzi, például éves, havi vagy heti szinten.
+Ezek alapján az idősorok több, egymástól független komponensből állhatnak, tehát egy $Y_t$ idősor felírható a következőképpen:
+
+$
+Y_t = f(S_t, T_t, epsilon_t)
+$
+ahol $S_t$ a szezonális komponens, $T_t$ a trendkomponens, és $epsilon_t$ a maradéktag.
+\
+=== Alapfogalmak
+
+#definition[
+Egy idősor kovarianciája a következőképpen definiálható:
+$
+op("Cov")(X_t, X_(t+k)) = E[(X_t - E[X_t])(X_(t+k) - E[X_(t+k)])],
+$
+ahol $X_t$ az idősor $t$-edik megfigyelése, $E[X_t]$ az idősor $t$-edik megfigyelésének várható értéke, és $k$ a késleltetés (lag) értéke.
+]
+
+#definition[
+Egy idősor autokovarianciája a következőképpen definiálható:
+$gamma(h) = op("Cov")(X_t, X_(t+h)),
+$
+ahol $X_t$ az idősor $t$-edik megfigyelése, és $h$ a késleltetés (lag) értéke.
+]
+
+#definition[
+Egy idősor autokorrelációja a következőképpen definiálható:
+$rho(h) = gamma(h) / gamma(0),
+$
+]
+
+#definition[
+Egy idősor gyengén stacionáris, ha teljesül az alábbi három feltétel:
+1. Az idősor várható értéke időben állandó, azaz $E[X_t] = \mu$ minden $t$-re.
+2. $E[X_t^2] < infinity$ minden $t$-re.
+3. Két megfigyelés közötti kovariancia csak a köztük lévő időkülönbségtől ($h$) függ és nem a konkrét $t$ időponttól, azaz $op("Cov")(X_t, X_(t+h)) = gamma(h)$.]
+
+#definition[
+Egy idősor erősen stacionáris, ha minden $h$ és minden $t_1, t_2,...,t_n$ esetén teljesül, hogy $(X_t_1, X_t_2, ..., X_t_n)$ és $(X_(t_1+h), X_(t_2+h), ..., X_(t_n+h))$ azonos eloszlásúak.
+]
+A (gyenge) stacionaritás fonto sfogalom az idősorelemzésben, mivel a legtöbb klasszikus idősorelemzési módszer feltételezi, hogy az idősor (gyengén)stacionáris. A stacionaritás azt jelenti, hogy az idősor statisztikai tulajdonságai időben állandóak, így a múltbeli adatok alapján megbízhatóan előrejelezhetjük a jövőbeli értékeket.
+
+=== Klasszikus idősorelemzési módszerek
+
+A klasszikus idősorelemzési módszereket két nagy csoportra oszhatjuk: determinisztikus és sztochasztikus módszerekre. A determinisztikus módszerek a trendek és szezonális mintázatok modellezésére fókuszálnak, míg a sztochasztikus módszerek a véletlenszerű komponensek modellezésére helyezik a hangsúlyt.
+
+==== Determinisztikus és simításos módszerek
+
+==== Sztochasztikus módszerek
+
+=== ML és DL módszerek idősorok elemzésére
+
+== Metrikák és értékelési módszerek
 
 
 #pagebreak()
