@@ -1102,7 +1102,7 @@ A klasszikus idősorelemzési módszereket két nagy csoportra oszhatjuk: determ
 ==== Determinisztikus és simításos módszerek
 
 Ezek a módszerek az adatokban lévő véltlen ingadozás kiszűrésére, a mögöttes trendek és szezonális mintázatok kiemelésére szolgálnak. Ezek a módszerek olyan rekurzív becslésnek tekinthetők, amely során a múlbeli megfigyelések egy súlyozott kombinációját használjuk a jövőbeli érték becslésére. A súlyok meghatározása alapján különböző simítási módszereket különböztetünk meg:
-- Egyszerű exponenciális simítás: Olyan idősorok esetén használjuk, amelyekben nincs trend vagy szezonálsis mintázat. A módszer lényege, hogy a jövőbeli értéket a múltbeli értékek súlyozott átlagaként becsüljük, ahol a súlyok exponenciálisan csökkennek a múltbeli értékekre vonatkozóan. Az alapegyenlete a következőképpen írható fel:
+- *Egyszerű exponenciális simítás*: Olyan idősorok esetén használjuk, amelyekben nincs trend vagy szezonálsis mintázat. A módszer lényege, hogy a jövőbeli értéket a múltbeli értékek súlyozott átlagaként becsüljük, ahol a súlyok exponenciálisan csökkennek a múltbeli értékekre vonatkozóan. Az alapegyenlete a következőképpen írható fel:
  $
   hat(Y)_(t+1) = alpha Y_t + (1 - alpha) hat(Y)_t,
   $ ahol $alpha$ a simítási paraméter, amely értéke 0 és 1 között van, $Y_t$ az idősor $t$-edik megfigyelése, és $hat(Y)_t$ a $t$-edik időpontban becsült érték. Ebből megmutatható:
@@ -1110,7 +1110,7 @@ $
  hat(Y)_(t+1) = alpha sum_(h=0)^(infinity) (1 - alpha)^h Y_(t-h)
 $
 
-- Holt-Winters módszer: Olyan idősorok esetén használjuk, amelyekben trend és/vagy szezonális mintázat is megfigyelhető. A módszer három egyenletből áll, amelyek a szint, a trend és a szezonális komponens becslésére szolgálnak. A három egyenlet a következőképpen írható fel:
+- *Holt-Winters módszer*: Olyan idősorok esetén használjuk, amelyekben trend és/vagy szezonális mintázat is megfigyelhető. A módszer három egyenletből áll, amelyek a szint, a trend és a szezonális komponens becslésére szolgálnak. A három egyenlet a következőképpen írható fel:
 $
 ell_t = alpha (Y_t - s_(t-m)) + (1-alpha)(ell_(t-1) + b_(t-1)),
 \
@@ -1126,9 +1126,61 @@ $ ahol $h$ a előrejelzés időtávja.
 
 ==== Sztochasztikus módszerek
 
-=== ML és DL módszerek idősorok elemzésére
+A klasszikus sztochasztikus megközelítés alapját a Box-Jenkins módszertan képezi, amely az autoregresszív és mozgóátlag modellekre épül. Ezek a modellek nemcsak a determinista komponenseket, hanem a véletlen ingadozásokat is modellezik. Ezek a módszerek feltételezik, hogy az idősor stacionáris, így gyakran szükséges az idősor differenciálása a stacionaritás eléréséhez.
+ - *Autoregresszív (AR) modellek*: Az AR modellekbe a jövőbeli értékek a múltbeli értékek lineáris kominációjakén áll elő:
+$
+Y_t = c + sum_(i=1)^p phi_i Y_(t-i) + epsilon_t,
+$
+ahol $Y_t$ az idősor $t$-edik megfigyelése, $c$ egy konstans, $phi_i$ az autoregresszív paraméterek, $p$ az autoregresszív rend, és $epsilon_t$ a hiba.
 
-== Metrikák és értékelési módszerek
+- *Mozgóátlag (MA) modellek*: Az MA modellek, szemben a determinisztikus mozgóátlag modelekkel, azt feltételezik, hogy a jövőbeli értékek nem a múltbeli tényleges értékektől, hanem a múltbeli előrejelzések hibáitól függnek:
+$
+Y_t = c + sum_(i=1)^q theta_i epsilon_(t-i) + epsilon_t,
+$
+ahol $Y_t$ az idősor $t$-edik megfigyelése, $c$ egy konstans, $theta_i$ a mozgóátlag paraméterek, $q$ a mozgóátlag rend, és $epsilon_t$ a hiba.
+
+- *ARMA és ARIMA modellek*: Ezek a modellek az AR és MA modellek kombinációi, az ARMA(p,q) modellt stacinárius idősorokra alkalmazzuk, míg az ARIMA(p,d,q) modell alkalmas nem stacionárius idősorokra is, ebben az esetben differenciálás segítségével érjük el a stacionaritást. A ARMA(p,q) modell a következőképpen írható fel:
+$
+Y_t = c + sum_(i=1)^p phi_i Y_(t-i) + sum_(j=1)^q theta_i epsilon_(t-j) + epsilon_t,
+$
+ahol $Y_t$ az idősor $t$-edik megfigyelése, $c$ egy konstans, $phi_i$ az autoregresszív paraméterek, $theta_i$ a mozgóátlag paraméterek, $p$ az autoregresszív rend, $q$ a mozgóátlag rend, és $epsilon_t$ a hiba.
+Az ARIMA modell esetén alkalmazott differenciálás:
+$
+Delta Y_T = Y_t - Y_(t-1),
+$
+Majd ezekre a differenciált értékekre alkalmazzuk az ARMA modellt, tehát d-edik rendű differenciálás esetén:
+$
+Delta^d Y_t = c + sum_(i=1)^p phi_i Delta^d Y_(t-i) + sum_(j=1)^q theta_i epsilon_(t-j) + epsilon_t,
+$
+ahol $Delta^d Y_t$ a d-edik rendű differenciált idősor $t$-edik megfigyelése.
+
+A szezonalitás modellezésére a SARIMA modellt használjuk, amely az ARIMA modell kiterjesztése, és a szezonális komponenseket is figyelembe veszi. Amennyiben más, külső tényezőket is szeretnénk figyelembe venni az előrejezés során, akkor az ARIMAX modellt használhatjuk, azonban ez csak akkor alkalmazható, ha lineáris kapcsolat van a külső tényezők és az idősor között, ami a gyakorlatban sokszor nem teljesül.
+
+=== Gépi tanulási és mélytanulási módszerek idősorok elemzésére
+
+Ahogy azt korábban láttuk a klasszikus idősor elemzési módszerek sok előfeltételezéssel élnek az adatokra vonatkozóan, például a stacionaritás feltételezése, valamint a lineáris kapcsolat feltételezése a külső tényezők és az idősor között. Ezek a feltételezések gyakran nem teljesülnek a valós adatok esetében, így ezek a módszerek nem mindig nyújtanak jó előrejelzéseket. Ezzel szemben a gépi tanulási (Machine Learning, ML) és mély tanulási (Deep Learning, DL) módszerek rugalmasabbak, képesek komplex, nemlineáris összefüggések modellezésére is. A gépi tanulási módszerek alkalmazásához az idősorokat általában felügyelt tanítási problémává alakítjuk, ahol a célváltozó a jövőbeli érték, a bemeneti változók pedig a múltbeli értékek és a külső tényezők:
+$
+Y_t = f(X_t) + epsilon_t,
+$
+ahol $Y_t$ a jövőbeli érték, $X_t$ a bemeneti változók, $f$ a modell, és $epsilon_t$ a hiba. A gépi tanulási módszerek (például a döntési fák, Random Forest, Gradient Boosting, Support Vector Machines) általában nem tudják értelmezni az idősorok időbeli függését, így új változókat kell bevezetni, amelyek kifejezik a múltbeli értékek hatását a jövőbeli értékekre, ilyen változók lehetnek például:
+- _Késleltetett (Lag) változók_: Ezek a múltbeli értékek, például $Y_(t-1)$, $Y_(t-2)$, ..., $Y_(t-p)$, ahol $p$ a késleltetés rendje.
+- _Mozgóátlag változók_: Ezek a múltbeli értékek átlagai, például $op("MA_p") = (Y_(t-1) + Y_(t-2) + ... + Y_(t-p)) / p$, ahol $p$ a mozgóátlag rendje.
+A gépi tanulási módszerek nagy előnye a klasszikus módszerekkel szemben, hogy képesek a nemlineáris összefüggések modellezésére, illetve képesek a változók közötti kölcsönhatások figyelembevételére is. A gépi tanulási módszerekkel szemben a mélytanulási módszerek képesek megragadni az adatok időbeliségét is, például a Recurrent Neural Networks (RNN) és a Long Short-Term Memory (LSTM) hálózatok.
+- _Recurrent Neural Networks (RNN)_: Olyan neurális hálózatok, amelyek képesek az adatok időbeli függését modellezni egy belső, rekurzív állapot ($h_t$) segítségével:
+$
+h_t = sigma(W_h h_(t-1) + W_x X_t + b),
+$
+ahol $h_t$ a rekurzív állapot a $t$-edik időpontban, $W_h$ és $W_x$ a súlyok, $b$ a torzítás (bias), és $sigma$ egy aktivációs függvény.
+- _Long Short-Term Memory (LSTM) hálózatok_: Olyan RNN-ek, amelyek képesek hosszú távú függőségek modellezésére is, egy speciális cella struktúrával, amely három kaput tartalmaz: a bemeneti kaput , a kimeneti kaput és a felejtési kaput. Ezek a kapuk szabályozzák az információ áramlását a cellában, így lehetővé téve a hosszú távú függőségek megragadását is.
+$
+i_t = sigma(W_i [h_(t-1), X_t] + b_i),
+\ 
+o_t = sigma(W_o [h_(t-1), X_t] + b_o),
+\ 
+f_t = sigma(W_f [h_(t-1), X_t] + b_f), 
+$
+
+Bár a mélytanulási módszerek rendelkeznek a legnagyobb kapacitással, gyakran nagy mennyiségű adatot és számítási erőforrást igényelnek a tanításhoz és black-box jellegük miatt az eredmények értelmezése is nehéz lehet. Ezzel szemben a gépi tanulási módszerek gyakran jó kompromisszumot jelentenek, nem igénylik a klasszikus módszerek szigorú előfeltételezéseit és alkalmazásukhoz nem szükséges annyi adat és számítási erőforrás, mint a mélytanulási módszerek esetén, valamint az eredmények értelmezését is megkönnyítik a mélytanulási módszerekkel szemben, például a döntési fák esetén a változók fontosságának értékelésével.
 
 
 #pagebreak()
