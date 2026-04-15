@@ -1097,9 +1097,32 @@ A (gyenge) stacionaritás fonto sfogalom az idősorelemzésben, mivel a legtöbb
 
 === Klasszikus idősorelemzési módszerek
 
-A klasszikus idősorelemzési módszereket két nagy csoportra oszhatjuk: determinisztikus és sztochasztikus módszerekre. A determinisztikus módszerek a trendek és szezonális mintázatok modellezésére fókuszálnak, míg a sztochasztikus módszerek a véletlenszerű komponensek modellezésére helyezik a hangsúlyt.
+A klasszikus idősorelemzési módszereket két nagy csoportra oszhatjuk: determinisztikus és sztochasztikus módszerekre. 
 
 ==== Determinisztikus és simításos módszerek
+
+Ezek a módszerek az adatokban lévő véltlen ingadozás kiszűrésére, a mögöttes trendek és szezonális mintázatok kiemelésére szolgálnak. Ezek a módszerek olyan rekurzív becslésnek tekinthetők, amely során a múlbeli megfigyelések egy súlyozott kombinációját használjuk a jövőbeli érték becslésére. A súlyok meghatározása alapján különböző simítási módszereket különböztetünk meg:
+- Egyszerű exponenciális simítás: Olyan idősorok esetén használjuk, amelyekben nincs trend vagy szezonálsis mintázat. A módszer lényege, hogy a jövőbeli értéket a múltbeli értékek súlyozott átlagaként becsüljük, ahol a súlyok exponenciálisan csökkennek a múltbeli értékekre vonatkozóan. Az alapegyenlete a következőképpen írható fel:
+ $
+  hat(Y)_(t+1) = alpha Y_t + (1 - alpha) hat(Y)_t,
+  $ ahol $alpha$ a simítási paraméter, amely értéke 0 és 1 között van, $Y_t$ az idősor $t$-edik megfigyelése, és $hat(Y)_t$ a $t$-edik időpontban becsült érték. Ebből megmutatható:
+$
+ hat(Y)_(t+1) = alpha sum_(h=0)^(infinity) (1 - alpha)^h Y_(t-h)
+$
+
+- Holt-Winters módszer: Olyan idősorok esetén használjuk, amelyekben trend és/vagy szezonális mintázat is megfigyelhető. A módszer három egyenletből áll, amelyek a szint, a trend és a szezonális komponens becslésére szolgálnak. A három egyenlet a következőképpen írható fel:
+$
+ell_t = alpha (Y_t - s_(t-m)) + (1-alpha)(ell_(t-1) + b_(t-1)),
+\
+b_t = beta (ell_t - ell_(t-1)) + (1-beta) b_(t-1),
+\
+s_t = gamma (Y_t - ell_t) + (1-gamma) s_(t-m),
+$
+ahol $ell_t$ a szint becslése, $b_t$ a trend becslése, $s_t$ a szezonális komponens becslése, $alpha$, $beta$ és $gamma$ a simítási paraméterek, amelyek értéke 0 és 1 között van, $Y_t$ az idősor $t$-edik megfigyelése, és $m$ a szezon hossza.
+Ekkor az előrejelzés az $t+h$ időpontban a következőképpen számítható:
+$
+hat(Y)_(t+h) = ell_t + h b_t + s_(t+h-m)),
+$ ahol $h$ a előrejelzés időtávja.
 
 ==== Sztochasztikus módszerek
 
