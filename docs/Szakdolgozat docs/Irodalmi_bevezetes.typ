@@ -1182,6 +1182,7 @@ $
 
 Bár a mélytanulási módszerek rendelkeznek a legnagyobb kapacitással, gyakran nagy mennyiségű adatot és számítási erőforrást igényelnek a tanításhoz és black-box jellegük miatt az eredmények értelmezése is nehéz lehet. Ezzel szemben a gépi tanulási módszerek gyakran jó kompromisszumot jelentenek, nem igénylik a klasszikus módszerek szigorú előfeltételezéseit és alkalmazásukhoz nem szükséges annyi adat és számítási erőforrás, mint a mélytanulási módszerek esetén, valamint az eredmények értelmezését is megkönnyítik a mélytanulási módszerekkel szemben, például a döntési fák esetén a változók fontosságának értékelésével.
 
+#include "Gyakorlati_resz.typ"
 
 #pagebreak()
 = Irodalomjegyzék
