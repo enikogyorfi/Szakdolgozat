@@ -97,7 +97,7 @@
 
 #show ref: it => {
   let el = it.element
-  if el != none and el.func() == figure {
+  if el != none and el.func() == figure and not el.kind == table {
     // Lekéri a hivatkozott ábra sorszámát
     let num = counter(figure).at(el.location()).first()
     link(el.location())[#num. Ábra]

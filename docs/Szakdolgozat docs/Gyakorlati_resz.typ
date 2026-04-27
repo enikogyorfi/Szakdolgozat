@@ -93,13 +93,22 @@
 )
 #show heading.where(level: 3): set text(size: 14pt, weight: "bold")
 
-#show figure.caption: it => context [
-  #counter(figure).display(). Ábra: #it.body
-]
+#show figure.caption: it => context {
+  // 1. Lekérjük a sorszámot. Az 'it.counter' automatikusan tudja,
+  // hogy a táblázatok vagy a képek számlálóját kell-e néznie!
+  let num = it.counter.display()
+
+  // 2. Lekérjük a megnevezést (pl. "Ábra" vagy "Táblázat").
+  // Biztonsági másolatként, ha nincs megadva, "ábra" lesz.
+  let nev = if it.supplement != none { it.supplement } else { "ábra" }
+
+  // 3. Összerakjuk a végső feliratot
+  [#num. #nev: #it.body]
+}
 
 #show ref: it => {
   let el = it.element
-  if el != none and el.func() == figure {
+  if el != none and el.func() == figure and not el.kind == table {
     // Lekéri a hivatkozott ábra sorszámát
     let num = counter(figure).at(el.location()).first()
     link(el.location())[#num. Ábra]
@@ -160,6 +169,33 @@
   ),
 )
 
+#let pandas-table(path) = {
+  let adatok = csv(path)
+  let fejlec = adatok.first()
+  let torzs = adatok.slice(1)
+
+  align(center)[
+    #table(
+      columns: fejlec.len(),
+
+      // Profi kinézet: Felső és alsó vastag vonal (mint a tudományos cikkekben a 'booktabs')
+      stroke: (x, y) => (
+        left: 0.5pt,
+        right: 0.5pt,
+        top: if y == 0 or y == 1 { 1pt } else { 0.5pt },
+        bottom: if y == 0 { 1pt } else if y == torzs.len() { 1pt } else { 0.5pt }
+      ),
+      fill: (x, y) => if y == 0 { gray.lighten(80%) } else { none },
+
+      // Fejléc kiemelése
+      ..fejlec.map(cella => strong(cella)),
+
+      // Adatok betöltése
+      ..torzs.flatten()
+    )
+  ]
+}
+
 = Gyakorlati alkalmazások
 
 Az előző fejezetekben bemutatott eszkozök, mint a sztochasztikus differenciálegyenletek, a különböző ML és DL modellek lehetőséget adnak arra, hogy elemezzünk összetett, időben változó rendszereket és előrejelzéseket készítsünk. Ebben a fejezetben ezen módszerek gyakorlati alkalmazását vizsgálom meg bűnözési adatokon,
@@ -183,10 +219,7 @@ A vizsgálathoz a Chicago városában elkövetett bűncselekmények adatait hasz
 - _Latitude_ és _Longitude_: A bűncselekmény helyének földrajzi koordinátái.
 
 #figure(
-  caption: [Chicago bűnügyi adatok (minta)],
-  [
-    #set text(size: 9pt)
-    #table(
+    table(
       columns: (auto, auto, 1.2fr, 1.2fr, 1fr, auto),
       align: left + horizon,
       stroke: 0.5pt,
@@ -199,9 +232,13 @@ A vizsgálathoz a Chicago városában elkövetett bűncselekmények adatait hasz
       [13974043], [09/21/2025], [THEFT], [OVER \$500], [SIDEWALK], [False],
       [13976000], [09/21/2025], [DECEPTIVE\ PRACTICE], [FINANCIAL\ IDENTITY THEFT], [RESIDENCE], [False],
       [13976430], [09/21/2025], [CRIMINAL\ DAMAGE], [TO VEHICLE], [HOTEL / MOTEL], [False],
-    )
-  ]
+    ),
+  
+  caption: [Chicago bűnügyi adatok (minta)],
+  kind: table,
+  
 )
+
 #figure(
   image("Images/EDA/major_crimes_chicago.svg", width: 80%),
   caption: [Chicago bűnesemények típusai és gyakorisága]
@@ -212,7 +249,7 @@ A @buneset_tipusok_chicago a Chicagoban elkövetett bűnesetek típusait és azo
 #figure(
   image("Images/EDA/buneset_suruseg_terkep.png", width: 60%),
   caption: [Chicago bűnözési sűrűségének térképe])<buneset_suruseg_terkep>
-A @buneset_suruseg_terkep a rendőri körzeteket mutatja Chicagoban a bűnözési sűrűség alapján színezve. Azonosíthatóak azok a kerületek, amik a leginkább érintettek, ezek a térképen a sötétebb színnel vannak jelölve. 
+A @buneset_suruseg_terkep a rendőri körzeteket mutatja Chicagoban a bűnözési sűrűség alapján színezve. Azonosíthatóak azok a körzetek, amik a leginkább érintettek, ezek a térképen a sötétebb színnel vannak jelölve.
 
 #figure(
   image("Images/EDA/buneset_heti_nap_eloszlása.png", width: 85%),
@@ -236,7 +273,7 @@ Ebben a fejezetben a bűnözés időbeli alakulását modellezem geometriai Brow
 
 === Adatok előkészítése
 
-Elsőként, hogy a modellt alkalmazni tudjam, a nyers adatokat megfelelő térbeli és időbeli felbontásra kellett hozni. Ahogy az @buneset_suruseg_terkep is mutatja, a bűnözési mintázat jelentős eltéréseket mutat a városon belül, ezért az előrejelzéseket kerültenként készítem el. Az időbeli felbontáshoz először minden kerületre és évre kiszámoltam a havi bűncselekmények számát, majd ebből az adatból kiszámoltam a bűncselekmények napi átlagos számát, így figyelembe tudtam venni, hogy az egyes hónapok különböző hosszúságúak. Tanító adathalmazatként a 2001 és 2024 közötti időszakot, míg teszt adatként 2025 január és augusztus közötti időszakot használtam. Illetve még az adatelőkészítés során eltávolítottam azokat az oszlopokat amelykre nem lesz szükség a modellépítés során, például a bűncselekmények pontos helyét jelző földrajzi koordinátákat, illetve a bűncselekmények típusát jelző oszlopokat is, mivel ezek nem relevánsak a bűnözés időbeli alakulásának modellezése szempontjából.
+Elsőként, hogy a modellt alkalmazni tudjam, a nyers adatokat megfelelő térbeli és időbeli felbontásra kellett hozni. Ahogy az @buneset_suruseg_terkep is mutatja, a bűnözési mintázat jelentős eltéréseket mutat a városon belül, ezért az előrejelzéseket kerültenként készítem el. Az időbeli felbontáshoz először minden körzetre és évre kiszámoltam a havi bűncselekmények számát, majd ebből az adatból kiszámoltam a bűncselekmények napi átlagos számát, így figyelembe tudtam venni, hogy az egyes hónapok különböző hosszúságúak. Tanító adathalmazatként a 2001 és 2024 közötti időszakot, míg teszt adatként 2025 január és augusztus közötti időszakot használtam. Illetve még az adatelőkészítés során eltávolítottam azokat az oszlopokat amelykre nem lesz szükség a modellépítés során, például a bűncselekmények pontos helyét jelző földrajzi koordinátákat, illetve a bűncselekmények típusát jelző oszlopokat is, mivel ezek nem relevánsak a bűnözés időbeli alakulásának modellezése szempontjából.
 
 === Paraméterek meghatározása
 
@@ -244,19 +281,88 @@ Elsőként a szimuláció alapparamétereit határoztam meg, ezek a következők
 - _dt_: A szimuláció időlépése, amelyet 1 hónapra állítottam be, mivel a bűnözési adatokat havi szinten aggregáltam.
 - _T_: A szimuláció teljes időtartama, amely az én esetemben 8 hónap volt, mivel a teszt adatok 2025 január és augusztus közötti időszakot ölelik fel.
 - _N_: A szimuláció lépéseinek száma, amelyet a teljes időtartam és az időlépés alapján számoltam ki, így $N =T/("dt")$
-- _$S_0$_: A szimuláció kezdeti értéke, amely minden kerületre a 2024 decemberében elkövetett bűncselekmények napi átlagos számát jelenti, mivel ez az utolsó ismert adatpont a tanító adathalmazatban.
+- _$S_0$_: A szimuláció kezdeti értéke, amely minden körzetre a 2024 decemberében elkövetett bűncselekmények napi átlagos számát jelenti, mivel ez az utolsó ismert adatpont a tanító adathalmazatban.
 - _t_: A szimuláció időtengelye, amely tartalmazza a szimuláció minden időpontját a kezdeti időponttól a teljes időtartam végéig, az időlépésnek megfelelően.
 Majd ezt követően meghatároztam a geometriai Brown-mozgás paramétereit, amelyek a következők voltak:
-- _μ_: A drift paraméter, amely a bűnözés hosszú távú trendjét jelenti. Ezt a paramétert minden kerületre külön-külön határoztam meg. Ehhez kiszámoltam a 2001 és 2024 közötti időszakban az egymást követő hónapok közötti relatív változást minden kerületre:
+- _μ_: A drift paraméter, amely a bűnözés hosszú távú trendjét jelenti. Ezt a paramétert minden körzetre külön-külön határoztam meg. Ehhez kiszámoltam a 2001 és 2024 közötti időszakban az egymást követő hónapok közötti relatív változást minden körzetre:
  $
  R=(S_(t+1)-S_t)/S_t
  $
- ahol $S_t$ a bűncselekmények napi átlagos száma egy adott kerületben a t-edik hónapban. Ezután kiszámoltam ezen relatív változások átlagát minden kerületre, és ezt az értéket használtam a drift paraméterként.
-- _σ_: A volatilitás paraméter, amely a bűnözés rövid távú ingadozásait jelenti. Ezt a paramétert szintén minden kerületre külön-külön határoztam meg. A $sigma$ kiszámolásához is a relatív változásokat használtam, de ezúttal a szórásukat számoltam ki minden kerületre, és ezt az értéket használtam a volatilitás paraméterként.
+ ahol $S_t$ a bűncselekmények napi átlagos száma egy adott körzetben a t-edik hónapban. Ezután kiszámoltam ezen relatív változások átlagát minden körzetre, és ezt az értéket használtam a drift paraméterként.
+- _σ_: A volatilitás paraméter, amely a bűnözés rövid távú ingadozásait jelenti. Ezt a paramétert szintén minden körzetre külön-külön határoztam meg. A $sigma$ kiszámolásához is a relatív változásokat használtam, de ezúttal a szórásukat számoltam ki minden körzetre, és ezt az értéket használtam a volatilitás paraméterként.
+Minden körzetre két lehetséges szcenáriót szimuláltam, úgy, hogy minden körzetre és minden időpontra generáltam egy véletlenszerű számot a standard normális eloszlásból. Ezután a sztochasztikus paraméter meghatározásához mindenkét szcenárióban vettem a véletlen számok kommulált összegét és így kaptam meg a _$W$_ paramétert. Végül a szimulációt a következő képlettel hajtottam végre minden körzetre és minden időpontra:
+ $
+ S_(t+1)=S_0*exp((μ-σ^2/2)*("dt")+σ*sqrt("dt")*W_t)
+ $
+ ahol $S_0$ a szimuláció kezdeti értéke, $μ$ a drift paraméter, $σ$ a volatilitás paraméter, $("dt")$ az időlépés, és $W_t$ a sztochasztikus paraméter.
 
+=== Eredmények és értékelés
 
+A szimuláció eredményeként minden körzetre és minden időpontra két lehetséges szcenáriót kaptam, az @geom_brown_simulation_results_1_kerulet az első körzetre kapott előrejelzéseket mutatja be a két szcenárióban.
+#figure(
+    caption: [Az első körzetre kapott előrejelzések a két szcenárióban],
+    [
+        #set text(size: 9pt)
+        #pandas-table("Results/predicted_df.csv")
+        
+    ]
+) <geom_brown_simulation_results_1_kerulet>
 
+Ahhoz, hogy ezeket a szcenáriókat értékelni tudjam, összehasonlítottam őket a teszt adatokkal, amelyek 2025 január és augusztus közötti időszakot ölelik fel. A @geom_brown_simulation_results_1_kerulet_actual_vs_predicted  mutatja a tényleges bűncselekmények napi átlagos számát a teszt időszakban, valamint a két szcenárióban kapott előrejelzéseket.
 
+#figure(
+    image("Images/Results_img/prediction_plot.png", width: 65%),
+    caption: [Tényleges bűncselekmények napi átlagos száma a teszt időszakban és a két szcenárióban kapott előrejelzések],
+) <geom_brown_simulation_results_1_kerulet_actual_vs_predicted>
+
+Már az ábra alapján is látható, hogy a két szcenárióban kapott előrejelzések jelentős eltéréseket mutatnak, ami a sztochasztikus paraméter véletlenszerűségéből adódik. Az ábra alapján leolvasható, hogy a  második szcenárióban kapott előrejelzések közelebb állnak a tényleges adatokhoz. Ez azt jelzi, hogy a geometriai Brown-mozgás érzékeny a sztochasztikus paraméter értékére, ezért fontos lehet több szcenáriót is szimulálni, hogy jobban megértsük a bűnözés időbeli alakulásának bizonytalanságát. A két szcenárió összehasonlításáshoz kiszámoltam az RMSE (Root Mean Square Error) értékét minden körzetre.
+$
+"RMSE" = sqrt(sum_(i=1)^(n)(y_i - (hat(y))_i)^2)
+$
+így számszerűsíteni tudtam a két szcenárió előrejelzéseinek pontosságát. Az RMSE értékek alapján a második szcenárióban kapott előrejelzések a 25. körzet kivételével minden körzetben alacsonyabb RMSE értéket mutattak, ami megerősíti azt a megfigyelést, hogy a második szcenárióban kapott előrejelzések közelebb állnak a tényleges adatokhoz. Az első körzet esetén a @geom_brown_simulation_results_1_kerulet_rmse mutatja a két RMSE értéket.
+#figure(
+    image("Images/Results_img/rmse_plot.png", width: 75%),
+    caption: [Az első körzet esetén a két szcenárió RMSE értékei],
+   ) <geom_brown_simulation_results_1_kerulet_rmse>
+
+Az eredmények összefoglalását az alábbi táblázat mutatja:
+
+#figure(
+    caption: [Az eredmények összefoglalása],
+    [
+        #set text(size: 9pt)
+        #pandas-table("Results/overall_metrics.csv")
+        )
+    ]
+) <geom_brown_simulation_results_rmse_table>
+A táblázat alapján látható, hogy a modell 93,08%-os pontosággal (Accuracy) tudta előrejelezni a bűnözés alakulását a teszt időszakban, ami azt jelzi, hogy a geometriai Brown-mozgás jól alkalmazható a bűnözés időbeli modellezésére. Az RMSE és MAE (mean absolute error) értékek alapján is jól teljesített a modell, ezek az értékek azt mutatják, hogy a modell által előrejelzett értékek nem sehol nem térnek el kiugóan a tényleges értékektől.
+
+#figure(
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em, // Kicsit szellősebb térköz
+
+    // Első kép és esetleg alá egy kis belső felirat
+    align(center)[
+      #image("Images/Results_img/gbm_predicted_heatmap.png", width: 90%)
+      *(a)* Előrejelzés hőtérképen
+    ],
+
+    // Második kép
+    align(center)[
+      #image("Images/Results_img/gbm_actual_heatmap.png", width: 90%)
+      *(b)* Tényleges adatok hőtérképen
+    ]
+  ),
+  caption: [Az előrejelzés és a tényleges adatok összehasonlítása hőtérképen],
+) <osszehasonlito-abra>
+A @osszehasonlito-abra alapján is látható, hogy a két hőtérkép hasonló mintázatot mutat, látható, hogy a modell mind a kisebb  mind a nagyobb esetszámú területeket jól azonosította, ami azt jelzi, hogy a modell képes volt megragadni a bűnözés nemcsak időbeli, de térbeli mintázatát is.
+
+#figure(
+    image("Images/Results_img/gbm_difference_heatmap.png" , width: 40%),
+    caption: [Az előrejelzés és a tényleges adatok közötti különbség hőtérképen],       
+) <gbm_difference_heatmap>
+ Hogy vizuálisan is látható legyen a különbség a két hőtérkép között, készítettem egy külön hőtérképet, amely az előrejelzés és a tényleges adatok közötti különbséget mutatja be. A @gbm_difference_heatmap alapján látható, hogy a különbségek nagy része kisebb értékek körül helyezkedik el, de megfiygelhető, hogy egy kiugró körzet (19-es), ahol az abszolút hiba magasabb, 7 körüli érték.
 == Bűnözés előrejelzése Random Forest modellel
 
 == Bűnözést befolyásoló demográfiai tényezők elemzése és előrejelzés készítése
