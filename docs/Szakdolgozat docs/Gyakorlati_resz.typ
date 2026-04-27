@@ -10,6 +10,8 @@
 #import "@preview/lilaq:0.6.0" as lq
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge, shapes
 #import "@preview/cetz:0.3.4": canvas, draw
+#import "citer.typ": handleref
+#show ref: handleref
 
 
 // this will automatically load predefined styled environments
@@ -226,4 +228,35 @@ A @arrest_stats_top10 a leggyakoribb bűncselekménytípusokat mutatja be a leta
 #figure(
   image("Images/EDA/buneset_havi_alakulasa_osszesitett.svg", width: 85%),
   caption: [Bűncselekmények havi alakulása (összesítve)])<buneset_havi_alakulasa_osszesitett>
-A @buneset_havi_alakulasa és a @buneset_havi_alakulasa_osszesitett a bűncselekmények havi alakulását mutatja be. A @buneset_havi_alakulasa alapján látható a bűnözés éven belüli szezonális mintázata, jellemzően a nyári hónapokban a legmagasabb a bűncselekmények száma, míg a téli hónapokban egy jelentős csökkenés figyelhető meg. Bár a bűnözés csökkenő trndet mutata a 2001 és 2025 közötti időszakban, a szezonalitás továbbra is megfigyelhető. Ezeket a megfigyeléseket számszerűsíti a @buneset_havi_alakulasa_osszesitett, itt is megfigyelhető, hogy valóban a nyári hónapokban a legmagasabb a bűncselekmények száma, míg ez a szám a téli hónapokra csökken
+A @buneset_havi_alakulasa és a @buneset_havi_alakulasa_osszesitett a bűncselekmények havi alakulását mutatja be. A @buneset_havi_alakulasa alapján látható a bűnözés éven belüli szezonális mintázata, jellemzően a nyári hónapokban a legmagasabb a bűncselekmények száma, míg a téli hónapokban egy jelentős csökkenés figyelhető meg. Bár a bűnözés csökkenő trndet mutata a 2001 és 2025 közötti időszakban, a szezonalitás továbbra is megfigyelhető. Ezeket a megfigyeléseket számszerűsíti a @buneset_havi_alakulasa_osszesitett, itt is megfigyelhető, hogy valóban a nyári hónapokban a legmagasabb a bűncselekmények száma, míg ez a szám a téli hónapokra csökken.
+
+== Bűnözés időbeli modellezése geometriai Brown-mozgással
+
+Ebben a fejezetben a bűnözés időbeli alakulását modellezem geometriai Brown-mozgással. A felépített modell alapját Julia Calatayud és tárasi (@calatayud2023) 2023-ban megjelent tanulmánya adja, amelyben a bűnözés időbeli alakulását sztochasztikus differenciálegyenletekkel modellezték. A szerzők a spanyolországi Valencia város bűnözési adatait vizsgálták geometriai Brown-mozgás segítségével, de az általuk javasolt módszertan alkalmazható más városok, így Chicago bűnözési adatainak modellezésére is. A következőkben bemutatom hogyan készítettem elő az adatokat és hogyan határoztam meg a geometriai Brown-mozgás paramétereit, majd a modell segítségével előrejelzéseket készítek a bűnözés alakulására vonatkozóan.
+
+=== Adatok előkészítése
+
+Elsőként, hogy a modellt alkalmazni tudjam, a nyers adatokat megfelelő térbeli és időbeli felbontásra kellett hozni. Ahogy az @buneset_suruseg_terkep is mutatja, a bűnözési mintázat jelentős eltéréseket mutat a városon belül, ezért az előrejelzéseket kerültenként készítem el. Az időbeli felbontáshoz először minden kerületre és évre kiszámoltam a havi bűncselekmények számát, majd ebből az adatból kiszámoltam a bűncselekmények napi átlagos számát, így figyelembe tudtam venni, hogy az egyes hónapok különböző hosszúságúak. Tanító adathalmazatként a 2001 és 2024 közötti időszakot, míg teszt adatként 2025 január és augusztus közötti időszakot használtam. Illetve még az adatelőkészítés során eltávolítottam azokat az oszlopokat amelykre nem lesz szükség a modellépítés során, például a bűncselekmények pontos helyét jelző földrajzi koordinátákat, illetve a bűncselekmények típusát jelző oszlopokat is, mivel ezek nem relevánsak a bűnözés időbeli alakulásának modellezése szempontjából.
+
+=== Paraméterek meghatározása
+
+Elsőként a szimuláció alapparamétereit határoztam meg, ezek a következők voltak:
+- _dt_: A szimuláció időlépése, amelyet 1 hónapra állítottam be, mivel a bűnözési adatokat havi szinten aggregáltam.
+- _T_: A szimuláció teljes időtartama, amely az én esetemben 8 hónap volt, mivel a teszt adatok 2025 január és augusztus közötti időszakot ölelik fel.
+- _N_: A szimuláció lépéseinek száma, amelyet a teljes időtartam és az időlépés alapján számoltam ki, így $N =T/("dt")$
+- _$S_0$_: A szimuláció kezdeti értéke, amely minden kerületre a 2024 decemberében elkövetett bűncselekmények napi átlagos számát jelenti, mivel ez az utolsó ismert adatpont a tanító adathalmazatban.
+- _t_: A szimuláció időtengelye, amely tartalmazza a szimuláció minden időpontját a kezdeti időponttól a teljes időtartam végéig, az időlépésnek megfelelően.
+Majd ezt követően meghatároztam a geometriai Brown-mozgás paramétereit, amelyek a következők voltak:
+- _μ_: A drift paraméter, amely a bűnözés hosszú távú trendjét jelenti. Ezt a paramétert minden kerületre külön-külön határoztam meg. Ehhez kiszámoltam a 2001 és 2024 közötti időszakban az egymást követő hónapok közötti relatív változást minden kerületre:
+ $
+ R=(S_(t+1)-S_t)/S_t
+ $
+ ahol $S_t$ a bűncselekmények napi átlagos száma egy adott kerületben a t-edik hónapban. Ezután kiszámoltam ezen relatív változások átlagát minden kerületre, és ezt az értéket használtam a drift paraméterként.
+- _σ_: A volatilitás paraméter, amely a bűnözés rövid távú ingadozásait jelenti. Ezt a paramétert szintén minden kerületre külön-külön határoztam meg. A $sigma$ kiszámolásához is a relatív változásokat használtam, de ezúttal a szórásukat számoltam ki minden kerületre, és ezt az értéket használtam a volatilitás paraméterként.
+
+
+
+
+== Bűnözés előrejelzése Random Forest modellel
+
+== Bűnözést befolyásoló demográfiai tényezők elemzése és előrejelzés készítése
