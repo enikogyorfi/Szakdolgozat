@@ -533,7 +533,7 @@ A második modellben a bemeneti változókat még kiegészítettem a mozgóátla
 - _Number of Crimes Per Day Lag 2_: A bűncselekmények napi átlagos száma két hónappal ezelőtt
 - _Rolling Mean 3_: A bűncselekmények napi átlagos számának 3 hónapos mozgóátlaga
 - _Rolling Mean 4_: A bűncselekmények napi átlagos számának 4 hónapos mozgóátlaga
-- _Rolling Std {k_}: A bűncselekmények napi átlagos számának k hónapos mozgószórása, ahol k = 3, 4, 5, 6, 9
+- _Rolling Std {k_}: A bűncselekmények napi átlagos számának k hónapos mozgószórása, ahol k = 3, 4, 5, 6
 
 A modell felépítése és a hiperparaméterek hangolása ugyanúgy történt, mint az első modell esetében. A keresztvalidáció során a következő eredményeket kaptam:
 #figure(
