@@ -1,16 +1,17 @@
 
 #import "@preview/scribe:0.2.0": *
-#import "@preview/mannot:0.3.2": *
+#import "@preview/mannot:0.3.3": *
 #import "@preview/physica:0.9.8": *
 #import "@preview/equate:0.3.2": *
-#import "@preview/rich-counters:0.2.1": *
+#import "@preview/rich-counters:0.2.2": *
 #import "@preview/theoretic:0.3.1" as theoretic
 #import theoretic.presets.colorbox: *
 #import "@preview/simple-plot:0.3.0": *
 #import "@preview/simple-plot:0.3.0": plot
 #import "@preview/lilaq:0.6.0" as lq
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge, shapes
-#import "@preview/cetz:0.3.4": canvas, draw
+#import "@preview/cetz:0.5.2": canvas, draw
+#import "@preview/codly:1.3.0": *
 
 // this will automatically load predefined styled environments
 
@@ -19,6 +20,21 @@
 #set math.equation(numbering: "(1)")
 #show: scribe
 
+
+#show: codly-init.with()
+
+#codly(
+  number-format: numbering.with("1"),
+  stroke: 0.5pt + luma(200),
+  inset: 0.8em,
+
+  // Így a helyes:
+  zebra-fill: luma(250),
+
+  languages: (
+    python: (name: "Python", icon: none, color: rgb("#4C72B0")),
+  )
+)
 
 #let stmt = counter("stmt")
 #let def = counter("def")

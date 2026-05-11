@@ -196,23 +196,33 @@
     )
   ]
 }
-#codly(
-languages: (
- py: (
+#show: codly-init.with()
 
- name: [Python], color: green),))
+#codly(
+  number-format: numbering.with("1"),
+  stroke: 0.5pt + luma(200),
+  inset: 0.8em,
+
+  // Így a helyes:
+  zebra-fill: luma(250),
+
+  languages: (
+    python: (name: "Python", icon: none, color: rgb("#4C72B0")),
+  )
+)
+
 = Gyakorlati alkalmazások
 
 Az előző fejezetekben bemutatott eszkozök, mint a sztochasztikus differenciálegyenletek, a különböző ML és DL modellek lehetőséget adnak arra, hogy elemezzünk összetett, időben változó rendszereket és előrejelzéseket készítsünk. Ebben a fejezetben ezen módszerek gyakorlati alkalmazását vizsgálom meg bűnözési adatokon,
  elemezem a bűnözés időbeli mintázatát, a bűnözést befolyásoló demográfiai tényezőket, valamint a bűnözés előrejelzésére szolgáló modellek teljesítményét.
- 
+
 A bűnügyi statisztikák elemzése társadalmi és gazdasági szempontból is fontos, segíthet megérteni a bűnőzést kiváltó okokat, és hozzájárulhat a hatékonyabb bűnmegelőzési stratégiák kidolgozásához. A bűncselekmények időbeli alakulásának vizsgálata lehetőséget ad a trendek, a szezonalitás és a hirtelen változások azonosítására, míg a demográfiai tényezők elemzése segíthet megérteni, hogy mely csoportok vannak nagyobb kockázatnak kitéve.
 
 
 Elsőként korábban bemutatott geometriai Brown-mozgás segítségével modellezem a bűnözés időbeli alakulását, majd Random Forest modellt fogok alkalmazni a bűnözés előrejelzésére és a legfontosabb tényezők azonosítására.
 
  == Adatok bemutatása
- 
+
 A vizsgálathoz a Chicago városában elkövetett bűncselekmények adatait használom, amelyeket a Chicago Police Department tett közzé. Az adatbázis tartalmazza a bűncselekmények típusát, helyét, időpontját és egyéb jellemzőit. Az adatok a 2001-től 2025-ig terjedő időszakot ölelik fel, és több mint 6 millió bűncselekményt tartalmaznak. Minden egyes rekord egy bűncselekményt reprezentál ée a legfontosabb jellemzői a következők:
 - _ID_: Egyedi azonosító minden bűncselekményhez.
 - _Dátum_: A bűncselekmény elkövetésének időpontja.
@@ -238,10 +248,10 @@ A vizsgálathoz a Chicago városában elkövetett bűncselekmények adatait hasz
       [13976000], [09/21/2025], [DECEPTIVE\ PRACTICE], [FINANCIAL\ IDENTITY THEFT], [RESIDENCE], [False],
       [13976430], [09/21/2025], [CRIMINAL\ DAMAGE], [TO VEHICLE], [HOTEL / MOTEL], [False],
     ),
-  
+
   caption: [Chicago bűnügyi adatok (minta)],
   kind: table,
-  
+
 )
 
 #figure(
@@ -278,7 +288,7 @@ Ebben a fejezetben a bűnözés időbeli alakulását modellezem geometriai Brow
 
 === Adatok előkészítése
 
-Elsőként, hogy a modellt alkalmazni tudjam, a nyers adatokat megfelelő térbeli és időbeli felbontásra kellett hozni. Ahogy az @buneset_suruseg_terkep is mutatja, a bűnözési mintázat jelentős eltéréseket mutat a városon belül, ezért az előrejelzéseket kerültenként készítem el (a 21-es és 31-es kerületre nem állt rendelkezésre elég információ, így azokat az elemzés során nem vettem figyelembe). Az időbeli felbontáshoz először minden körzetre és évre kiszámoltam a havi bűncselekmények számát, majd ebből az adatból kiszámoltam a bűncselekmények napi átlagos számát, így figyelembe tudtam venni, hogy az egyes hónapok különböző hosszúságúak. Tanító adathalmazatként a 2001 és 2024 közötti időszakot, míg teszt adatként 2025 január és augusztus közötti időszakot használtam. Illetve még az adatelőkészítés során eltávolítottam azokat az oszlopokat amelykre nem lesz szükség a modellépítés során, például a bűncselekmények pontos helyét jelző földrajzi koordinátákat, illetve a bűncselekmények típusát jelző oszlopokat is, mivel ezek nem relevánsak a bűnözés időbeli alakulásának modellezése szempontjából.
+Elsőként, hogy a modellt alkalmazni tudjam, a nyers adatokat megfelelő térbeli és időbeli felbontásra kellett hozni. Ahogy az @buneset_suruseg_terkep is mutatja, a bűnözési mintázat jelentős eltéréseket mutat a városon belül, ezért az előrejelzéseket kerültenként készítem el (a 21-es és 31-es körzetre nem állt rendelkezésre elég információ, így azokat az elemzés során nem vettem figyelembe). Az időbeli felbontáshoz először minden körzetre és évre kiszámoltam a havi bűncselekmények számát, majd ebből az adatból kiszámoltam a bűncselekmények napi átlagos számát, így figyelembe tudtam venni, hogy az egyes hónapok különböző hosszúságúak. Tanító adathalmazatként a 2001 és 2024 közötti időszakot, míg teszt adatként 2025 január és augusztus közötti időszakot használtam. Illetve még az adatelőkészítés során eltávolítottam azokat az oszlopokat amelykre nem lesz szükség a modellépítés során, például a bűncselekmények pontos helyét jelző földrajzi koordinátákat, illetve a bűncselekmények típusát jelző oszlopokat is, mivel ezek nem relevánsak a bűnözés időbeli alakulásának modellezése szempontjából.
 
 === Paraméterek meghatározása
 
@@ -309,7 +319,7 @@ A szimuláció eredményeként minden körzetre és minden időpontra két lehet
     [
         #set text(size: 9pt)
         #pandas-table("Results/predicted_df.csv")
-        
+
     ]
 ) <geom_brown_simulation_results_1_kerulet>
 
@@ -365,10 +375,10 @@ A @osszehasonlito-abra alapján is látható, hogy a két hőtérkép hasonló m
 
 #figure(
     image("Images/Results_img/gbm_difference_heatmap.png" , width: 40%),
-    caption: [Az előrejelzés és a tényleges adatok közötti különbség hőtérképen],       
+    caption: [Az előrejelzés és a tényleges adatok közötti különbség hőtérképen],
 ) <gbm_difference_heatmap>
- Hogy vizuálisan is látható legyen a különbség a két hőtérkép között, készítettem egy külön hőtérképet, amely az előrejelzés és a tényleges adatok közötti különbséget mutatja be. A @gbm_difference_heatmap alapján látható, hogy a különbségek nagy része kisebb értékek körül helyezkedik el, de megfiygelhető, hogy egy kiugró körzet (19-es), ahol az abszolút hiba magasabb, 7 körüli érték.
- 
+ Hogy vizuálisan is látható legyen a különbség a két hőtérkép között, készítettem egy külön hőtérképet, amely az előrejelzés és a tényleges adatok közötti különbséget mutatja be. A @gbm_difference_heatmap alapján látható, hogy a különbségek nagy része kisebb értékek körül helyezkedik el, de megfiygelhető, hogy a 19-es, 14-es és 12-es körzetekben az abszolút átlagos hiba magasabb.
+
 == Bűnözés előrejelzése Random Forest modellel
 
 A geometriai Brown-mozgás alkalmazásával sikerült feltárni a bűnözés időbeli alakulását és a sztochasztkus differenciálegyenletek segítségével megragadni az előrejelzés bizonytalanságát. Ez a megközelítés elsősorban a múltbeli adatoból származtatott drift és volatilitás paraméterekre támaszkodik és vázolja fel a jövőbeli szcenáriókat, azonban nem ismerjük meg az adatokban lévő struktúrákat és összefüggéseket. Ezért ebben a részben egy másik megközelítést alkalmazok, egy Random Forest modellt, amely képes megragadni az adatokban lévő nemlineáris összefüggéseket és interakciókat. A modell építése során a bűncselekmények számát jelzem előre minden körzetre és minden hónapra vonatkozóan, ugyanazt a tanító és teszt adathalmazatot használva, mint a geometriai Brown-mozgás esetében.
@@ -382,11 +392,15 @@ A Random Forest modell esetében is hasonlóan a geometriai Brown-mozgáshoz a 2
 - _Month cos_: A hónap koszinusz transzformációja, amely segít megragadni a szezonális mintázatokat
 - _IsSummer_: Egy bináris változó, amely jelzi, hogy a hónap a nyári időszakban van-e (június, július, augusztus)
 - _IsWinter_: Egy bináris változó, amely jelzi, hogy a hónap a téli időszakban van-e (december, január, február)
+#figure(
+   caption: [Az időbeli jellemzők előkészítése],
+  [
 ```py
 def year_indexing(df):
     df['Year_Index'] = 2025 - df['Year'] + 1
     return df
-
+```
+```py
 def prepare_month_data(df, col):
     df[col] = df[col].astype(float)
     df[f"{col}_Sin"] = df[col].apply(lambda x: (np.sin(((x-1) * 2 * np.pi / 12)+0.5)+1)/2)
@@ -396,8 +410,12 @@ def prepare_month_data(df, col):
     df = year_indexing(df)
     return df
 ```
-
-Továbbá mivel a bűnözés jövőbeli rátája egy kerületben nagymértékben függ az elmúlt időszakok tendenciáitól és a hónapok kinyerése és átalakítása segít a szezonalitás modellezésében, de nem képes megragadni a folyamatos időbeli trendet. Tehát, hogy a Random Forest modellt hatékonyan tudjam alkalmazni idősorok elmzésére, az adatelőkészítés során úgynevezett késleltetett változókat (lag features) is létrehoztam. Ezek a változók a bűncselekmények napi átlagos számát tartalmazzák az előző hónapokban minden körzetre vonatkozóan. Tehát így a modell képes lesz emlékezni a múltbeli értékekre.
+]
+)
+Továbbá mivel a bűnözés jövőbeli rátája egy körzetben nagymértékben függ az elmúlt időszakok tendenciáitól és a hónapok kinyerése és átalakítása segít a szezonalitás modellezésében, de nem képes megragadni a folyamatos időbeli trendet. Tehát, hogy a Random Forest modellt hatékonyan tudjam alkalmazni idősorok elmzésére, az adatelőkészítés során úgynevezett késleltetett változókat (lag features) is létrehoztam. Ezek a változók a bűncselekmények napi átlagos számát tartalmazzák az előző hónapokban minden körzetre vonatkozóan. Tehát így a modell képes lesz emlékezni a múltbeli értékekre.
+#figure(
+    caption: [Késleltetett változók létrehozása],
+    [
 ```py
 def create_lagged_features(df, col, lag=1):
     df_lagged = df.copy()
@@ -405,31 +423,31 @@ def create_lagged_features(df, col, lag=1):
         df_lagged[f'{col} Lag {i}'] = df_lagged.groupby('District')[col].shift(i)
     return df_lagged
 ```
+])
 \
 
 A lag változók létrehozása mellett a múltbeli értékekből kiszámolt mozgóátlagot és mozgószórást is hozzáadtam az adatokhoz, hogy egy-egy kiugró érték ne befolyásolja túlzottan a modellt és hogy a modell a mozgószórás értékek alapján meg tudja ragadni a bűnözés ingadozásait.
+#figure(
+    caption: [Mozgóátlagok és mozgószórások létrehozása],
+    [
 ```py
 def rolling_mean(df, idopontok):
     for i in idopontok:
-        df[f'Rolling Mean {i}'] = (df.groupby('District')['Number of Crimes Per Day']
-            .rolling(window=i)
-            .mean()
-            .shift(1)
-            .reset_index(0, drop=True)
-                                   )
-    return df
+       df[f'Rolling Mean {i}'] = (
+        df.groupby('District')['Number of Crimes Per Day']
+        .transform(lambda s: s.shift(1).rolling(window=i).mean()))
 
-def rolling_std(df, idopontok):
-    for i in idopontok:
-        df[f'Rolling Std {i}'] = (df.groupby('District')['Number of Crimes Per Day']
-                                  .rolling(window=i)
-                                  .std()
-                                  .shift(1)
-                                  .reset_index(0, drop=True)
-                                  )
     return df
 ```
-=== Modellépítés
+```py
+def rolling_std(df, idopontok):
+    for i in idopontok:
+        df[f'Rolling Std {i}'] = (df.groupby('District')['Number of Crimes Per Day'].transform(lambda s: s.shift(1).rolling(window=i).std()))
+
+    return df
+```
+])
+=== Modellépítés és eredmények
 
 Az adatok előkéazítése után a Random Forest modellek betanítása következett. Két különböző modellt építettem, az elsőben csak a késleltetett változókat használtam, míg a második modellben már a mozgóátlagokat és mozgószórásokat is hozzáadtam a bemeneti változókhoz.
 
@@ -446,8 +464,120 @@ A modellben során használt bemeneti változók a következők voltak:
 - _Number of Crimes Per Day Lag 2_: A bűncselekmények napi átlagos száma két hónappal ezelőtt
 
 A késleltetett (lag) változók számának megválasztása során több különböző beállítást is kipróbáltam, az eredmények alapján a 2 hónapra visszamenő késleltetett változók adták a legjobb eredményeket, ezért ezeket használtam a modellben. Több lag-változó használata esetn a modell teljesítmény már nem mutatott javulást, ezt magyarázhatja, hogy a bűnözés alakulására leginkább az előző hónapok tendenciái vannak hatással, és a túl sok lag-változó használata már nem ad hozzá új információt a modell számára, viszont növeli a modell komplexitását és a túlillesztés kockázatát.
-A Random Forest modell nem hónaponként készítette el az előrejelzést, hanem egyszerre, a 8 hónapra vonatkozóan. Így a modell egy adott időpont és kerület alapján egy teljes előrejelzési horizontot állított elő. Ennek előnye, hogy a több hónapra vonatkozó becslések egyszerre készülnek el, vagyis a modell nem kényszerül arra, hogy minden újabb hónap előrejelzéséhez az előző saját becslését használja fel. Ez csökkentheti a hibák továbbterjedését, amely a szekvenciális előrejelzéseknél gyakran problémát jelent.
 
+A Random Forest modell nem hónaponként készítette el az előrejelzést, hanem egyszerre, a 8 hónapra vonatkozóan. Így a modell egy adott időpont és körzet alapján egy teljes előrejelzési horizontot állított elő. Ennek előnye, hogy a több hónapra vonatkozó becslések egyszerre készülnek el, vagyis a modell nem kényszerül arra, hogy minden újabb hónap előrejelzéséhez az előző saját becslését használja fel. Ez csökkentheti a hibák továbbterjedését, amely a szekvenciális előrejelzéseknél gyakran problémát jelent.
+
+A Random Forest modell hiperparamétereit RandomizedSearchCV segítségével hangoltam, amely egy véletlenszerű keresést hajt végre a megadott hiperparaméterek között, és a legjobb kombinációt választja ki a modell teljesítménye alapján. A legjobb hiperparaméterek a következők voltak:
+- _n_estimators_: 521 (a döntési fák száma a Random Forest modellben)
+- _max_depth_: 12 (a döntési fák maximális mélyse)
+- _max_features_: '0.5' (a bemeneti változók aránya, amelyet minden döntési fa építésekor véletlenszerűen kiválasztanak)
+
+A modell validálásához walk-forward cross-validation-t alkalmaztam, amely egy időbeli keresztvalidációs módszer. A módszer során a tanító adathalmazatot több részre osztottam, és minden részre külön-külön tanítottam a modellt, majd a következő részre vonatkozóan készítettem előrejelzést, így megőriztem az időbeli sorrendiséget.
+A keresztvalidáció során a következő eredményeket kaptam:
+#figure(
+    caption: [Walk-forward keresztvalidáció eredményei],
+    [
+        #set text(size: 9pt)
+        #pandas-table("Results/walk_forward_cv_results.csv")
+    ]
+) <walk_forward_cv_results>
+
+A modell teljesítményét a teszt adathalmazaton is értékeltem, amely 2025 január és augusztus közötti időszakot öleli fel. A következő táblázat mutatja a teszt adathalmazaton kapott eredményeket:
+#figure(
+    caption: [Teszt adathalmazaton \
+     kapott eredmények],
+    [
+        #set text(size: 9pt)
+        #pandas-table("Results/lagged_test_results.csv")
+    ]
+) <test_results_model_1>
+A táblázat alapján látható, hogy a modell 90,82%-os pontosággal (Accuracy) tudta előrejelezni a bűnözés alakulását a teszt időszakban, illetve az RMSE érték is viszonlyag alacsony (3,11), ami azt jelenti, hogy az előrejelzett napi átlagos bűncselekményszám átlagosan kis mértékben tér el a tényleges értékektől.
+Akárcsak a geometriai Brown-mozgás esetében, a modell előrejelzéseit hőtérképen is megjelenítettem, hogy vizuálisan is összehasonlítható legyen a tényleges adatokkal.
+#figure(
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em, // Kicsit szellősebb térköz
+
+    // Első kép és esetleg alá egy kis belső felirat
+    align(center)[
+      #image("Images/Results_img/lagged_predicted_heatmap.png", width: 90%)
+      *(a)* Előrejelzés hőtérképen
+    ],
+
+    // Második kép
+    align(center)[
+      #image("Images/Results_img/gbm_actual_heatmap.png", width: 90%)
+      *(b)* Tényleges adatok hőtérképen
+    ]
+  ),
+  caption: [Az előrejelzés és a tényleges adatok összehasonlítása hőtérképen],
+) <lagged_osszehasonlito_abra>
+ A @lagged_osszehasonlito_abra mutatja az előrejelzés és a tényleges adatok hőtérképeit.
+Az eltérések vizuális megjelenítéséhez készítettem egy külön hőtérképet, amely az előrejelzés és a tényleges adatok közötti különbséget mutatja be.
+#figure(
+    image("Images/Results_img/lagged_error_heatmap.png" , width: 40%),
+    caption: [Az előrejelzés és a tényleges adatok közötti különbség hőtérképen],
+) <lagged_difference_heatmap>
+Az @lagged_difference_heatmap alapján látható, hogy a különbségek nagy része nem jelentős, de megfigyelhető pár körzet, ahol az abszolút átlagos hiba magasabb, például a 14, 25 és 19-es körzetekben, ahol 4 fölötti átlagos hibát kaptam.
+
+=== Modell 2: Késleltetett változók, mozgóátlagok és mozgószórások
+
+A második modellben a bemeneti változókat még kiegészítettem a mozgóátlagokkal és mozgószórásokkal, így a bemeneti változók a következők voltak:
+- _District_: A körzet azonosítója
+- _Year Index_: Az év indexe
+- _Month Sin_: A hónap szinusz transzformációja
+- _Month Cos_: A hónap koszinusz transzformációja
+- _Is Summer_: Bináris változó, amely jelzi, hogy a hónap a nyári időszakban van-e
+- _Is Winter_: Bináris változó, amely jelzi, hogy a hónap a téli időszakban van-e
+- _Number of Crimes Per Day Lag 1_: A bűncselekmények napi átlagos száma az előző hónapban
+- _Number of Crimes Per Day Lag 2_: A bűncselekmények napi átlagos száma két hónappal ezelőtt
+- _Rolling Mean 3_: A bűncselekmények napi átlagos számának 3 hónapos mozgóátlaga
+- _Rolling Mean 4_: A bűncselekmények napi átlagos számának 4 hónapos mozgóátlaga
+- _Rolling Std {k_}: A bűncselekmények napi átlagos számának k hónapos mozgószórása, ahol k = 3, 4, 5, 6, 9
+
+A modell felépítése és a hiperparaméterek hangolása ugyanúgy történt, mint az első modell esetében. A keresztvalidáció során a következő eredményeket kaptam:
+#figure(
+    caption: [Walk-forwar keresztvalidáció eredményei],
+    [
+        #set text(size: 9pt)
+        #pandas-table("Results/walk_forward_cv_results_rollingmean.csv")
+    ]
+) <walk_forward_cv_results_model_2>
+
+A teszt adathalmazaton kapott eredményeket a következő táblázat mutatja:
+#figure(
+    caption: [Teszt adathalmazaton kapott eredmények],
+    [
+        #set text(size: 9pt)
+        #pandas-table("Results/rollingmean_test_results.csv")
+    ]) <test_results_model_2>
+A táblázat alapján látható, hogy a modell 92,71%-os pontosággal jelzett előre, ebből is látszik, hogy a mozgóátlagok és mozgószórások hozzáadása javította a modell teljesítményét, hiszen az első modellben 90,82%-os pontosággal tudta előrejelezni a bűnözés alakulását. Az RMSE érték is csökkent (2,44), ami azt jelenti, hogy az előrejelzett napi átlagos bűncselekményszám átlagosan kisebb mértékben tér el a tényleges értékektől, mint az első modell esetében.
+Ebben az esetben is elkészítettem a hőtérképeket:
+#figure(
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em, // Kicsit szellősebb térköz
+
+    // Első kép és esetleg alá egy kis belső felirat
+    align(center)[
+      #image("Images/Results_img/rollingmean_predicted_heatmap.png", width: 90%)
+      *(a)* Előrejelzés hőtérképen
+    ],
+
+    // Második kép
+    align(center)[
+      #image("Images/Results_img/gbm_actual_heatmap.png", width: 90%)
+      *(b)* Tényleges adatok hőtérképen
+    ]
+  ),
+  caption: [Az előrejelzés és a tényleges adatok összehasonlítása hőtérképen],
+) <rollingmean_osszehasonlito_abra>
+
+Továbbá a különbség hőtérképet is elkészítettem:
+#figure(
+    image("Images/Results_img/rollingmean_error_heatmap.png" , width: 40%),
+    caption: [Az előrejelzés és a tényleges adatok közötti különbség hőtérképen],
+) <rollingmean_difference_heatmap>
 
 
 
