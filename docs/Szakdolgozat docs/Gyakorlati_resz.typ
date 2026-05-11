@@ -579,6 +579,27 @@ Továbbá a különbség hőtérképet is elkészítettem:
     caption: [Az előrejelzés és a tényleges adatok közötti különbség hőtérképen],
 ) <rollingmean_difference_heatmap>
 
+Az ábráról leolvasható, hogy az eltérések értéeki kis tartományban mozognak, de megfigyelhető, hogy a 12-es körzetben jelentős eltérés van, ahol az átlagos hiba 10 fölötti érték, ami kiugróan magas. Ez magyarázható azzal, hogy a körzetben a bűncselekmények száma növekedett a teszt időszakban, míg a tanító adathalmazatban csökkenő tendencia volt megfigyelhető, így a modell nem tudta jól megragadni ezt a változást.
+
+=== Összefoglalás
+
+A bűnözés előrejelzésére több különböző megközelítést alkalmaztam és hasonlítottam össze. Elsőként geometriai Brown-mozgással modelleztem a bűncselekmények időbeli alakulását, majd Random Forest modelleket építettem, amelyek már több bemeneti változót is figyelembe vettek. Az összehasonlítás érdekében egy egyszerű baseline modellt is készítettem, amely a 3 hónapos mozgóátlagon alapult.
+
+A baseline modell célja, hogy egy egyszerű, könnyen érthető előrejelzést adjon, amelyhez a komplexebb modellek teljesítményét viszonyítani lehet. Ennél a módszernél az előrejelzés minden körzet esetén a 2024-es év utolsó három hónapjának (október, november, december) bűncselekményszámának átlagát jelenti.A baseline modell nem tanul külön paramétereket, hanem kizárólag a legutóbbi rövid távú trendet veszi figyelembe. Ezért alkalmas annak vizsgálatára, hogy a geometriai Brown-mozgás és a Random Forest modellek valóban többletinformációt tudnak-e kinyerni az adatokból egy egyszerű mozgóátlagos előrejelzéshez képest.
+
+Az eredményeket az alábbi táblázat foglalja össze:
+#figure(
+    caption: [Modellek teljesítményének összehasonlítása],
+    [
+        #set text(size: 9pt)
+        #pandas-table("Results/summary.csv")
+    ]
+) <model_comparison>
+
+A táblázat alapján látható, hogy a legjobban a geometriai Brown-mozgás teljesített, ez arra utal, hogy a vuzsgált időszakban a bűnözés alakulása jól követte a korábbi trendet. A geometriai Brown mozgás előnye az lehetett, hogy bűnözés időbeli változását írta le, és minden körzetre külön drift- és volatilitásparamétert használt. Emiatt jól tudta követni azokat a területeket, ahol a bűncselekményszám alakulása viszonylag stabilan illeszkedett a múltbeli mintázatokhoz.
+A Random Forest rolling feature-ökkel kiegészített változata szintén jó eredményt adott, csak kis mértékben marad el a geometriai Brown-mozgás eredményétől. Ez azt mutatja, hogy a mozgóátlagok és mozgószórások hasznos információt adtak a modell számára.
+
+Összességében az eredmények azt mutatják, hogy a bűncselekmények előrejelzésében a múltbeli trend és a rövid távú mozgóátlag kiemelten fontos szerepet játszik. A geometriai Brown-mozgás teljesítménye alapján a bűnözés alakulása ebben az időszakban erősen követte a korábbi trendeket, és a sztochasztikus modellezés jól megragadta ezt a dinamikát.
 
 
 == Bűnözést befolyásoló demográfiai tényezők elemzése és előrejelzés készítése
