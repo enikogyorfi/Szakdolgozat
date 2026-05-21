@@ -368,7 +368,7 @@ Tehát például három szcenárió generálása esetén a következő eredmény
 A táblázat alapján látható, hogy a három szcenárióban kapott előrejelzések jelentős eltéréseket mutatnak, ami a sztochasztikus paraméter véletlenszerűségéből adódik. Ez azt jelzi, hogy a geometriai Brown-mozgás érzékeny a sztochasztikus paraméter értékére, ezért fontos lehet több szcenáriót is szimulálni, hogy jobban megértsük a bűnözés időbeli alakulásának bizonytalanságát. A szcenáriók eredményeit a valós adatokkal is összehasonlítottam:
 
 #figure(
-    image("Images/Results_img/predictions_vs_actuals_district_1.png", width: 65%),
+    image("Images/Results_img/predictions_vs_actuals_district_1.png", width: 85%),
     caption: [Tényleges bűncselekmények napi átlagos száma a teszt időszakban és a három szcenárióban kapott előrejelzések],
 ) <geom_brown_simulation_results_1_kerulet_actual_vs_predicted>
 A különbségek számszerűsítéséhez kiszámoltam az RMSE értékeket is:
@@ -645,7 +645,7 @@ Az eredményeket az alábbi táblázat foglalja össze:
     ]
 ) <model_comparison>
 
-A táblázat alapján látható, hogy a legjobban a geometriai Brown-mozgás teljesített, ez arra utal, hogy a vuzsgált időszakban a bűnözés alakulása jól követte a korábbi trendet. A geometriai Brown mozgás előnye az lehetett, hogy bűnözés időbeli változását írta le, és minden körzetre külön drift- és volatilitásparamétert használt. Emiatt jól tudta követni azokat a területeket, ahol a bűncselekményszám alakulása viszonylag stabilan illeszkedett a múltbeli mintázatokhoz.
+A táblázat alapján látható, hogy a legjobban a geometriai Brown-mozgás teljesített, ez arra utal, hogy a vizsgált időszakban a bűnözés alakulása jól követte a korábbi trendet. A geometriai Brown mozgás előnye az lehetett, hogy bűnözés időbeli változását írta le, és minden körzetre külön drift- és volatilitásparamétert használt. Emiatt jól tudta követni azokat a területeket, ahol a bűncselekményszám alakulása viszonylag stabilan illeszkedett a múltbeli mintázatokhoz.
 A Random Forest rolling feature-ökkel kiegészített változata szintén jó eredményt adott, csak kis mértékben marad el a geometriai Brown-mozgás eredményétől. Ez azt mutatja, hogy a mozgóátlagok és mozgószórások hasznos információt adtak a modell számára.
 
 Összességében az eredmények azt mutatják, hogy a bűncselekmények előrejelzésében a múltbeli trend és a rövid távú mozgóátlag kiemelten fontos szerepet játszik. A geometriai Brown-mozgás teljesítménye alapján a bűnözés alakulása ebben az időszakban erősen követte a korábbi trendeket, és a sztochasztikus modellezés jól megragadta ezt a dinamikát.
