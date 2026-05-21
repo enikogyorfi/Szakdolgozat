@@ -282,13 +282,17 @@ A @arrest_stats_top10 a leggyakoribb bűncselekménytípusokat mutatja be a leta
   caption: [Bűncselekmények havi alakulása (összesítve)])<buneset_havi_alakulasa_osszesitett>
 A @buneset_havi_alakulasa és a @buneset_havi_alakulasa_osszesitett a bűncselekmények havi alakulását mutatja be. A @buneset_havi_alakulasa alapján látható a bűnözés éven belüli szezonális mintázata, jellemzően a nyári hónapokban a legmagasabb a bűncselekmények száma, míg a téli hónapokban egy jelentős csökkenés figyelhető meg. Bár a bűnözés csökkenő trndet mutata a 2001 és 2025 közötti időszakban, a szezonalitás továbbra is megfigyelhető. Ezeket a megfigyeléseket számszerűsíti a @buneset_havi_alakulasa_osszesitett, itt is megfigyelhető, hogy valóban a nyári hónapokban a legmagasabb a bűncselekmények száma, míg ez a szám a téli hónapokra csökken.
 
-== Bűnözés időbeli modellezése geometriai Brown-mozgással
 
-Ebben a fejezetben a bűnözés időbeli alakulását modellezem geometriai Brown-mozgással. A felépített modell alapját Julia Calatayud és tárasi (@calatayud2023) 2023-ban megjelent tanulmánya adja, amelyben a bűnözés időbeli alakulását sztochasztikus differenciálegyenletekkel modellezték. A szerzők a spanyolországi Valencia város bűnözési adatait vizsgálták geometriai Brown-mozgás segítségével, de az általuk javasolt módszertan alkalmazható más városok, így Chicago bűnözési adatainak modellezésére is. A következőkben bemutatom hogyan készítettem elő az adatokat és hogyan határoztam meg a geometriai Brown-mozgás paramétereit, majd a modell segítségével előrejelzéseket készítek a bűnözés alakulására vonatkozóan.
+
+== Bűnözés időbeli modellezése geometriai Brown-mozgással (Korrelált Brown-mozgás)
+
+Ebben a fejezetben a bűnözés időbeli alakulását modellezem geometriai Brown-mozgással. A felépített modell alapját Julia Calatayud és tárasi (@calatayud2023) 2023-ban megjelent tanulmánya adja, amelyben a bűnözés időbeli alakulását sztochasztikus differenciálegyenletekkel modellezték. A módszer lényege, hogy a különböző területekhez tartozó Brown-mozgások nem függetlenek, hanem korreláltak, így a modell képes figyelembe venni a térségek közötti együttmozgást is.
+ A szerzők a spanyolországi Valencia város bűnözési adatait vizsgálták geometriai Brown-mozgás segítségével, de az általuk javasolt módszertan alkalmazható más városok, így Chicago bűnözési adatainak modellezésére is. A következőkben bemutatom hogyan készítettem elő az adatokat és hogyan határoztam meg a geometriai Brown-mozgás paramétereit, majd a modell segítségével előrejelzéseket készítek a bűnözés alakulására vonatkozóan.
 
 === Adatok előkészítése
 
 Elsőként, hogy a modellt alkalmazni tudjam, a nyers adatokat megfelelő térbeli és időbeli felbontásra kellett hozni. Ahogy az @buneset_suruseg_terkep is mutatja, a bűnözési mintázat jelentős eltéréseket mutat a városon belül, ezért az előrejelzéseket kerültenként készítem el (a 21-es és 31-es körzetre nem állt rendelkezésre elég információ, így azokat az elemzés során nem vettem figyelembe). Az időbeli felbontáshoz először minden körzetre és évre kiszámoltam a havi bűncselekmények számát, majd ebből az adatból kiszámoltam a bűncselekmények napi átlagos számát, így figyelembe tudtam venni, hogy az egyes hónapok különböző hosszúságúak. Tanító adathalmazatként a 2001 és 2024 közötti időszakot, míg teszt adatként 2025 január és augusztus közötti időszakot használtam. Illetve még az adatelőkészítés során eltávolítottam azokat az oszlopokat amelykre nem lesz szükség a modellépítés során, például a bűncselekmények pontos helyét jelző földrajzi koordinátákat, illetve a bűncselekmények típusát jelző oszlopokat is, mivel ezek nem relevánsak a bűnözés időbeli alakulásának modellezése szempontjából.
+
 
 === Paraméterek meghatározása
 
@@ -298,59 +302,100 @@ Elsőként a szimuláció alapparamétereit határoztam meg, ezek a következők
 - _N_: A szimuláció lépéseinek száma, amelyet a teljes időtartam és az időlépés alapján számoltam ki, így $N =T/("dt")$
 - _$S_0$_: A szimuláció kezdeti értéke, amely minden körzetre a 2024 decemberében elkövetett bűncselekmények napi átlagos számát jelenti, mivel ez az utolsó ismert adatpont a tanító adathalmazatban.
 - _t_: A szimuláció időtengelye, amely tartalmazza a szimuláció minden időpontját a kezdeti időponttól a teljes időtartam végéig, az időlépésnek megfelelően.
-Majd ezt követően meghatároztam a geometriai Brown-mozgás paramétereit, amelyek a következők voltak:
-- _μ_: A drift paraméter, amely a bűnözés hosszú távú trendjét jelenti. Ezt a paramétert minden körzetre külön-külön határoztam meg. Ehhez kiszámoltam a 2001 és 2024 közötti időszakban az egymást követő hónapok közötti relatív változást minden körzetre:
- $
- R=(S_(t+1)-S_t)/S_t
- $
- ahol $S_t$ a bűncselekmények napi átlagos száma egy adott körzetben a t-edik hónapban. Ezután kiszámoltam ezen relatív változások átlagát minden körzetre, és ezt az értéket használtam a drift paraméterként.
-- _σ_: A volatilitás paraméter, amely a bűnözés rövid távú ingadozásait jelenti. Ezt a paramétert szintén minden körzetre külön-külön határoztam meg. A $sigma$ kiszámolásához is a relatív változásokat használtam, de ezúttal a szórásukat számoltam ki minden körzetre, és ezt az értéket használtam a volatilitás paraméterként.
-Minden körzetre két lehetséges szcenáriót szimuláltam, úgy, hogy minden körzetre és minden időpontra generáltam egy véletlenszerű számot a standard normális eloszlásból. Ezután a sztochasztikus paraméter meghatározásához mindenkét szcenárióban vettem a véletlen számok kommulált összegét és így kaptam meg a _$W$_ paramétert. Végül a szimulációt a következő képlettel hajtottam végre minden körzetre és minden időpontra:
- $
- S_(t+1)=S_0*exp((μ-σ^2/2)*("dt")+σ*sqrt("dt")*W_t)
- $
- ahol $S_0$ a szimuláció kezdeti értéke, $μ$ a drift paraméter, $σ$ a volatilitás paraméter, $("dt")$ az időlépés, és $W_t$ a sztochasztikus paraméter.
 
-=== Eredmények és értékelés
+A körzetek idősorait geometriai Brown-mozgással modelleztem. Jelölje $S_(i,t)$ az i-edik körzetben a bűncselekmények napi átlagos számát a t-edik időpontban. Ekkor az i-edik körzet idősora a következő sztochasztikus differenciálegyenlettel írható le:
+$
+d S_(i,t) = S_(i,t) μ_i d t + σ_i S_(i,t) d W_(i.t))
+$
+ahol $mu_i$ az i-edik körzet drift paramétere, $sigma_i$ a volatilitás paramétere, és $W_(i,t)$ az i-edik körzethez tartozó Brown-mozgás. A megoldás az alábbi alakban adható meg:
+ $
+ S_(i,t)=S_(i,0)*exp((μ_i-σ_i^2/2)*"t"+σ_i*W_(i,t))
+ $
+A modell minden körzetre külön-külön határozza meg a drift és volatilitás paramétereket, de a körzetek közötti Brown-mozgások között korrelációt feltételez:
+$
+"Corr"( W_(i,t), W_(j,t))=ρ_(i,j)
+ $
+ ahol $ρ_(i,j)$ a körzetek közötti korrelációs együttható. Ez azt fejezi ki, hogy a különböző körzetek bűnözési mintázatai nem függetlenek, tehát ha két körzet bűnözése hasonlóan változott az elmúlt években, akkor a modell a jövőben is figyelembe fogja ezt venni.
+ A drift és volatilitás paraméterek számítását az alábbi módon végeztem:
+- _μ_: A drift paraméter, amely a bűnözés hosszú távú trendjét jelenti. Ezt a paramétert minden körzetre külön-külön határoztam meg. Ehhez először kiszámoltam az i-edik körzetben minden egymást követő hónap közötti loghozamot:
+$
+mu_(i,t) = log(S_(i,t+1)/S_(i,t))
+$
+majd kiszámoltam a loghozamok átlagát és szórását és a drift paramétert a következő képlettel számoltam ki:
+$
+μ_i = overline(mu_(i,t)) + 0.5*"sd" (mu_(i,t))^2
+$
+- _σ_: A volatilitás paraméter, amely a bűnözés rövid távú ingadozásait jelenti. Ezt a paramétert szintén minden körzetre külön-külön határoztam meg. A $sigma$ kiszámolásához is a loghozamokat használtam, kiszámoltam minden körzetre a szórásukat, és ezt az értéket használtam a volatilitás paraméterként:
+$
+σ_i = "sd"(mu_(i,t))
+$
 
-A szimuláció eredményeként minden körzetre és minden időpontra két lehetséges szcenáriót kaptam, az @geom_brown_simulation_results_1_kerulet az első körzetre kapott előrejelzéseket mutatja be a két szcenárióban.
+==== A korrelációs mátrix meghatározása és szcenáriók generálása
+
+A loghozamok alapján kiszámoltam a körzetek közötti korrelációs mátrixot, amely megmutatja, hogy a különböző körzetek bűnözési mintázatai mennyire mozognak együtt. Ha $i,j$ jelöl két körzetet, akkor a korrelációs együttható a következő képlettel számolható ki:
+$
+ρ_(i,j) = "Cov"(mu_(i,t), mu_(j,t))/sigma_i*sigma_j
+$
+ahol $"cov"(mu_(i,t), mu_(j,t))$ az i-edik és j-edik körzet loghozamainak kovarianciája, $sigma_i$ és $sigma_j$ pedig a volatilitás paraméterek. Így a korrelációs mátrix a következő alakú lesz:
+$
+R = (ρ_(i,j))
+$
+
+A korrelált Brown-mozgások előállításához a körzetek korrelációs mátrixának Cholesky-felbontását használtam:
+$
+R = L L^T
+$
+ahol R a korrelációs mátrix, L pedig egy alsó háromszögmátrix. Ekkor a független standard normál eloszlású változókból előállíthatók a korrelált valószínűségi változók a következő módon:
+$
+Delta W_t = sqrt(d t) L Z_t
+$
+ahol $Z_t$ egy független standard normál eloszlású vektor, és $Delta W$ a korrelált Brown-mozgások vektora. Ezután a Brown-pályákat a következő módon állítottam elő:
+$
+W_(t_k) = sum_(l=1)^(k) Delta W_t_l
+$
+Tehát így minden körzethez és szcenárióhoz egy összefüggő Brown-pálya tartozik, amely figyelembe veszi a körzetek közötti korrelációt is. Majd az így kapott paramétereket és pályákat behelyettesítettem a geometriai Brown-mozgás megoldásába és így kaptam meg a bűnözés előrejelzéseit minden körzetre és minden időpontra vonatkozóan.
+
+Tehát például három szcenárió generálása esetén a következő eredményt kaptam az első körzetre vonatkozóan:
+
 #figure(
-    caption: [Az első körzetre kapott előrejelzések a két szcenárióban],
+    caption: [Az első körzetre kapott előrejelzések a három szcenárióban],
     [
         #set text(size: 9pt)
-        #pandas-table("Results/predicted_df.csv")
+        #pandas-table("Results/gbm_pred_1korzet_2.csv")
 
     ]
 ) <geom_brown_simulation_results_1_kerulet>
-
-Ahhoz, hogy ezeket a szcenáriókat értékelni tudjam, összehasonlítottam őket a teszt adatokkal, amelyek 2025 január és augusztus közötti időszakot ölelik fel. A @geom_brown_simulation_results_1_kerulet_actual_vs_predicted  mutatja a tényleges bűncselekmények napi átlagos számát a teszt időszakban, valamint a két szcenárióban kapott előrejelzéseket.
+A táblázat alapján látható, hogy a három szcenárióban kapott előrejelzések jelentős eltéréseket mutatnak, ami a sztochasztikus paraméter véletlenszerűségéből adódik. Ez azt jelzi, hogy a geometriai Brown-mozgás érzékeny a sztochasztikus paraméter értékére, ezért fontos lehet több szcenáriót is szimulálni, hogy jobban megértsük a bűnözés időbeli alakulásának bizonytalanságát. A szcenáriók eredményeit a valós adatokkal is összehasonlítottam:
 
 #figure(
-    image("Images/Results_img/prediction_plot.png", width: 65%),
-    caption: [Tényleges bűncselekmények napi átlagos száma a teszt időszakban és a két szcenárióban kapott előrejelzések],
+    image("Images/Results_img/predictions_vs_actuals_district_1.png", width: 65%),
+    caption: [Tényleges bűncselekmények napi átlagos száma a teszt időszakban és a három szcenárióban kapott előrejelzések],
 ) <geom_brown_simulation_results_1_kerulet_actual_vs_predicted>
-
-Már az ábra alapján is látható, hogy a két szcenárióban kapott előrejelzések jelentős eltéréseket mutatnak, ami a sztochasztikus paraméter véletlenszerűségéből adódik. Az ábra alapján leolvasható, hogy a  második szcenárióban kapott előrejelzések közelebb állnak a tényleges adatokhoz. Ez azt jelzi, hogy a geometriai Brown-mozgás érzékeny a sztochasztikus paraméter értékére, ezért fontos lehet több szcenáriót is szimulálni, hogy jobban megértsük a bűnözés időbeli alakulásának bizonytalanságát. A két szcenárió összehasonlításáshoz kiszámoltam az RMSE (Root Mean Square Error) értékét minden körzetre.
-$
+A különbségek számszerűsítéséhez kiszámoltam az RMSE értékeket is:
+ $
 "RMSE" = sqrt(sum_(i=1)^(n)(y_i - (hat(y))_i)^2)
 $
-így számszerűsíteni tudtam a két szcenárió előrejelzéseinek pontosságát. Az RMSE értékek alapján a második szcenárióban kapott előrejelzések a 25. körzet kivételével minden körzetben alacsonyabb RMSE értéket mutattak, ami megerősíti azt a megfigyelést, hogy a második szcenárióban kapott előrejelzések közelebb állnak a tényleges adatokhoz. Az első körzet esetén a @geom_brown_simulation_results_1_kerulet_rmse mutatja a két RMSE értéket.
+és ábrázoltam a három szcenárióra:
+
 #figure(
-    image("Images/Results_img/rmse_plot.png", width: 75%),
-    caption: [Az első körzet esetén a két szcenárió RMSE értékei],
+    image("Images/Results_img/rmse_by_scenario_district_1.png", width: 75%),
+    caption: [Az első körzet esetén a három szcenárió RMSE értékei],
    ) <geom_brown_simulation_results_1_kerulet_rmse>
 
+=== Eredmények és értékelés
+
+A tényleges szimuláció során 10.000 szcenáriót generáltam, ahogy azt a három szcenáriót tartalmazó példán is bemutattam, ezek a szcenáriók eltérő viselkedést mutatnak. Ahhoz, hogy kiválasszam a legjobb szcenáriót, ami minden körzet esetén a legjobb előrejelzést adja, kiszámoltam az RMSE értékeket minden szcenárióra és minden körzetre vonatkozóan, majd kiválasztottam azt a szcenáriót, amelyik a átlagos RMSE értéket adta.
 Az eredmények összefoglalását az alábbi táblázat mutatja:
 
 #figure(
     caption: [Az eredmények összefoglalása],
     [
         #set text(size: 9pt)
-        #pandas-table("Results/overall_metrics.csv")
+        #pandas-table("Results/gbm_overall_metrics.csv")
         )
     ]
 ) <geom_brown_simulation_results_rmse_table>
-A táblázat alapján látható, hogy a modell 93,08%-os pontosággal (Accuracy) tudta előrejelezni a bűnözés alakulását a teszt időszakban, ami azt jelzi, hogy a geometriai Brown-mozgás jól alkalmazható a bűnözés időbeli modellezésére. Az RMSE és MAE (mean absolute error) értékek alapján is jól teljesített a modell, ezek az értékek azt mutatják, hogy a modell által előrejelzett értékek nem sehol nem térnek el kiugóan a tényleges értékektől.
+A táblázat alapján látható, hogy a modell 91,07%-os pontosággal (Accuracy) tudta előrejelezni a bűnözés alakulását a teszt időszakban, ami azt jelzi, hogy a geometriai Brown-mozgás jól alkalmazható a bűnözés időbeli modellezésére. Az RMSE és MAE (mean absolute error) értékek alapján is jól teljesített a modell, ezek az értékek azt mutatják, hogy a modell által előrejelzett értékek sehol nem térnek el kiugóan a tényleges értékektől.
 
 #figure(
   grid(
@@ -359,13 +404,13 @@ A táblázat alapján látható, hogy a modell 93,08%-os pontosággal (Accuracy)
 
     // Első kép és esetleg alá egy kis belső felirat
     align(center)[
-      #image("Images/Results_img/gbm_predicted_heatmap.png", width: 90%)
+      #image("Images/Results_img/gbm_predicted_heatmap_2.png", width: 90%)
       *(a)* Előrejelzés hőtérképen
     ],
 
     // Második kép
     align(center)[
-      #image("Images/Results_img/gbm_actual_heatmap.png", width: 90%)
+      #image("Images/Results_img/gbm_actual_heatmap_2.png", width: 90%)
       *(b)* Tényleges adatok hőtérképen
     ]
   ),
@@ -374,10 +419,14 @@ A táblázat alapján látható, hogy a modell 93,08%-os pontosággal (Accuracy)
 A @osszehasonlito-abra alapján is látható, hogy a két hőtérkép hasonló mintázatot mutat, látható, hogy a modell mind a kisebb  mind a nagyobb esetszámú területeket jól azonosította, ami azt jelzi, hogy a modell képes volt megragadni a bűnözés nemcsak időbeli, de térbeli mintázatát is.
 
 #figure(
-    image("Images/Results_img/gbm_difference_heatmap.png" , width: 40%),
+    image("Images/Results_img/gbm_difference_heatmap_2.png" , width: 40%),
     caption: [Az előrejelzés és a tényleges adatok közötti különbség hőtérképen],
 ) <gbm_difference_heatmap>
  Hogy vizuálisan is látható legyen a különbség a két hőtérkép között, készítettem egy külön hőtérképet, amely az előrejelzés és a tényleges adatok közötti különbséget mutatja be. A @gbm_difference_heatmap alapján látható, hogy a különbségek nagy része kisebb értékek körül helyezkedik el, de megfiygelhető, hogy a 19-es, 14-es és 12-es körzetekben az abszolút átlagos hiba magasabb.
+
+
+
+
 
 == Bűnözés előrejelzése Random Forest modellel
 
@@ -600,6 +649,12 @@ A táblázat alapján látható, hogy a legjobban a geometriai Brown-mozgás tel
 A Random Forest rolling feature-ökkel kiegészített változata szintén jó eredményt adott, csak kis mértékben marad el a geometriai Brown-mozgás eredményétől. Ez azt mutatja, hogy a mozgóátlagok és mozgószórások hasznos információt adtak a modell számára.
 
 Összességében az eredmények azt mutatják, hogy a bűncselekmények előrejelzésében a múltbeli trend és a rövid távú mozgóátlag kiemelten fontos szerepet játszik. A geometriai Brown-mozgás teljesítménye alapján a bűnözés alakulása ebben az időszakban erősen követte a korábbi trendeket, és a sztochasztikus modellezés jól megragadta ezt a dinamikát.
-
+#pagebreak
 
 == Bűnözést befolyásoló demográfiai tényezők elemzése és előrejelzés készítése
+
+Az előző fejezetekben a bűnözés időbeli alakulását vizsgáltam geometriai Brown-mozgás, illetve Random Forest modellek segítségével. Ezekben a modellekben a fő cél az volt, hogy a múltbeli bűnözési adatok alapján minél pontosabb előrejelzést készítsek a következő hónapokra. A modellek elsősorban az idősoros mintázatokra, a szezonalitásra, a lag-változókra és a mozgóátlagokra épültek. Ebben a fejezetben egy ettől eltérő megközelítést vizsgálok. Itt nemcsak maga az előrejelzés a cél, hanem annak vizsgálata is, hogy mely társadalmi-demográfiai jellemzők állhatnak kapcsolatban a bűnözés alakulásával és az egyes bűncselekménytípusok esetében milyen tényezők lehetnek meghatározóak.
+
+További különbség az eddigi fejezetekhez képest, hogy az elemzést már nem körzetekre végzem, hanem ugynevezett community area szinten, amely egy kisebb területi egység, illetve nem havi szinten, hanem éves szinten vizsgálom a bűnözés alakulását. Ennek oka, hogy a társadalmi-demográfiai jellemzők általában éves szinten állnak rendelkezésre és community area szinten aggregálható.
+
+=== Adatok előkészítése
