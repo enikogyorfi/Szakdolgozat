@@ -384,7 +384,7 @@ $
 
 === Eredmények és értékelés
 
-A tényleges szimuláció során 10.000 szcenáriót generáltam, ahogy azt a három szcenáriót tartalmazó példán is bemutattam, ezek a szcenáriók eltérő viselkedést mutatnak. Ahhoz, hogy kiválasszam a legjobb szcenáriót, ami minden körzet esetén a legjobb előrejelzést adja, kiszámoltam az RMSE értékeket minden szcenárióra és minden körzetre vonatkozóan, majd kiválasztottam azt a szcenáriót, amelyik a átlagos RMSE értéket adta.
+A tényleges szimuláció során 10.000 szcenáriót generáltam és ahogy azt a három szcenáriót tartalmazó példán is bemutattam, ezek a szcenáriók eltérő viselkedést mutatnak. Ahhoz, hogy kiválasszam azt a szcenáriót, ami minden körzet esetén a legjobb előrejelzést adja, kiszámoltam az RMSE értékeket minden szcenárióra és minden körzetre vonatkozóan, majd kiválasztottam azt a szcenáriót, amelyik a legkisebb átlagos RMSE értéket adta.
 Az eredmények összefoglalását az alábbi táblázat mutatja:
 
 #figure(
@@ -423,7 +423,6 @@ A @osszehasonlito-abra alapján is látható, hogy a két hőtérkép hasonló m
     caption: [Az előrejelzés és a tényleges adatok közötti különbség hőtérképen],
 ) <gbm_difference_heatmap>
  Hogy vizuálisan is látható legyen a különbség a két hőtérkép között, készítettem egy külön hőtérképet, amely az előrejelzés és a tényleges adatok közötti különbséget mutatja be. A @gbm_difference_heatmap alapján látható, hogy a különbségek nagy része kisebb értékek körül helyezkedik el, de megfiygelhető, hogy a 19-es, 14-es és 12-es körzetekben az abszolút átlagos hiba magasabb.
-
 
 
 
@@ -645,11 +644,13 @@ Az eredményeket az alábbi táblázat foglalja össze:
     ]
 ) <model_comparison>
 
-A táblázat alapján látható, hogy a legjobban a geometriai Brown-mozgás teljesített, ez arra utal, hogy a vizsgált időszakban a bűnözés alakulása jól követte a korábbi trendet. A geometriai Brown mozgás előnye az lehetett, hogy bűnözés időbeli változását írta le, és minden körzetre külön drift- és volatilitásparamétert használt. Emiatt jól tudta követni azokat a területeket, ahol a bűncselekményszám alakulása viszonylag stabilan illeszkedett a múltbeli mintázatokhoz.
-A Random Forest rolling feature-ökkel kiegészített változata szintén jó eredményt adott, csak kis mértékben marad el a geometriai Brown-mozgás eredményétől. Ez azt mutatja, hogy a mozgóátlagok és mozgószórások hasznos információt adtak a modell számára.
+A táblázat alapján látható, hogy a különböző hibamutatók nem teljesen ugyanazt a sorrendet adják. RMSE alapján a Random Forest kizárólag késleltetett változókat használó változata érte el a legalacsonyabb hibát, ugyanakkor a MAPE és az Accuracy alapján a rolling feature-ökkel kiegészített Random Forest modell teljesített a legjobban. A MAPE relatív hibát mér, az Accuracy pedig ebből származtatott mutató, ez alapján összességében a Random Forest rolling feature-ökkel kiegészített változata tekinthető a legkedvezőbb modellnek.
 
-Összességében az eredmények azt mutatják, hogy a bűncselekmények előrejelzésében a múltbeli trend és a rövid távú mozgóátlag kiemelten fontos szerepet játszik. A geometriai Brown-mozgás teljesítménye alapján a bűnözés alakulása ebben az időszakban erősen követte a korábbi trendeket, és a sztochasztikus modellezés jól megragadta ezt a dinamikát.
-#pagebreak
+A geometriai Brown-mozgás teljesítménye valamivel gyengébb lett, mint a Random Forest rolling feature-ökkel kiegészített változatáé és a baseline modellé. Ennek oka lehet, hogy a geometriai Brown-mozgás elsősorban a múltbeli trendből, a volatilitásból és a korrelált véletlen ingadozásokból indul ki, míg a Random Forest modellek további időbeli jellemzőket, például szezonalitást, lag-változókat, mozgóátlagokat és mozgószórásokat is figyelembe vesznek.
+
+Összességében az eredmények azt mutatják, hogy a bűncselekmények előrejelzésében a múltbeli trend, a rövid távú mozgóátlagok és az időbeli késleltetett változók kiemelten fontos szerepet játszanak. A Random Forest rolling feature-ökkel kiegészített változata azért teljesített jól, mert egyszerre tudta figyelembe venni a múltbeli értékeket, az ingadozásokat és a szezonális mintázatokat. 
+
+#pagebreak()
 
 == Bűnözést befolyásoló demográfiai tényezők elemzése és előrejelzés készítése
 
@@ -658,3 +659,15 @@ Az előző fejezetekben a bűnözés időbeli alakulását vizsgáltam geometria
 További különbség az eddigi fejezetekhez képest, hogy az elemzést már nem körzetekre végzem, hanem ugynevezett community area szinten, amely egy kisebb területi egység, illetve nem havi szinten, hanem éves szinten vizsgálom a bűnözés alakulását. Ennek oka, hogy a társadalmi-demográfiai jellemzők általában éves szinten állnak rendelkezésre és community area szinten aggregálható.
 
 === Adatok előkészítése
+
+A demográfiai és társadalmi-gazdasági jellemzők adatainak forrása a U.S. Census Bureau által publikált American Community Survey (ACS) 5 éves becslései voltak, amelyek évente frissülnek és részletes információkat tartalmaznak a lakosság összetételéről, jövedelmi viszonyairól, foglalkoztatottságáról, oktatási szintjéről és egyéb társadalmi-gazdasági jellemzőiről.
+
+Az elemzéshez a 2013 és 2023 közötti adatokat használtam fel. Az adatok eredetileg census tract szinten álltak rendelkezésre, amely egy kisebb területi egység, mint a community area. Ezért először a census tract-eket aggregáltam community area szintre. A feldolgozás során több társadalmi és gazdasági mutatót képeztem illetve a nyers adatok helyett arányszámokat alkalmaztam, a jobb összehasonlíthatóság érdekében. Az elemzés során a következő mutatókat használtam:
+- _Teljes népesség_: A community area teljes lakossága
+- _Munkanélküliek aránya_: A munkanélküliek aránya a teljes munkaerőhöz képest
+- _Egy főre jutó jövedelem_: A community area egy főre jutó jövedelme
+- _Iskolázottsági mutatók_: A középiskolát végzettek aránya, a diplomások aránya illetve a középiskolai végzettség nélküli lakosok aránya
+- _Szegénységi ráta_: A szegénységi küszöb alatt élők aránya
+- _Fiatal férfiak aránya_: A 15-34 éves férfiak aránya a teljes lakossághoz képest
+
+A bűnözési adatok előkészítése során az adatokat community area szintre aggregáltam és éves szinten összesítettem. Elsőként az összes bűncselekményt egyben vizsgáltam, majd külön-külön elemeztem a leggyakoribb bűncselekménytípusokat is, mint például a lopás, testi sértés.
