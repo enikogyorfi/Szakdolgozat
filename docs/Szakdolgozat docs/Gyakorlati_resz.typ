@@ -660,7 +660,10 @@ További különbség az eddigi fejezetekhez képest, hogy az elemzést már nem
 
 === Adatok előkészítése
 
+Ebben a fejezetben tanító adatként a 2013 és 2023 közötti időszakot használtam, míg az előrejelzést a 2024-es évre készítettem el, az előző fejezthez képest az eltérés oka, hogy erre a periódusra állnak rendelkezésre a legfrissebb társadalmi-demográfiai adatok.
+
 A demográfiai és társadalmi-gazdasági jellemzők adatainak forrása a U.S. Census Bureau által publikált American Community Survey (ACS) 5 éves becslései voltak, amelyek évente frissülnek és részletes információkat tartalmaznak a lakosság összetételéről, jövedelmi viszonyairól, foglalkoztatottságáról, oktatási szintjéről és egyéb társadalmi-gazdasági jellemzőiről.
+Az ACS 5 éves becslések nem egyetlen év pontos állapotát, hanem több év adataiból képzett becslést reprezentálnak. Emiatt ezek a változók inkább a városrészek tartósabb társadalmi-gazdasági jellemzőit írják le, nem pedig hirtelen éves változásokat. Ez ugyanakkor előnyös is lehet a bűnözési mintázatok vizsgálatában, mert a demográfiai tényezők hatása jellemzően nem egyik évről a másikra, hanem hosszabb időtávon jelenik meg.
 
 Az elemzéshez a 2013 és 2023 közötti adatokat használtam fel. Az adatok eredetileg census tract szinten álltak rendelkezésre, amely egy kisebb területi egység, mint a community area. Ezért először a census tract-eket aggregáltam community area szintre. A feldolgozás során több társadalmi és gazdasági mutatót képeztem illetve a nyers adatok helyett arányszámokat alkalmaztam, a jobb összehasonlíthatóság érdekében. Az elemzés során a következő mutatókat használtam:
 - _Teljes népesség_: A community area teljes lakossága
@@ -670,4 +673,29 @@ Az elemzéshez a 2013 és 2023 közötti adatokat használtam fel. Az adatok ere
 - _Szegénységi ráta_: A szegénységi küszöb alatt élők aránya
 - _Fiatal férfiak aránya_: A 15-34 éves férfiak aránya a teljes lakossághoz képest
 
-A bűnözési adatok előkészítése során az adatokat community area szintre aggregáltam és éves szinten összesítettem. Elsőként az összes bűncselekményt egyben vizsgáltam, majd külön-külön elemeztem a leggyakoribb bűncselekménytípusokat is, mint például a lopás, testi sértés.
+Mivel az ACS-adatok csak 2023-ig álltak rendelkezésre, a 2024-es előrejelzéshez a jellemzőket becsülni kellett. Ehhez Community Area-nként negyedfokú polinomiális extrapolációt alkalmaztam, amely a múltbeli értékek alapján egy negyedfokú polinomot illesztett az adatokra, majd ezt a polinomot használva becsültem meg a 2024-es értékeket.
+
+A bűnözési adatok előkészítése során az adatokat community area szintre aggregáltam és éves szinten összesítettem. Elsőként az összes bűncselekményt egyben vizsgáltam, majd külön-külön elemeztem a leggyakoribb bűncselekménytípusokat is, mint például a lopás, testi sértés. A feldolgozás során az előző fejezetekhez hasonlóan létrehoztam késleltetett változókat, mozgóátlagokat és mozgószórásokat is, hogy a modell ne csak a társadalmi-demográfiai jellemzőket, hanem a bűnözés múltbeli alakulását is figyelembe vegye az előrejelzés során.
+
+=== Eredmények és értékelés
+
+A demográfiai adatok bevonásával végzett elemzést két lépésben készítettem el. Elsőként egy összesített modellt építettem, amelyben az adott Community Area-ban és évben előforduló összes bűncselekmény számát vizsgáltam. Ennek célja az volt, hogy általános képet kapjak arról, mely társadalmi-gazdasági és demográfiai jellemzők kapcsolódnak leginkább a bűnözés teljes szintjéhez.
+
+Ezt követően a leggyakoribb bűncselekménytípusokat külön-külön is elemeztem, hogy megvizsgáljam, hogy a különböző bűncselekménytípusok esetében milyen tényezők lehetnek meghatározóak. Erre azért volt szükség, mert például egy vagyon elleni bűncselekmény, egy erőszakos bűncselekmény vagy egy kábítószerrel kapcsolatos eset mögött eltérő társadalmi és gazdasági mintázatok állhatnak.
+
+==== Összesített modell
+
+Tehát elsőként az összes bűncselekmény együttes esetszámát vizsgáltam, a célváltozó ennek megfelelően a bűncselekmények éves száma volt minden Community Area-ban. Az előrejelzés pedig egy évre előre készült, a 2024-es évre vonatkozóan. A modell célja egyrészt az volt, hogy vizsgáljam, hogy a társadalmi-gazdasági és demográfiai jellemzők bevonása javítja-e az előrejelzés pontosságát, másrészt pedig hogy megvizsgáljam, hogy mely tényezők állnak leginkább kapcsolatban a bűnözés alakulásával.
+
+Ennek megfelelően két modellt építettem, az elsőben csak a bűnözés múltbeli alakulását figyelembe vevő változókat használtam, míg a második modellben már a társadalmi-gazdasági és demográfiai jellemzőket is bevontam. A két modell összehasonlítás azért is fontos, mert az előző fejezetekben tárgyalt modellek, amik csak a bűnözés időbeli alakulását használták fel, is jó előrejelzéseket adtak, így a demográfiai adatok hozzáadott értéke csak akkor mutatható ki, ha a második modell a korábbi bűnözési szint figyelembevétele mellett is javítja az előrejelzési teljesítményt.
+Az értékelés során a korábban már ismertetett metrikákat használtam: RMSE, MAE, MAPE és Accuracy. Az eredményeket az alábbi táblázat foglalja össze:
+#figure(
+    caption: [Összesített modell eredményei],
+    [
+        #set text(size: 9pt)
+        #pandas-table("Results/szocdem_vs_rollingmean_summary.csv")
+    ]
+) <summary_total_crime>
+
+A táblázat alapján látható, hogy a társadalmi-gazdasági és demográfiai jellemzők bevonása javította az előrejelzés pontosságát, 88,74%-ról 90,14%-ra nőtt az Accuracy értéke. Tehát az új jellemzők hozzáadása valóban többletinformációt adott a modellnek, ugyanakkor a javulás mértéke nem volt ugrásszerű. Ennek oka lehet egyrészről, hogy a demográfiai tényezők csak lassan, általában hossazbb időszak alatt mutatnak jelentős változást, így a 2024-es évre vonatkozóan a becsült értékek nem térnek el jelentősen a 2023-as értékektől, másrészről pedig az idősoros jellemzők, mint például a lag-változók és a mozgóátlagok, már önmagukban is sok információt tartalmaznak, a modell már önmagában is viszonylag jó előrejelzést tud adni, így a további jellemzők hozzáadása ehhez képest már csak kisebb mértékben javítja a teljesítményt.
+

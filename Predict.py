@@ -12,6 +12,13 @@ import shap
 from sklearn.inspection import permutation_importance
 from sklearn.model_selection import cross_val_predict
 from sklearn.base import clone
+plt.rcParams["figure.facecolor"] = "white"
+plt.rcParams["axes.facecolor"] = "white"
+plt.rcParams["savefig.facecolor"] = "white"
+plt.rcParams.update({
+    "figure.facecolor": "white",
+    "axes.facecolor": "white",
+    "savefig.facecolor": "white"})
 
 def train_test_split(data, features, target, test_year):
     df = data.copy()
@@ -87,6 +94,7 @@ def predict(model, name, X_test, y_test, WMAPE=False):
         else:
             MAPE = np.mean(errors / y_test) * 100
             Accuracy = 100-MAPE
+            MAE = np.mean(abs(errors))
 
         Max_Error = max(errors)
         metrics = {
@@ -95,6 +103,7 @@ def predict(model, name, X_test, y_test, WMAPE=False):
             'WMAPE': wmape_score if WMAPE else 0,
             'MAPE': MAPE if not WMAPE else 0,
             'Accuracy': Accuracy if not WMAPE else 0,
+            'MAE': MAE if not WMAPE else 0,
             'Max_Error': Max_Error
         }
         mlflow.log_metrics(metrics)
@@ -105,9 +114,9 @@ def Scatter_plot(Results):
     plt.figure(figsize=(10, 6))
     plt.scatter(Results['Actual'], Results['Predicted'], alpha=0.5)
     plt.plot([Results['Actual'].min(), Results['Actual'].max()], [Results['Actual'].min(), Results['Actual'].max()], 'r--')
-    plt.title('Actual vs Predicted Counts')
-    plt.xlabel('Actual Counts')
-    plt.ylabel('Predicted Counts')
+    plt.title('Valós vs Predikált értékek', color = 'black')
+    plt.xlabel('Valós értékek', color = 'black')
+    plt.ylabel('Predikált értékek', color = 'black')
     plt.xlabel('Index')
 
 def Histogram(Results, area_col, target_col):
@@ -131,10 +140,11 @@ def feature_importance(model, X_train):
     feature_names = X_train.columns
     feature_importances = pd.Series(importances, index=feature_names).sort_values(ascending=False)
     plt.figure(figsize=(10, 6))
+    sns.set_style("white")
     sns.barplot(x=feature_importances, y=feature_importances.index)
-    plt.title('Feature Importances')
-    plt.xlabel('Importance Score')
-    plt.ylabel('Features')
+    plt.title('Feature Importances', color = 'black')
+    plt.xlabel('Importance Score', color = 'black')
+    plt.ylabel('Feature', color='black')
 
 def shap_summary(model, X_test):
     explainer = shap.TreeExplainer(model)
@@ -154,9 +164,9 @@ def permutation_importance_plot(model, X_test, y_test, feature_names):
     }).sort_values(by='Importance', ascending=False)
     plt.figure(figsize=(10, 6))
     sns.barplot(x=perm_importance['Importance'], y=perm_importance['Feature'])
-    plt.title('Permutation Importances (validation set)')
-    plt.xlabel('Mean Importance')
-    plt.ylabel('Feature')
+    plt.title('Permutation Importances (validation set)', color = 'black')
+    plt.xlabel('Mean Importance', color = 'black')
+    plt.ylabel('Feature', color = 'black')
 
 def permutation_importance_table(model, name, X_test, y_test, feature_names):
     Result_tables_dir = "Results_tables"
@@ -197,31 +207,36 @@ def visualitzacio(Results, name, model, X_train, X_test, y_test):
     with mlflow.start_run(run_name=f'{name}_Visualizations'):
         Scatter_plot(Results)
         full_path = os.path.join(images_dir, f'{name}_Results_scatter.png')
-        plt.savefig(full_path)
+        plt.tight_layout()
+        plt.savefig(full_path,  dpi=300, bbox_inches='tight')
         plt.close()
         mlflow.log_artifact(full_path, artifact_path="plots")
         plt.show()
         Histogram(Results, "Community Area", "error")
         full_path = os.path.join(images_dir, f'{name}_Results_histogram.png')
-        plt.savefig(full_path)
+        plt.tight_layout()
+        plt.savefig(full_path,  dpi=300, bbox_inches='tight')
         plt.close()
         mlflow.log_artifact(full_path, artifact_path="plots")
         plt.show()
         feature_importance(model, X_train)
         full_path = os.path.join(images_dir, f'{name}_Feature_importance.png')
-        plt.savefig(full_path)
+        plt.tight_layout()
+        plt.savefig(full_path,  dpi=300, bbox_inches='tight')
         plt.close()
         mlflow.log_artifact(full_path, artifact_path="plots")
         plt.show()
         shap_summary(model, X_test)
         full_path = os.path.join(images_dir, f'{name}_shap_summary.png')
-        plt.savefig(full_path)
+        plt.tight_layout()
+        plt.savefig(full_path,  dpi=300, bbox_inches='tight')
         plt.close()
         mlflow.log_artifact(full_path, artifact_path="plots")
         plt.show()
+        plt.tight_layout()
         permutation_importance_plot(model, X_test, y_test, X_train.columns)
         full_path = os.path.join(images_dir, f'{name}_permutation_importance.png')
-        plt.savefig(full_path)
+        plt.savefig(full_path,  dpi=300, bbox_inches='tight')
         plt.close()
         mlflow.log_artifact(full_path, artifact_path="plots")
 
