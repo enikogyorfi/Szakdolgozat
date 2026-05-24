@@ -697,5 +697,81 @@ Az értékelés során a korábban már ismertetett metrikákat használtam: RMS
     ]
 ) <summary_total_crime>
 
-A táblázat alapján látható, hogy a társadalmi-gazdasági és demográfiai jellemzők bevonása javította az előrejelzés pontosságát, 88,74%-ról 90,14%-ra nőtt az Accuracy értéke. Tehát az új jellemzők hozzáadása valóban többletinformációt adott a modellnek, ugyanakkor a javulás mértéke nem volt ugrásszerű. Ennek oka lehet egyrészről, hogy a demográfiai tényezők csak lassan, általában hossazbb időszak alatt mutatnak jelentős változást, így a 2024-es évre vonatkozóan a becsült értékek nem térnek el jelentősen a 2023-as értékektől, másrészről pedig az idősoros jellemzők, mint például a lag-változók és a mozgóátlagok, már önmagukban is sok információt tartalmaznak, a modell már önmagában is viszonylag jó előrejelzést tud adni, így a további jellemzők hozzáadása ehhez képest már csak kisebb mértékben javítja a teljesítményt.
+A táblázat alapján látható, hogy a társadalmi-gazdasági és demográfiai jellemzők bevonása javította az előrejelzés pontosságát, 88,74%-ról 90,14%-ra nőtt az Accuracy értéke. Tehát az új jellemzők hozzáadása valóban többletinformációt adott a modellnek, ugyanakkor a javulás mértéke nem volt ugrásszerű. Ennek oka lehet egyrészről, hogy a demográfiai tényezők csak lassan, általában hossazbb időszak alatt mutatnak jelentős változást, így a 2024-es évre vonatkozóan a becsült értékek nem térnek el jelentősen a 2023-as értékektől, másrészről pedig az idősoros jellemzők, mint például a lag-változók és a mozgóátlagok, már önmagukban is sok információt tartalmaznak, a modell már önmagában is viszonylag jó előrejelzést tud adni, így a további jellemzők hozzáadása ehhez képest már csak kisebb mértékben javítja a teljesítményt. További magyarázat lehet, hogy a 2024-es adatra a társadalmi-gazdasági és demográfiai jellemzők nem közvetlen megfigyelésből származnak, hanem becsült értékek, így ezek is hibával terheltek, ami csökkentheti a modell teljesítményét.
 
+#figure(
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em, // Kicsit szellősebb térköz
+
+    // Első kép és esetleg alá egy kis belső felirat
+    align(center)[
+      #image("Images/Results_img/RF_2024_byCommunityArea_onlylagged_Results_scatter.png", width: 90%)
+      *(a)* Csak idősoros jellemzőket használó modell előrejelzése 
+    ],
+
+    // Második kép
+    align(center)[
+      #image("Images/Results_img/RF_2024_byCommunityArea_laggedrolling_szocdem_Results_scatter.png", width: 90%)
+      *(b)* Idősoros jellemzőket és társadalmi-gazdasági, demográfiai jellemzőket is használó modell előrejelzése
+    ]
+  ),
+  caption: [Az előrejelzések és a tényleges adatok összehasonlítása szórásdiagramon]
+)<összehasonlító_scatter>
+Az ábrán is látható, hogy mindkét modell előrejelzései jól követik a tényleges aatokat, tehát a pontok nagy része a 45 fokos egyenes közelében helyezkedik el, iiletve az ábrán is látható, hogy a magasabb esetszámnál a társadlmi-gazdasági és demográfiai jellemzőket is tartalmazó modell előrejelzései jobban követik a tényleges adatokat.
+
+
+#figure(
+    caption: [A társadalmi-gazdasági és demográfiai jellemzőket \
+     is tartalmazó modell feature importance értékei],
+    [
+        #image("Images/Results_img/RF_2024_byCommunityArea_laggedrolling_szocdem_Feature_importance.png" , width: 80%)
+    ]
+) <feature_importance>
+Az @feature_importance ábra alapján látható, hogy a legfontosabb jellemzők között elsősorban a bűnözés múltbeli alakulását leíró változók szerepelnek, a társadalmi-gazdasági és demográfiai jellemzők közül pedig teljes népesség illetve a fiat férfiak aránya tűnik a legfontosabbnak.
+
+==== Bűncselekménytípusok szerinti elemzés
+
+Az összesített modell után a bűncselekménytípusok elemzésésvel folytattam. A típusonkénti modellben a célváltozó minden esetben a kiválasztott bűncselekménytípus éves esetszáma volt minden Community Area-ban. A modell célja elsősorban au volt, hogy vizsgáljam, hogy az egyes bűncselekménytípusok esetében milyen társadalmi-gazdasági és demográfiai tényezők lehetnek meghatározóak, illetve hogy ezek a tényezők mennyire járulnak hozzá a modell előrejelzési teljesítményéhez. Ennek megfelelően ebben a fejezetben nem használtam a mozgóátlagokat, hanem csak a demográfiai és társadalmi-gazdasági jellemzőket,hogy a modellek értelmezése során egyértelműen meg lehessen vizsgálni, hogy mely tényezők járulnak hozzá leginkább az előrejelzéshez.
+
+A modellek értelmezéséhez minden típus esetében elkészítettem háromféle ábrát:
+- _Feature importance_: Random Forest beépített feature importance értéke azt mutatja meg, hogy a döntési fák építése során az adott változó milyen mértékben járult hozzá a célváltozó jobb szétválasztásához
+- _SHAP értékek_: Az adott bűncselekménytípus esetében a legfontosabb jellemzők SHAP értékei, amelyek megmutatják, hogy az egyes jellemzők milyen irányban és milyen mértékben befolyásolják a modell előrejelzését
+- _Permutation importance_: Ennél a módszernél egy-egy változó értékeit véletlenszerűen összekeverjük, majd megvizsgáljuk, hogy ez mennyire rontja a modell teljesítményét. Ha egy változó összekeverése jelentősen növeli az előrejelzési hibát, akkor az azt jelzi, hogy a modell erősen támaszkodott erre a változóra.
+
+Az eddigi fejezetektől eltérően itt a modelll értékeléséhez WMAPE-t (Weighted Mean Absolute Percentage Error) használtam, mivel az egyes bűncselekménytípusok esetszáma nagyon eltérő lehet. Egy gyakori bűncselekménytípus, például a lopás esetében sokkal nagyobb esetszámok jelennek meg, míg ritkább típusoknál bizonyos Community Area-kban akár nagyon alacsony vagy nulla értékek is előfordulhatnak. Ilyen esetekben a hagyományos MAPE használata problémás lehet, mert az minden megfigyelésnél külön-külön oszt a tényleges értékkel. Ha a tényleges érték nagyon kicsi, akkor már egy kisebb abszolút hiba is aránytalanul nagy százalékos hibát eredményezhet, nulla érték esetén pedig a MAPE nem is értelmezhető.
+$
+"WMAPE" = (sum_(i=1)^n |y_i - hat(y)_i|) /(sum_(i=1)^n |y_i|)*100
+$
+
+A típusonkénti elemzés során minden bűncselekménykategóriánál külön értelmeztem az ábrákat. Elsőként a feature importance alapján megvizsgáltam, mely változók kapták a legnagyobb súlyt a modellben. Ezt követően a permutation importance eredményeivel ellenőriztem, hogy ezek a változók valóban hozzájárultak-e a modell prediktív teljesítményéhez. Végül a SHAP-ábrák segítségével részletesebben elemeztem, hogyan hatottak a legfontosabb változók az előrejelzett bűncselekményszámokra.
+
+===== Lopás
+
+A leggyakarabb bűncselekménytípus a lopás volt. Az alábbi ábrák a lopás esetében mutatják be a feature importance értékeket, a permutation importance eredményeit és a SHAP értékeket:
+#figure(
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em, // Kicsit szellősebb térköz
+
+    // Első kép és esetleg alá egy kis belső felirat
+    align(center)[
+      #image("Images/Results_img/RF_2024_by_THEFT_szocdem_Feature_importance.png", width: 90%)
+      *(a)* Lopás esetében a feature importance értékek
+    ],
+
+    // Második kép
+    align(center)[
+      #image("Images/Results_img/RF_2024_by_THEFT_szocdem_permutation_importance.png", width: 90%)
+      *(b)* Lopás esetében a permutation importance értékek
+    ]
+  ),
+  caption: [Lopás esetében a feature importance és permutation importance értékek összehasonlítása]
+)<összehasonlító_scatter>
+
+#figure(
+    caption: [Lopás esetében a feature importance értékek],
+    [
+        #image("Images/Results_img/RF_2024_by_THEFT_szocdem_shap_summary.png" , width: 80%)
+    ]
+) <theft_feature_importance>                                                                                                                                                                                                                                                                                                                                                                                                                                       

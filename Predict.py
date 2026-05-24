@@ -117,7 +117,7 @@ def Scatter_plot(Results):
     plt.title('Valós vs Predikált értékek', color = 'black')
     plt.xlabel('Valós értékek', color = 'black')
     plt.ylabel('Predikált értékek', color = 'black')
-    plt.xlabel('Index')
+
 
 def Histogram(Results, area_col, target_col):
 
