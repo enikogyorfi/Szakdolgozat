@@ -744,7 +744,7 @@ $
 "WMAPE" = (sum_(i=1)^n |y_i - hat(y)_i|) /(sum_(i=1)^n |y_i|)*100
 $
 
-A típusonkénti elemzés során minden bűncselekménykategóriánál külön értelmeztem az ábrákat. Elsőként a feature importance alapján megvizsgáltam, mely változók kapták a legnagyobb súlyt a modellben. Ezt követően a permutation importance eredményeivel ellenőriztem, hogy ezek a változók valóban hozzájárultak-e a modell prediktív teljesítményéhez. Végül a SHAP-ábrák segítségével részletesebben elemeztem, hogyan hatottak a legfontosabb változók az előrejelzett bűncselekményszámokra.
+A típusonkénti elemzés során minden bűncselekménykategóriánál külön értelmeztem az ábrákat. Elsőként a feature importance alapján megvizsgáltam, mely változók kapták a legnagyobb súlyt a modellben. Ezt követően a permutation importance eredményeivel ellenőriztem, hogy ezek a változók valóban hozzájárultak-e a modell prediktív teljesítményéhez. Végül a SHAP-ábrák segítségével részletesebben elemeztem, hogyan hatottak a legfontosabb változók az előrejelzett bűncselekményszámokra. A három leggyakrabban előforduló bűncselekménytípus esetében részletesen is bemutatom ezeket az elemzéseket.
 
 ===== Lopás
 
@@ -756,22 +756,119 @@ A leggyakarabb bűncselekménytípus a lopás volt. Az alábbi ábrák a lopás 
 
     // Első kép és esetleg alá egy kis belső felirat
     align(center)[
-      #image("Images/Results_img/RF_2024_by_THEFT_szocdem_Feature_importance.png", width: 90%)
+      #image("Images/Results_img/RF_2024_by_THEFT_szocdem_Feature_importance.png", width: 125%)
       *(a)* Lopás esetében a feature importance értékek
     ],
 
     // Második kép
     align(center)[
-      #image("Images/Results_img/RF_2024_by_THEFT_szocdem_permutation_importance.png", width: 90%)
+      #image("Images/Results_img/RF_2024_by_THEFT_szocdem_permutation_importance.png", width: 125%)
       *(b)* Lopás esetében a permutation importance értékek
     ]
   ),
   caption: [Lopás esetében a feature importance és permutation importance értékek összehasonlítása]
-)<összehasonlító_scatter>
+)<theft_importance>
+
+
 
 #figure(
     caption: [Lopás esetében a feature importance értékek],
     [
         #image("Images/Results_img/RF_2024_by_THEFT_szocdem_shap_summary.png" , width: 80%)
     ]
-) <theft_feature_importance>                                                                                                                                                                                                                                                                                                                                                                                                                                       
+) <theft_feature_importance>
+
+Az ábrák alapján látható, hogy a lopás esetében a következők voltaka legfontosabb változók:
+- _Fiat férfiak aránya_: Ez a változó a legmagasabb feature importance értéket kapta, és a permutation importance alapján is ez a változó volt a legfontosabb. A SHAP-ábrán is látható, hogy a magasabb fiatal férfi arány általában magasabb lopásszámot ereményez.
+- _Teljes népesség_: Ez a változó is magas feature importance értéket kapott, és a permutation importance alapján is ez volt a második legfontosabb változó. A SHAP-ábrán is látható, hogy a nagyobb népességű körzetekben általában magasabb lopásszámot jósolt a modell.
+- _Egy főre jutó jövedelem_: Ez a változó is viszonylag magas feature importance értéket kapott, és a permutation importance alapján ez volt a harmadik legfontosabb változó. Az SHAP alapján látható, hogy ha magasabb volt az egy főre jutó jövedelem, akkor az bizonyos esetekben magasabb lopásszámot eredményezett, ami magyarázható azzal, hogy a magasabb jövedelmű körzetekben gyakrabb lehet a lopás.
+- _Középiskolai végzettség nélküli lakosok aránya (25 év felett)_: Ez a változó is viszonylag magas feature importance értéket kapott, és a permutation importance alapján is meghatározó volt. Az SHAP-ábra alapján elsősorban az figyelhető meg, hogyha csökken az alacsony iskolázottságú lakosok aránya, akkor az általában alacsonyabb lopásszámot eredményezett.
+- _Szegénységi ráta_: Ez a változó is viszonylag magas feature importance értéket kapott, és a permutation importance alapján is meghatározó volt. Az SHAP-ábra alapján látható, hogy a magasabb szegénységi ráta általában magasabb lopásszámot eredményezett.
+
+A lopás esetében a modell WMAPE értéke 20,28% volt, ami azt jelenti, hogy az előrejelzések átlagosan 20,28%-kal tértek el a tényleges értékektől.
+#figure(
+    caption: [Lopás esetében az előrejelzések és a tényleges adatok összehasonlítása],
+    [
+        #image("Images/Results_img/RF_2024_by_THEFT_szocdem_Results_scatter.png", width: 80%)
+    ]
+) <theft_scatter>
+Az ábrán látható, hogy a lopás esetében a modell előrejelzései viszonylag jól követik a tényleges adatokat, bár a magasabb esetszámoknál néhány pont jelentősen eltér a 45 fokos egyenestől, ami azt jelzi, hogy a modell néhány esetben alul- vagy túlbecsülte a lopásszámot.
+
+==== Testi sértés
+
+A második leggyakoribb bűncselekménytípus a testi sértés volt. Az alábbi ábrák a testi sértés esetében mutatják be a feature importance értékeket, a permutation importance eredményeit és a SHAP értékeket:
+#figure(
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em, // Kicsit szellősebb térköz
+
+    // Első kép és esetleg alá egy kis belső felirat
+    align(center)[
+      #image("Images/Results_img/RF_2024_by_BATTERY_szocdem_Feature_importance.png", width: 125%)
+      *(a)* Testi sértés esetében a feature importance értékek
+    ],
+
+    // Második kép
+    align(center)[
+      #image("Images/Results_img/RF_2024_by_BATTERY_szocdem_permutation_importance.png", width: 125%)
+      *(b)* Testi sértés esetében a permutation importance értékek
+    ]
+  ),
+  caption: [Testi sértés esetében a feature importance és permutation importance értékek összehasonlítása]
+)<battery_importance>
+
+#figure(
+    caption: [Testi sértés esetében a feature importance értékek],
+    [
+        #image("Images/Results_img/RF_2024_by_BATTERY_szocdem_shap_summary.png" , width: 80%)
+    ]
+) <battery_feature_importance>
+Az ábrák alapján látható, hogy a testi sértés esetében a legfontosabb változók hasonlóak voltak, mint a lopás esetében:
+- _Népesség_: Ez a változó a legmagasabb feature importance értéket kapta, és a permutation importance alapján is ez a változó volt a legfontosabb. A SHAP-ábrán is látható, hogy a nagyobb népességű körzetekben általában magasabb testi sértés számot jósolt a modell.
+- _Szegénységi ráta_: Ez a változó is magas feature importance értéket kapott, és a permutation importance alapján is ez volt a második legfontosabb változó. Az SHAP-ábrán is látható, hogy a magasabb szegénységi ráta általában magasabb testi sértés számot eredményezett.
+- _Fiatal férfiak aránya_: Ez a változó is viszonylag magas feature importance értéket kapott, és a permutation importance alapján is meghatározó volt. A SHAP ábra alapján a magasabb arány kisebb mértékben, de alacsonyabb testi sértés számot eredményezett.
+
+Ebben az esetben a modell WMAPE értéke 23,07% volt, ami azt jelenti, hogy az előrejelzések átlagosan 23,07%-kal tértek el a tényleges értékektől.
+
+#figure(
+    caption: [Testi sértés esetében az előrejelzések és a tényleges adatok összehasonlítása],
+    [
+        #image("Images/Results_img/RF_2024_by_BATTERY_szocdem_Results_scatter.png", width: 80%)
+    ]
+) <battery_scatter>
+Az ábrán látható, hogy a testi sértés esetében már a kisebb esetszámoknál is több pont helyezkedik el a 45 fokos egyenestől távol, a modell előrejelzései kevésbé pontosak, mint a lopás esetében. 
+
+==== Rongálás
+
+A harmadik leggyakoribb bűncselekménytípus a rongálás volt. Az alábbi ábrák a rongálás esetében mutatják be a feature importance értékeket, a permutation importance eredményeit és a SHAP értékeket:
+
+#figure(
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em, // Kicsit szellősebb térköz
+
+    // Első kép és esetleg alá egy kis belső felirat
+    align(center)[
+      #image("Images/Results_img/RF_2024_by_CRIMINAL_DAMAGE_szocdem_Feature_importance.png", width: 125%)
+      *(a)* Rongálás esetében a feature importance értékek
+    ],
+
+    // Második kép
+    align(center)[
+      #image("Images/Results_img/RF_2024_by_CRIMINAL_DAMAGE_szocdem_permutation_importance.png", width: 125%)
+      *(b)* Rongálás esetében a permutation importance értékek
+    ]
+  ),
+  caption: [Rongálás esetében a feature importance és permutation importance értékek összehasonlítása]
+)<criminal_damage_importance>
+
+
+
+#figure(
+    caption: [Rongálás esetében a feature importance értékek],
+    [
+        #image("Images/Results_img/RF_2024_by_CRIMINAL_DAMAGE_szocdem_shap_summary.png" , width: 80%)
+    ]
+) <criminal_damage_feature_importance>
+
+

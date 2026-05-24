@@ -139,12 +139,12 @@ def feature_importance(model, X_train):
     importances = model.feature_importances_
     feature_names = X_train.columns
     feature_importances = pd.Series(importances, index=feature_names).sort_values(ascending=False)
-    plt.figure(figsize=(10, 6))
     sns.set_style("white")
-    sns.barplot(x=feature_importances, y=feature_importances.index)
-    plt.title('Feature Importances', color = 'black')
-    plt.xlabel('Importance Score', color = 'black')
-    plt.ylabel('Feature', color='black')
+    ax =sns.barplot(x=feature_importances, y=feature_importances.index)
+    ax.set_title("Feature Importances", color="black")
+    ax.set_xlabel("Importance Score", color="black")
+    ax.set_ylabel("Feature", color="black")
+    ax.tick_params(axis="y", labelsize=15)
 
 def shap_summary(model, X_test):
     explainer = shap.TreeExplainer(model)
@@ -163,10 +163,11 @@ def permutation_importance_plot(model, X_test, y_test, feature_names):
         'Type': 'Validation (Permutation)'
     }).sort_values(by='Importance', ascending=False)
     plt.figure(figsize=(10, 6))
-    sns.barplot(x=perm_importance['Importance'], y=perm_importance['Feature'])
-    plt.title('Permutation Importances (validation set)', color = 'black')
-    plt.xlabel('Mean Importance', color = 'black')
-    plt.ylabel('Feature', color = 'black')
+    ax = sns.barplot(x=perm_importance['Importance'], y=perm_importance['Feature'])
+    ax.set_title('Permutation Importances (validation set)', color = 'black')
+    ax.set_xlabel('Mean Importance', color = 'black')
+    ax.set_ylabel('Feature', color = 'black')
+    ax.tick_params(axis='y', labelsize=15)
 
 def permutation_importance_table(model, name, X_test, y_test, feature_names):
     Result_tables_dir = "Results_tables"
