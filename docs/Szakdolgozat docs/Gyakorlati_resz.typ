@@ -746,7 +746,7 @@ $
 
 A típusonkénti elemzés során minden bűncselekménykategóriánál külön értelmeztem az ábrákat. Elsőként a feature importance alapján megvizsgáltam, mely változók kapták a legnagyobb súlyt a modellben. Ezt követően a permutation importance eredményeivel ellenőriztem, hogy ezek a változók valóban hozzájárultak-e a modell prediktív teljesítményéhez. Végül a SHAP-ábrák segítségével részletesebben elemeztem, hogyan hatottak a legfontosabb változók az előrejelzett bűncselekményszámokra. A három leggyakrabban előforduló bűncselekménytípus esetében részletesen is bemutatom ezeket az elemzéseket.
 
-===== Lopás
+====== Lopás
 
 A leggyakarabb bűncselekménytípus a lopás volt. Az alábbi ábrák a lopás esetében mutatják be a feature importance értékeket, a permutation importance eredményeit és a SHAP értékeket:
 #figure(
@@ -794,7 +794,7 @@ A lopás esetében a modell WMAPE értéke 20,28% volt, ami azt jelenti, hogy az
 ) <theft_scatter>
 Az ábrán látható, hogy a lopás esetében a modell előrejelzései viszonylag jól követik a tényleges adatokat, bár a magasabb esetszámoknál néhány pont jelentősen eltér a 45 fokos egyenestől, ami azt jelzi, hogy a modell néhány esetben alul- vagy túlbecsülte a lopásszámot.
 
-==== Testi sértés
+===== Testi sértés
 
 A második leggyakoribb bűncselekménytípus a testi sértés volt. Az alábbi ábrák a testi sértés esetében mutatják be a feature importance értékeket, a permutation importance eredményeit és a SHAP értékeket:
 #figure(
@@ -838,7 +838,7 @@ Ebben az esetben a modell WMAPE értéke 23,07% volt, ami azt jelenti, hogy az e
 ) <battery_scatter>
 Az ábrán látható, hogy a testi sértés esetében már a kisebb esetszámoknál is több pont helyezkedik el a 45 fokos egyenestől távol, a modell előrejelzései kevésbé pontosak, mint a lopás esetében. 
 
-==== Rongálás
+===== Rongálás
 
 A harmadik leggyakoribb bűncselekménytípus a rongálás volt. Az alábbi ábrák a rongálás esetében mutatják be a feature importance értékeket, a permutation importance eredményeit és a SHAP értékeket:
 
@@ -862,8 +862,6 @@ A harmadik leggyakoribb bűncselekménytípus a rongálás volt. Az alábbi ábr
   caption: [Rongálás esetében a feature importance és permutation importance értékek összehasonlítása]
 )<criminal_damage_importance>
 
-
-
 #figure(
     caption: [Rongálás esetében a feature importance értékek],
     [
@@ -871,4 +869,51 @@ A harmadik leggyakoribb bűncselekménytípus a rongálás volt. Az alábbi ábr
     ]
 ) <criminal_damage_feature_importance>
 
+Az ábrák alapján megállapítható, hogy a itt sem tértek el jelentősen a legfontosabb változók a lopás és testi sértés esetében megfigyelhető változóktól:
+- _Népesség_: Ez a változó a legmagasabb feature importance értéket kapta, és a permutation importance alapján is ez a változó volt a legfontosabb. A SHAP-ábrán is látható, hogy a nagyobb népességű körzetekben általában magasabb rongálás számot jósolt a modell
+- _Szegénységi ráta_: Ez a változó is magas feature importance értéket kapott, és a permutation importance alapján is ez volt a második legfontosabb változó. Az SHAP-ábrán is látható, hogy a magasabb szegénységi ráta általában magasabb rongálás számot eredményezett, illetve a csökkenés a rongálási számot is meghatározóan csökkentette.
+- _Fogalkoztatottsági ráta_: Ez a változó is viszonylag magas feature importance értéket kapott, de a permutation importance alapján nem volt olyan meghatározó. A SHAP-ábra alapján látható, hogyha csökken a foglalkoztatottsági ráta, akkor az általában magasabb rongálás számot eredményezett.
+- _Fiatal férfiak aránya_: Ez a változó is viszonylag magas feature importance értéket kapott, de a permutation importance alapján nem volt annyira meghatározó. A SHAP ábra alapján a magasabb arány kisebb mértékben, de alacsonyabb rongálás számot eredményezett.
 
+A rongálás esetében a modell WMAPE értéke 21,48% volt, ami azt jelenti, hogy az előrejelzések átlagosan 21,48%-kal tértek el a tényleges értékektől.
+#figure(
+    caption: [Rongálás esetében az előrejelzések és a tényleges adatok összehasonlítása],
+    [
+        #image("Images/Results_img/RF_2024_by_CRIMINAL_DAMAGE_szocdem_Results_scatter.png", width: 80%)
+    ]
+) <criminal_damage_scatter>
+Az ábrán látható, hogy a rongálás esetében a modell előrejelzései a kisebb esetszámoknál viszonylag jól követik a tényleges adatokat, de a közepes és magasabb esetszámoknál már több pont helyezkedik el a 45 fokos egyenestől távol.
+
+===== Összefoglalás
+
+A bűncselekménytípusonkénti modellek részletesebb képet adtak arról, hogy a különböző kategóriák milyen demográfiai jellemzőkkel állnak kapcsolatban.
+A három leggyakoribb bűncselekménytípus, a lopás, a testi sértés és a rongálás esetében is hasonló társadalmi-gazdasági és demográfiai tényezők bizonyultak meghatározónak. A legfontosabb változók között minden típus esetében szerepelt a teljes népesség, a szegénységi ráta és a fiatal férfiak aránya. Ez azt jelzi, hogy ezek a tényezők általánosan fontos szerepet játszanak a bűnözés alakulásában, függetlenül attól, hogy milyen típusú bűncselekményről van szó.
+
+Fontos hangsúlyozni, hogy az eredmények nem oksági kapcsolatokat bizonyítanak. A változófontossági és SHAP-eredmények azt mutatják meg, hogy a modell előrejelzése szempontjából mely változók bizonyultak informatívnak. Ez alapján következtethetünk arra, hogy bizonyos társadalmi-gazdasági jellemzők kapcsolatban állhatnak egyes bűncselekménytípusok előfordulásával.
+
+Minden típushoz külön feature importance, permutation importance és SHAP-ábra tartozik, ezek egyenkénti bemutatása a főszövegben túlzottan részletes lenne. Ezért a főbb tendenciák szemléltetésére a 20 leggyakoribb bűncselekménytípus alapján készítettem összesítő ábrákat.
+
+#figure(
+    caption: [A 20 leggyakoribb bűncselekménytípus esetében a feature importance értékek],
+    [
+        #image("Images/Results_img/top_socio_feature_frequency.png" , width: 80%)
+    ]
+) <top20_feature_importance>
+Az ábrán a 20 leggyakoribb bűncselekménytípus esetében mutatja, hogy a permutation importance alapján mely társadalmi-gazdasági és demográfiai jellemzők voltak a leggyakrabban a legfontosabb változók között. Az ábra alapján látható, hogy a teljes népesség, a szegénységi ráta és a fiatal férfiak aránya voltak a leggyakoribb fontos változók, ami megerősíti azt a megállapítást, hogy ezek a tényezők általánosan fontos szerepet játszanak a bűnözés alakulásában.
+
+#figure(
+    caption: [A 20 leggyakoribb bűncselekménytípus esetében a feature importance értékek hőtérképen],
+    [
+        #image("Images/Results_img/socio_feature_importance_heatmap.png" , width: 90%)
+    ]
+) <top20_feature_importance_value_heatmap>
+
+#figure(
+    caption: [A 20 leggyakoribb bűncselekménytípus esetében a feature importance értékek hőtérképen],
+    [
+        #image("Images/Results_img/socio_feature_relative_importance_heatmap.png" , width: 90%)
+    ]
+) <top20_feature_importance_value_relative_heatmap>
+A két hőtérképen a 20 leggyakoribb bűncselekménytípus esetében mutatja, hogy a társadalmi-gazdasági és demográfiai jellemzők milyen gyakran szerepeltek a legfontosabb változók között, illetve hogy ezek a változók milyen mértékben járultak hozzá az előrejelzéshez. Az első hőtérképen a feature importance értékek abszolút értékei láthatóak, míg a második hőtérképen ezek az értékek normalizálva vannak, hogy jobban összehasonlíthatóak legyenek egymással. Mindkét ábra megerősíti azt a megállapítást, hogy bizonyos társadalmi-gazdasági és demográfiai tényezők általánosan fontos szerepet játszanak a bűnözés alakulásában, függetlenül attól, hogy milyen típusú bűncselekményről van szó.
+
+= Összefoglalás
