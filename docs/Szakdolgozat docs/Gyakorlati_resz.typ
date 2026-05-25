@@ -109,10 +109,18 @@
 
 #show ref: it => {
   let el = it.element
-  if el != none and el.func() == figure and not el.kind == table {
-    // Lekéri a hivatkozott ábra sorszámát
-    let num = counter(figure).at(el.location()).first()
-    link(el.location())[#num. Ábra]
+
+  if el != none and el.func() == figure {
+    let num = el.counter.at(el.location()).first()
+    let nev = if el.supplement != none {
+      el.supplement
+    } else if el.kind == table {
+      [Táblázat]
+    } else {
+      [Ábra]
+    }
+
+    link(el.location())[#num. #nev]
   } else {
     it
   }
@@ -232,44 +240,51 @@ A vizsgálathoz a Chicago városában elkövetett bűncselekmények adatait hasz
 - _District_: A város melyik rendőri körzetében történt a bűncselekmény.
 - _Community Area_: A város melyik területén történt a bűncselekmény.
 - _Latitude_ és _Longitude_: A bűncselekmény helyének földrajzi koordinátái.
+#pagebreak()
 
 #figure(
-    table(
-      columns: (auto, auto, 1.2fr, 1.2fr, 1fr, auto),
-      align: left + horizon,
-      stroke: 0.5pt,
-      inset: 4pt,
-      fill: (x, y) => if y == 0 { gray.lighten(60%) },
-      [*ID*], [*Date*], [*Primary Type*], [*Description*], [*Location*], [*Arrest*],
+  table(
+    columns: (auto, auto, 1.2fr, 1.2fr, 1fr, auto),
+    align: left + horizon,
+    stroke: 0.5pt,
+    inset: 4pt,
+    fill: (x, y) => if y == 0 { gray.lighten(60%) },
 
-      [13974502], [09/21/2025], [CRIMINAL\ DAMAGE], [TO PROPERTY], [RESIDENCE -\ GARAGE], [False],
-      [13975969], [09/21/2025], [THEFT], [FROM MOTOR\ VEHICLE], [RESIDENCE], [False],
-      [13974043], [09/21/2025], [THEFT], [OVER \$500], [SIDEWALK], [False],
-      [13976000], [09/21/2025], [DECEPTIVE\ PRACTICE], [FINANCIAL\ IDENTITY THEFT], [RESIDENCE], [False],
-      [13976430], [09/21/2025], [CRIMINAL\ DAMAGE], [TO VEHICLE], [HOTEL / MOTEL], [False],
-    ),
+    [*ID*], [*Date*], [*Primary Type*], [*Description*], [*Location*], [*Arrest*],
 
+    [13974502], [09/21/2025], [CRIMINAL\ DAMAGE], [TO PROPERTY], [RESIDENCE -\ GARAGE], [False],
+    [13975969], [09/21/2025], [THEFT], [FROM MOTOR\ VEHICLE], [RESIDENCE], [False],
+    [13974043], [09/21/2025], [THEFT], [OVER \$500], [SIDEWALK], [False],
+    [13976000], [09/21/2025], [DECEPTIVE\ PRACTICE], [FINANCIAL\ IDENTITY THEFT], [RESIDENCE], [False],
+    [13976430], [09/21/2025], [CRIMINAL\ DAMAGE], [TO VEHICLE], [HOTEL / MOTEL], [False],
+  ),
   caption: [Chicago bűnügyi adatok (minta)],
   kind: table,
+  supplement: [Táblázat],
+)<chicago_adat_minta>
 
-)
+A modellezés megjezdése előtt fontos megismerni a felhasznált bűnözési adatok szerkezetét és jellemzőit. Így először vizuális eszközökkel szemléltetem az adathalmaz néhány fontos aspektusát, elsősorban a teljes, 2001 és 2025 közötti időszakra aggregált formában. Az elemzés célja, hogy képet kapjunk a bűncselekmények típus szerinti megoszlásáról, térbeli elhelyezkedéséről, időbeli mintázatairól, valamint a letartóztatási arányok különbségeiről.
 
+Az ábrák segítségével azonosíthatók azok a bűncselekménytípusok, amelyek a legnagyobb számban fordultak elő, továbbá megfigyelhetők a városon belüli területi különbségek is. Emellett az időbeli aggregálások lehetőséget adnak a hosszabb távú trendek és szezonális mintázatok feltárására. Ez az előzetes feltáró elemzés fontos kiindulópontot jelent a későbbi modellezési lépésekhez, mivel segít megérteni, hogy milyen jellegű adatokra épülnek az előrejelző modellek.
+#pagebreak()
 #figure(
-  image("Images/EDA/major_crimes_chicago.svg", width: 80%),
+  image("Images/EDA/major_crimes_chicago.svg", width: 50%),
   caption: [Chicago bűnesemények típusai és gyakorisága]
 )<buneset_tipusok_chicago>
 
-A @buneset_tipusok_chicago a Chicagoban elkövetett bűnesetek típusait és azok gyakoriságát mutatja be 2001 és 2025 között. A leggyakoribb bűncselekménytípusok közé tartozik a lopás (THEFT, több mint 1,7 millió eset), a testi sértés (BATTERY, több mint 1,5 millió eset)  illetve fontos lehet még kiemelni a kábítószerrek kapcsolatos bűncselekmények magasabb számát is (NARCOTICS, több mint 700 ezer eset). Ezek az adatok fontosak lehetnek a bűnmegelőzési stratégiák kialakításához és a későbbi elemzések során vizsgálhatjuk azt is, hogy ezek a bűncselekménytípusok hogyan változnak időben és térben, valamint milyen demográfiai tényezők befolyásolják előfordulásukat.
+A @buneset_tipusok_chicago Chicagoban elkövetett bűnesetek típusait és azok gyakoriságát mutatja be 2001 és 2025 között. A leggyakoribb bűncselekménytípusok közé tartozik a lopás (több mint 1,7 millió eset), a testi sértés (több mint 1,5 millió eset)  illetve fontos lehet még kiemelni a kábítószerrek kapcsolatos bűncselekmények magasabb számát is (több mint 700 ezer eset). Ezek az adatok fontosak lehetnek a bűnmegelőzési stratégiák kialakításához és a későbbi elemzések során vizsgálhatjuk azt is, hogy ezek a bűncselekménytípusok hogyan változnak időben és térben, valamint milyen demográfiai tényezők befolyásolják előfordulásukat.
 
 #figure(
-  image("Images/EDA/buneset_suruseg_terkep.png", width: 60%),
+  image("Images/EDA/buneset_suruseg_terkep.png", width: 50%),
   caption: [Chicago bűnözési sűrűségének térképe])<buneset_suruseg_terkep>
 A @buneset_suruseg_terkep a rendőri körzeteket mutatja Chicagoban a bűnözési sűrűség alapján színezve. Azonosíthatóak azok a körzetek, amik a leginkább érintettek, ezek a térképen a sötétebb színnel vannak jelölve.
 
 #figure(
   image("Images/EDA/buneset_heti_nap_eloszlása.png", width: 85%),
-  caption: [Chicago bűnözési sűrűségének térképe])<buneset_heti_nap_eloszlasa>
-A @buneset_heti_nap_eloszlasa a bűncselekmények eloszlását mutatja a hét napjaira lebontva. Az ábráról kivehető a napszaki és heti mintázat, például, hogy a legtöbb bűncselekményt a hét végén éjfél körül követik el, illetve a hétköznapokon is megfigyelhető egy kisebb csúcs a délutáni órákban. Ezek az információk fontosak lehetnek a rendőri erőforrások hatékonyabb elosztásához.
+  caption: [Bűncselekmények heti és napi eloszlása])<buneset_heti_nap_eloszlasa>
+  
+A @buneset_heti_nap_eloszlasa a bűncselekmények eloszlását mutatja a hét napjaira lebontva. Az ábráról kivehető a napszaki és heti mintázat, például, hogy a legtöbb bűncselekményt a hét végén éjfél körül követik el, illetve a hétköznapokon is megfigyelhető egy kisebb csúcs a délutáni órákban. A heti és napszakos mintázatok értelmezéséhez jó elméleti keretet ad a rutintevékenység-elmélet, amely szerint a bűncselekmények akkor valószínűbbek, amikor a potenciális elkövető, az alkalmas célpont és a megfelelő felügyelet hiánya térben és időben találkozik. Tehát ezek az ábrán is látható változások szorosan összefüggnek az emberek úgynevezett rutintevékenységeinek heti ingadozásával, hiszen ahogy a munkahelyi, otthoni és szabadidős tevékenységeink helyszínei megváltoznak a hétköznapok és a hétvégék során, úgy változik a potenciális elkövetők és a célpontok találkozásának valószínűsége is.(@andresen2015)
+.
 #figure(
   image("Images/EDA/arrest_stats_top10.svg", width: 85%),
   caption: [Leggyakoribb bűncselekménytípusok és letartóztatási arányuk])<arrest_stats_top10>
@@ -282,6 +297,24 @@ A @arrest_stats_top10 a leggyakoribb bűncselekménytípusokat mutatja be a leta
   caption: [Bűncselekmények havi alakulása (összesítve)])<buneset_havi_alakulasa_osszesitett>
 A @buneset_havi_alakulasa és a @buneset_havi_alakulasa_osszesitett a bűncselekmények havi alakulását mutatja be. A @buneset_havi_alakulasa alapján látható a bűnözés éven belüli szezonális mintázata, jellemzően a nyári hónapokban a legmagasabb a bűncselekmények száma, míg a téli hónapokban egy jelentős csökkenés figyelhető meg. Bár a bűnözés csökkenő trndet mutata a 2001 és 2025 közötti időszakban, a szezonalitás továbbra is megfigyelhető. Ezeket a megfigyeléseket számszerűsíti a @buneset_havi_alakulasa_osszesitett, itt is megfigyelhető, hogy valóban a nyári hónapokban a legmagasabb a bűncselekmények száma, míg ez a szám a téli hónapokra csökken.
 
+== Baseline modell
+
+A komplexebb modellek alkalmazása előtt készítettem egy egyszerű baseline modellt is, amely viszonyítási alapként szolgál a későbbi előrejelző modellek értékeléséhez. A baseline modell célja, hogy egy egyszerű, könnyen érthető előrejelzést adjon, amelyhez a komplexebb modellek teljesítményét viszonyítani lehet.
+
+Ennél a módszernél az előrejelzés minden körzet esetén a 2024-es év utolsó három hónapjának (október, november, december) bűncselekményszámának átlagát jelenti.. A modell tehát nem tanul külön paramétereket, és nem használ további magyarázó változókat, hanem kizárólag a legutóbbi rövid távú bűnözési szintből indul ki.
+
+Ez a megközelítés azért alkalmas baseline modellként, mert a bűnözési adatokban gyakran megfigyelhető rövid távú stabilitás, vagyis hogy a bűnözés szintje egy adott körzetben viszonylag hasonló marad rövid időn belül.Ha egy komplexebb modell nem teljesít érdemben jobban ennél az egyszerű mozgóátlagos előrejelzésnél, akkor az arra utalhat, hogy a modell nem tudott jelentős többletinformációt kinyerni az adatokból.
+
+A baseline modell teljesítményét ugyanazokkal a metrikákkal értékeltem ki, mint később a komplexebb modelleket. Az ereményeket az alábbi táblázatban foglaltam össze:
+
+#figure(
+    caption: [A baseline modell előrejelzései és teljesítménymutatói],
+    [
+        #set text(size: 9pt)
+        #pandas-table("Results/baseline_results.csv")
+
+    ]
+) <baseline_model_results>
 
 
 == Bűnözés időbeli modellezése geometriai Brown-mozgással (Korrelált Brown-mozgás)
@@ -633,7 +666,7 @@ Az ábráról leolvasható, hogy az eltérések értéeki kis tartományban mozo
 
 A bűnözés előrejelzésére több különböző megközelítést alkalmaztam és hasonlítottam össze. Elsőként geometriai Brown-mozgással modelleztem a bűncselekmények időbeli alakulását, majd Random Forest modelleket építettem, amelyek már több bemeneti változót is figyelembe vettek. Az összehasonlítás érdekében egy egyszerű baseline modellt is készítettem, amely a 3 hónapos mozgóátlagon alapult.
 
-A baseline modell célja, hogy egy egyszerű, könnyen érthető előrejelzést adjon, amelyhez a komplexebb modellek teljesítményét viszonyítani lehet. Ennél a módszernél az előrejelzés minden körzet esetén a 2024-es év utolsó három hónapjának (október, november, december) bűncselekményszámának átlagát jelenti.A baseline modell nem tanul külön paramétereket, hanem kizárólag a legutóbbi rövid távú trendet veszi figyelembe. Ezért alkalmas annak vizsgálatára, hogy a geometriai Brown-mozgás és a Random Forest modellek valóban többletinformációt tudnak-e kinyerni az adatokból egy egyszerű mozgóátlagos előrejelzéshez képest.
+
 
 Az eredményeket az alábbi táblázat foglalja össze:
 #figure(
