@@ -224,6 +224,22 @@
 #counter(page).update(1)
 = Bevezetés
 
+A bűnözési gyakoriság vizsgálata és előrejelzése olyan összetett feladat, amely számos tényezőtől függ, beleértve a térbeli és társadalmi környezetet, gazdasági feltételeket. Tehát modellezése egy olyan összetett folyamat, amelyben egyszerre az időbeli trendeket, szezonalitást és más társadalmi folyamatokat.
+
+Szakdolgozatom célja ennek az összetett jelenségnek a modellezése és vizsgálata különböző módszerekkel, melyek között megjelenik a sztochasztikus differenciálegyenletek alkalmazása, illetve gépi tanulási módszereket is alkalmazok. A kutatás két fő kérdés köré épül: egyrészt azt vizsgálom, hogy a múltbeli adatok alapján mennyire jelezhető előre a bűncselekmények időbeli alakulása, másrészt azt elemzem, hogy a társadalmi-gazdasági és demográfiai jellemzők milyen kapcsolatban állhatnak az egyes bűncselekménytípusok területi eloszlásával.
+
+A dolgozat első felében bemutatom a felhasznált módszerek elméleti alapjait. Először a sztochasztikus folyamatok elméleti alapjait ismertetem, majd bemutatom a sztochasztikus differenciálegyenletek elméletét, kitérve az Itô-integrálra és az Itô–Doeblin-formulára. Majd a Brown-mozgás és a geometriai Brown-mozgás tulajdonságait ismertetem, amelyek a dolgozatban alkalmazott modellek alapját képezik.
+
+Az elméleti rész második nagyobb egysége a gépi tanulási módszerekhez kapcsolódik. A dolgozatban elsősorban felügyelt tanulási, regressziós problémákkal foglalkozom. Bemutatom a döntési fák és az ensemble módszerek alapjait, különös tekintettel a Random Forest modellre. Ezen kívül röviden ismertetem az idősorelemzés alapfogalmait.
+
+A gyakorlati részben ezt követően Chicago városának bűnözési adatait elemzem és készítek előrejelzéseket. Elsőként a bűnözés időbeli alakulását geometriai Brown-mozgással modellezem. A modellben minden rendőrségi körzetre külön drift- és volatilitásparamétert becsülök, majd korrelált Brown-mozgások segítségével több lehetséges jövőbeli szcenáriót generálok.
+\
+A következő lépésben Random Forest modelleket alkalmazok a bűncselekmények időbeli előrejelzésére. A Random Forest modellek esetében több új változót is bevezettem, amelyek a bűncselekmények időbeli mintázatait segítenek megragadni, például a bűncselekmények számának mozgóátlagát és mozgó szórását különböző időablakokban. A modell teljesítményét különböző metrikák segítségével értékelem, és összehasonlítom a geometriai Brown-mozgás modell előrejelzéseivel.
+
+A dolgozat utolsó gyakorlati egysége a társadalmi-demográfiai jellemzők vizsgálatára fókuszál. Ez a rész eltér az előző idősoros modellektől, mert itt nemcsak az előrejelzési pontosság a cél, hanem annak elemzése is, hogy mely változók állhatnak kapcsolatban a bűnözés alakulásával. Először egy összesített modellt építek az összes bűncselekmény éves számára, majd külön vizsgálom a leggyakoribb bűncselekménytípusokat.
+
+Öszzegzésképpen, a dolgozat célja egy átfogó elemzés készítése a bűnözési gyakoriság modellezéséről, amelyben a sztochasztikus folyamatok és gépi tanulási módszerek egyaránt szerepet kapnak.
+
 = A Sztochasztikus Folyamatok Elméleti Alapjai
 
 == Definíciók és alapfogalmak
