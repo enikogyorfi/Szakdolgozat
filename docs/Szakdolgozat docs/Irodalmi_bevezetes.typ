@@ -224,7 +224,7 @@
 #counter(page).update(1)
 = Bevezetés
 
-A bűnözési gyakoriság vizsgálata és előrejelzése olyan összetett feladat, amely számos tényezőtől függ, beleértve a térbeli és társadalmi környezetet, gazdasági feltételeket. Tehát modellezése egy olyan összetett folyamat, amelyben egyszerre az időbeli trendeket, szezonalitást és más társadalmi folyamatokat.
+A bűnözési gyakoriság vizsgálata és előrejelzése összetett modellezési feladat, mivel a bűncselekmények előfordulása nemcsak időbeli mintázatoktól, hanem térbeli, társadalmi és gazdasági tényezőktől is függ. A bűnözés alakulásában egyszerre jelennek meg hosszabb távú trendek, szezonális ingadozások, területi különbségek és olyan társadalmi-gazdasági folyamatok, amelyek befolyásolják az egyes városrészek bűnözési mintázatait.
 
 Szakdolgozatom célja ennek az összetett jelenségnek a modellezése és vizsgálata különböző módszerekkel, melyek között megjelenik a sztochasztikus differenciálegyenletek alkalmazása, illetve gépi tanulási módszereket is alkalmazok. A kutatás két fő kérdés köré épül: egyrészt azt vizsgálom, hogy a múltbeli adatok alapján mennyire jelezhető előre a bűncselekmények időbeli alakulása, másrészt azt elemzem, hogy a társadalmi-gazdasági és demográfiai jellemzők milyen kapcsolatban állhatnak az egyes bűncselekménytípusok területi eloszlásával.
 
@@ -238,9 +238,11 @@ A következő lépésben Random Forest modelleket alkalmazok a bűncselekmények
 
 A dolgozat utolsó gyakorlati egysége a társadalmi-demográfiai jellemzők vizsgálatára fókuszál. Ez a rész eltér az előző idősoros modellektől, mert itt nemcsak az előrejelzési pontosság a cél, hanem annak elemzése is, hogy mely változók állhatnak kapcsolatban a bűnözés alakulásával. Először egy összesített modellt építek az összes bűncselekmény éves számára, majd külön vizsgálom a leggyakoribb bűncselekménytípusokat.
 
-Öszzegzésképpen, a dolgozat célja egy átfogó elemzés készítése a bűnözési gyakoriság modellezéséről, amelyben a sztochasztikus folyamatok és gépi tanulási módszerek egyaránt szerepet kapnak.
+Összegzésképpen, a dolgozat célja egy átfogó elemzés készítése a bűnözési gyakoriság modellezéséről, amelyben a sztochasztikus folyamatok és gépi tanulási módszerek egyaránt szerepet kapnak.
 
 = A Sztochasztikus Folyamatok Elméleti Alapjai
+
+Ebben a fejezetben a sztochasztikus folyamatok elméleti alapjait tekintem át. A fejezet felépítése és jelölésrendszere nagyrészt Shreve Stochastic Calculus for Finance II: Continuous-Time Models (@shreve2004) című könyvét követi.
 
 == Definíciók és alapfogalmak
 
@@ -248,7 +250,7 @@ A dolgozat utolsó gyakorlati egysége a társadalmi-demográfiai jellemzők viz
   Egy valószínűségi tér $(Omega, cal(F), P)$ hármasa tartalmazza:
 
   - $Omega$ *(eseménytér)*: a lehetséges kimenetelek halmaza.
-  - $cal(F)$ *($sigma$-algebra)*: $Omega$ részhalmazainak olyan rendszere, amely tartalmazza az $emptyset$ üres halmazt; komplementerre zárt; és megszámlálható unióra zárt. Az $(Omega, cal(F))$ párost mérhető térnek nevezzük.
+  - $cal(F)$ *($sigma$-algebra)*: $Omega$ részhalmazainak olyan rendszere, amely tartalmazza az $emptyset$ üres halmazt; komplementerre zárt; és megszámlálható unióra zárt. Az $(Omega, cal(F))$ párt mérhető térnek nevezzük.
   - $P$ *(valószínűségi mérték)*: egy $P: cal(F) -> RR$ függvény, amely kielégíti a $P(emptyset)=0$ és $P(Omega)=1$ feltételeket, és megszámlálható additivitással rendelkezik diszjunkt halmazok esetén.
 ] <def_elso>
 
@@ -258,13 +260,17 @@ A dolgozat utolsó gyakorlati egysége a társadalmi-demográfiai jellemzők viz
 ] <def_masodik>
 
 #definition[
-  @shreve2004 Tegyük fel, hogy adott két valószínűségi mérték $cal(P)$ és $cal(Q)$ ugyanazon mérhető téren $(Omega, cal(F))$. Azt mondjuk, hogy a $cal(Q)$ mérték abszolút folytonos a $cal(P)$-re nézve, ha létezik egy integrálható véletlen változó $f: Omega -> RR$, melyre minden $A in cal(F)$ esetén
+   Tegyük fel, hogy adott két valószínűségi mérték $cal(P)$ és $cal(Q)$ ugyanazon mérhető téren $(Omega, cal(F))$. Azt mondjuk, hogy a $cal(Q)$ mérték abszolút folytonos a $cal(P)$-re nézve, ha
+   minden $A in cal(F)$ esetén, ha $cal(P)(A) = 0$, akkor $cal(Q)(A) = 0$ is teljesül.
+] <def_abszolut_folytonos>
+#theorem[
+    Tegyük fel, hogy a $cal(Q)$ mérték abszolút folytonos a $cal(P)$-re nézve. Ekkor létezik egy nemnegatív, $cal(P)$-integrálható $f: Omega -> RR$, függvény, melyre minden $A in cal(F)$ esetén
   $
     cal(Q)(A) = integral_A f(omega) dif cal(P)(omega)
   $
   teljesül.
 
-  Ekkor $f$ a $cal(Q)$ mérték $cal(P)$-re vonatkozó sűrűségfüggvénye.
+  Ekkor $f$ a $cal(Q)$ mérték $cal(P)$-re vonatkozó sűrűségfüggvénye (Radon–Nikodym-deriváltja).
 ] <def_harmadik>
 
 #box[
@@ -275,17 +281,18 @@ $
 ]
 
 #definition[
- @shreve2004 Legyen $Omega$ egy nemüres halmaz. Legyen $T$ egy rögzített pozitív szám, és tegyük fel, hogy minden $t in [0,T]$ esetén adott egy $cal(F)(t)$ $sigma$-algebra. Tegyük fel továbbá, hogy ha $s <= t$, akkor minden halmaz, amely eleme $cal(F)(s)$-nek, eleme $cal(F)(t)$-nek is. Ekkor a $0 <= t <= T$ paraméterű $cal(F)(t)$ $sigma$-algebrák gyűjteményét filtrációnak nevezzük.
+ Legyen $Omega$ egy nemüres halmaz. Legyen $T$ egy rögzített pozitív szám, és tegyük fel, hogy minden $t in [0,T]$ esetén adott egy $cal(F)(t)$ $sigma$-algebra. Ha minden  $0 <= t <= T$ esetén $cal(F)(s) subset.eq cal(F)(t)$, akkor az $cal(F)(t)$ $sigma$-algebrák gyűjteményét filtrációnak nevezzük.
+
 ] <def_negyedik>
 
 #definition[
-  @shreve2004 Legyen $X$ egy nem üres $Omega$ mintatéren értelmezett valószínűségi változó. Legyen $cal(G)$ az $Omega$ részhalmazainak egy $sigma$-algebrája. Ha a $sigma(X)$ minden halmaza eleme $cal(G)$-nek is, akkor azt mondjuk, hogy $X$ $cal(G)$-mérhető.
-] <def_otodik>
+   Legyen $X$ egy nem üres $Omega$ mintatéren értelmezett valószínűségi változó. Legyen $cal(G)$ az $Omega$ részhalmazainak egy $sigma$-algebrája. Ha a $sigma(X) subset.eq cal(G)$ is teljesül, akkor azt mondjuk, hogy $X$ $cal(G)$-mérhető.
+    ] <def_otodik>
 
 #definition[
-  @shreve2004 Legyen $f(t)$ egy $[0,T]$ intervallumon értelmezett függvény. Az $f$ kvadratikus variációját a $[0,T$ intervallumon a következő határértékkel definiáljuk:
+   Legyen $f(t)$ egy $[0,T]$ intervallumon értelmezett függvény. Az $f$ kvadratikus variációját a $[0,T]$ intervallumon a következő határértékkel definiáljuk:
 $
-    [f,f](T) = lim_(||Pi|| -> infinity) sum_(i=0)^(n-1) (f(t_(i+1)) - f(t_i))^2,
+    [f,f](T) = lim_(||Pi|| -> 0) sum_(i=0)^(n-1) (f(t_(i+1)) - f(t_i))^2,
 $
 ahol $Pi = {0 = t_0 < t_1 < dots < t_n = T}$ egy partíciója a $[0,T]$ intervallumnak, és $||Pi|| = max_(0 <= i <= n-1) (t_(i+1) - t_i)$.
 ]
@@ -293,17 +300,17 @@ ahol $Pi = {0 = t_0 < t_1 < dots < t_n = T}$ egy partíciója a $[0,T]$ interval
 == Sztochasztikus folyamatok
 
 #definition[
-  @shreve2004 Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $T$ egy rögzített pozitív szám. Ekkor az
+   Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $T$ egy rögzített pozitív szám. Ekkor az
   #box($X = (X_t)_(t in [0,T])$)
   családot sztochasztikus folyamatnak nevezzük, ha minden $t in [0,T]$ esetén $X_t$ egy valószínűségi változó.
 ] <def_hatodik>
 
 #definition[
-  @shreve2004 Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $(cal(F)(t))_(0 <= t <= T)$ filtráció. Legyen $X(t)$ egy valószínűségi változókból álló család, amelyet $t in [0,T]$ paraméter indexel. Azt mondjuk, hogy $X(t)$ egy adaptált sztochasztikus folyamat az $cal(F(t))$-re nézve, ha minden $t$-re az $X(t)$ valószínűségi változó $cal(F)(t)$-mérhető.
+   Legyen $(Omega, cal(F), P)$ egy valószínűségi tér és $(cal(F)(t))_(0 <= t <= T)$ filtráció. Legyen $X(t)$ egy valószínűségi változókból álló család, amelyet $t in [0,T]$ paraméter indexel. Azt mondjuk, hogy $X(t)$ egy adaptált sztochasztikus folyamat az $cal(F(t))$-re nézve, ha minden $t$-re az $X(t)$ valószínűségi változó $cal(F)(t)$-mérhető.
 ] <def_hetedik>
 
 #definition[
-  @shreve2004 Legyen $(Omega, cal(F), P)$ egy valószínűségi mező, legyen $T$ egy rögzített pozitív szám, és legyen $(cal(F)(t))_(0 <= t <= T)$ a $cal(F)$ $sigma$-algebráinak egy filtrációja. Tekintsünk egy adaptált sztochasztikus folyamatot $M(t)$-t, $0 <= t <= T$.
+   Legyen $(Omega, cal(F), P)$ egy valószínűségi mező, legyen $T$ egy rögzített pozitív szám, és legyen $(cal(F)(t))_(0 <= t <= T)$ a $cal(F)$ $sigma$-algebráinak egy filtrációja. Tekintsünk egy adaptált sztochasztikus folyamatot, $M = (M(t))_(0 <= t <= T)$. Ekkor a következő három eset lehetséges:
 
   (i) Ha $E[M(t) | cal(F)(s)] = M(s)$ minden $0 <= s <= t <= T$ esetén, akkor a folyamatot *martingálnak* nevezzük.
 
@@ -313,14 +320,14 @@ ahol $Pi = {0 = t_0 < t_1 < dots < t_n = T}$ egy partíciója a $[0,T]$ interval
 ] <def_nyolcadik>
 
 #definition[
-@shreve2004 Legyen $(Omega, cal(F), P)$ egy valószínűségi mező, legyen $T$ egy rögzített pozitív szám és legyen $(cal(F)(t))_(0 <= t <= T)$ a $cal(F)$ $sigma$-algebráinak egy filtrációja. Az $X(t)_(0 <= t <= T)$ adaptált sztochasztikus folyamatot Markov-folyamatnak nevezzük, ha minden $0 <= s < t <= T$ és minden nemnegatív, Borel-mérhető $f$ függvény esetén létezik egy $g$ Borel-mérhető függvény, amelyre teljesül:
+ Legyen $(Omega, cal(F), P)$ egy valószínűségi mező, legyen $T$ egy rögzített pozitív szám és legyen $(cal(F)(t))_(0 <= t <= T)$ a $cal(F)$ $sigma$-algebráinak egy filtrációja. Az $X(t)_(0 <= t <= T)$ adaptált sztochasztikus folyamatot Markov-folyamatnak nevezzük, ha minden $0 <= s < t <= T$ és minden nemnegatív, Borel-mérhető $f$ függvény esetén létezik egy $g$ Borel-mérhető függvény, amelyre teljesül:
 $
 E[f(X(t)) | cal(F)(s)] = g(X(s))
 $
 
 ] <def_kilencedik>
 
-*Megjegyzés.* Tehát a Markov-folyamat jövőbeli állapota csak a jelenlegi állapottól függ, és független a múltbeli állapotoktól. Ebből következik, hogy az együttes valószínűségi sűrűség feltételes formája felírható átmeneti sűrűségek szorzataként:
+*Megjegyzés.* Tehát a Markov-folyamat jövőbeli állapotának eloszlása csak a jelenlegi állapottól függ, és független a múltbeli állapotoktól. Ebből következik, hogy az együttes valószínűségi sűrűség feltételes formája felírható átmeneti sűrűségek szorzataként:
 $
   p(x_n, t_n dots x_2, t_2 | x_1, t_1) = p(x_n, t_n | x_(n-1), t_(n-1)) dots p(x_2, t_2 | x_1, t_1).
 $
@@ -343,7 +350,7 @@ $
   - Bármely $s < t$ időpontpárra a $B_t - B_s$ növekmény normális eloszlású, 0 várható értékkel és $t-s$ szórásnégyzettel. Formálisan: $B_t - B_s ~ N(0, t-s)$.
 ] <def_tizenegyedik>
 
-*Megjegyzés.* A független növekmények tulajdonságából adódóan a Brown-mozgás egy Gauss–Markov-folyamat. Továbbá, mivel az átmeneti sűrűsége csak az időbeli különbségtől függ, egyben időben homogén Markov-folyamat is.
+*Megjegyzés.* A független növekmények tulajdonságából adódóan a Brown-mozgás Markov-folyamat. Továbbá, mivel az átmeneti sűrűsége csak az időbeli különbségtől függ, egyben időben homogén Markov-folyamat is.
 
 #definition[
   @shreve2004 Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. A $B(t)$-hez tartozó filtráció egy $cal(F)(t)$ szigma-algebrákból álló család, amelyre a következő feltételek teljesülnek:
@@ -355,9 +362,7 @@ $
 
 
 #theorem[
-  @shreve2004 Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. Ekkor a következő állítások teljesülnek:
-
-  - $B(t)$ martingál a fenti definícióban definiált filtrációval.
+  @shreve2004 Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. Ekkor $B(t)$ martingál a fenti definícióban definiált filtrációval.
   ]
 
 #proof[
@@ -385,7 +390,7 @@ $
 
 == Bevezetés
 
-Egy közönséges differenciálegyenlet az alábbi formában írható fel:
+Egy közönséges differenciálegyenlet (KDE) az alábbi formában írható fel:
 $
   (d x(t))  / (d t)  = f(t, x(t)).
 $
@@ -396,7 +401,7 @@ $
   x(t) = x_0 + integral_0^t f(s, x(s)) dif s.
 $
 
-Egy SDE akkor jön létre, ha a differenciálegyenlet egy együtthatója determinisztikus paraméter helyett sztochasztikus paraméterré válik. Például tekintsük a következő KDE-t:
+Egy sztochasztiku differenciálegyenlet (SDE) akkor jön létre, ha a differenciálegyenlet egy együtthatója determinisztikus paraméter helyett sztochasztikus paraméterré válik. Például tekintsük a következő KDE-t:
 $
   (d x(t)) / (d t) = a(t)x(t).
 $
@@ -662,7 +667,7 @@ lognormális eloszlású.]
   $
     dif S(t) = mu S(t) dif t + sigma S(t) dif B(t),
   $
-  ahol $mu$ és $sigma$ konstansok. Ekkor az $S(t)$ folyamat varianciája a következőképpen írható fel:
+  ahol $mu$ és $sigma$ konstansok. Ekkor az $S(t)$ folyamat szórásnégyzete a következőképpen írható fel:
   $
     op("Var")[S(t)] = S^2(0) exp(2 mu t)(exp(sigma^2 t) - 1).
   $
@@ -684,7 +689,7 @@ $  E[S^2(t)] = S^2(0) exp(2(mu - 1/2 sigma^2)t) E[exp(2 sigma B(t))] =
  \
  S^2(0) exp(2 mu t + sigma^2 t). #<equate:revoke>
 $
-A variancia definíciója szerint:
+A szórásnégyzet definíciója szerint:
 $
 op("Var")[S(t)] = E[S^2(t)] - (E[S(t)])^2 = \
  S^2(0) exp(2 mu t + sigma^2 t) - (S(0) exp(mu t))^2 = #<equate:revoke>
@@ -727,14 +732,14 @@ Két fő kérdésre keresünk választ a gépi tanulás során:
 - Egy új bemeneti adat (x) esetén mennyi lesz a célváltozó (y) értéke?\
   Ez a predikciós kérdés. Ebben az esetben a függvény úgynevezett "fekete doboz" modellként működik, ahol nem a függvény pontos alakja a lényeg, hanem a predikciós teljesítménye. Az előrejelzés pontossága két hibatényezőtől függ, egy csökkenthető hibától, amely a függvény becslésének pontosságából adódik, és egy nem csökkenthető hibától, amely egy felső korlátot szab az előrejelzés pontosságának.
 - Hogyan befolyásolja a bemeneti változó (X) értéke a célváltozó (Y) értékét?\
-  Ez a magyarázó kérdés.Vizsgálhatjuk, hogy a bemeneti változók közül melyik az néhány legfontosabb, amely a legnagyobb hatással van a célváltozó értékére.
+  Ez a magyarázó kérdés. Vizsgálhatjuk, hogy a bemeneti változók közül melyik az néhány legfontosabb, amely a legnagyobb hatással van a célváltozó értékére.
   Ilyenkor a függvény pontos alakja is fontos, nem viselkedhet "fekete doboz" modellként. 
 
 ])
 
 #v(0.3cm)
 A változóknak két fő típusát különböztetjük meg, lehetnek kvalitatív (minőségi) vagy kvantitatív (mennyiségi) változók. A kvalitatív változók kategóriákba, osztályokba sorolhatóak, például a nem, a szín vagy a márka. Ezzel szemben a kvantitatív változók számszerű értékeket vesznek fel, ilyen például a magasság, a súly vagy az ár. A célváltozó típusa alapján a gépi tanulási problémák lehetnek klasszifikációs vagy regressziós problémák.  Klasszifikáció esetén a célváltozó kvalitatív, és a modell célja, hogy egy adott bemeneti adat alapján megállapítsa a hozzá tartozó kategóriát. Regresszió esetén a célváltozó kvantitatív, és a modell célja, hogy egy adott bemeneti adat alapján megjósolja a hozzá tartozó számértéket.
-A határvonal a klasszifikációs és regressziós módszerek között azonaban nem mindig éles. A legkisebb négyzetek módszerét mennyiségi meghatározásra használjuk, a logisztikus regressziót pedig kvalitatív meghatározásra, de a KNN (K-Nearest Neighbors) algoritmust, a döntési fákat mind a két probléma esetén használhatjuk.
+A határvonal a klasszifikációs és regressziós módszerek között azonban nem mindig éles. A legkisebb négyzetek módszerét mennyiségi meghatározásra használjuk, a logisztikus regressziót pedig kvalitatív meghatározásra, de a KNN (K-Nearest Neighbors) algoritmust, a döntési fákat mind a két probléma esetén használhatjuk.
 
 Mindkét probléma esetén fontos vizsgálni a modell teljesítményét, hibáját. A várható hiba egy $x_0$ pontban a következőképpen írható fel:
 $
@@ -750,12 +755,12 @@ E[(f(x_0) - E[hat(f)(x_0)])^2] + E[(E[hat(f)(x_0)] - hat(f)(x_0))^2] + op("Var")
  (E[hat(f)(x_0)] - f(x_0))^2 +op("Var")[hat(f)(x_0)]+ op("Var")[epsilon]
   #<equate:revoke> \
 $
-ahol $hat(f)(x_0)$ a modell által adott előrejelzés, $f(x_0)$ a valódi értéke, és $epsilon$ a nem csökkenthető hiba. Tehát a várható hiba három összetevőből épül fel: a becslés varianciájából ($op("Var")[hat(f)(x_0)]$), a becslés torzításának négyzetéből ($(E[hat(f)(x_0)] - f(x_0))^2$) és a hibatag varianciájából ($op("Var")[epsilon]$).
+ahol $hat(f)(x_0)$ a modell által adott előrejelzés, $f(x_0)$ a valódi értéke, és $epsilon$ a nem csökkenthető hiba. Tehát a várható hiba három összetevőből épül fel: a becslés szórásnégyzetéből ($op("Var")[hat(f)(x_0)]$), a becslés torzításának négyzetéből ($(E[hat(f)(x_0)] - f(x_0))^2$) és a hibatag szórásnégyzetéből ($op("Var")[epsilon]$).
 
-Ahhoz, hogy a várható hiba értékét minimalizáljuk, olyan módszert kell választanunk, amely egyszerre biztosít alacsonmy varianciát és alacsony torzítást.
- A variancia azt mutatja meg, hogy a modell előrejelzése mennyire érzékeny a tanító adathalmaz változásaira. Általánosságban elmondható, hogy a komplexebb modellek nagyobb varianciával rendelkeznek. A torzítás pedig abból fakad, hogy a modell nem képes pontosan megragadni a valódi függvény alakját, ez akkor fordulhat elő ha egy bonyolult problémát egy egyszerűbb modellel közelítünk. Például ha a változók közötti kapcsolat erősen nemlineáris, de egy lineáris modellt használunk, akkor a modell torzított lesz.
+Ahhoz, hogy a várható hiba értékét minimalizáljuk, olyan módszert kell választanunk, amely egyszerre biztosít alacsony szórásnégyzetet és alacsony torzítást.
+ A szórásnégyzet azt mutatja meg, hogy a modell előrejelzése mennyire érzékeny a tanító adathalmaz változásaira. Általánosságban elmondható, hogy a komplexebb modellek nagyobb szórásnégyzettel rendelkeznek. A torzítás pedig abból fakad, hogy a modell nem képes pontosan megragadni a valódi függvény alakját, ez akkor fordulhat elő ha egy bonyolult problémát egy egyszerűbb modellel közelítünk. Például ha a változók közötti kapcsolat erősen nemlineáris, de egy lineáris modellt használunk, akkor a modell torzított lesz.
   Általában a kevésbé komplex modellek nagyobb torzítással rendelkeznek.
-  Tehát láthatjuk, hogy a modell komplexitásának növelése csökkenti a torzítást, de növeli a varianciát. Ez az úgynevezett torzítás-variancia kompromisszum (bias-variance tradeoff).
+  Tehát láthatjuk, hogy a modell komplexitásának növelése csökkenti a torzítást, de növeli a szórásnégyzetet. Ez az úgynevezett torzítás-szórásnégyzet kompromisszum (bias-variance tradeoff).
   
 
 #show: lq.set-diagram(width: 12cm, height: 8cm)
@@ -778,18 +783,18 @@ Ahhoz, hogy a várható hiba értékét minimalizáljuk, olyan módszert kell v�
     yaxis: (ticks: none),
     legend: (position: right, dy: 4em),
     lq.plot(x, x => 8 * calc.exp(-0.4 * x) + 0.5,label: "Torzítás", stroke:(thickness: 2pt), mark:none),
-    lq.plot(x, x => 0.12 * calc.pow(x - 1, 2) + 0.3, label: "Variancia", stroke:(thickness: 2pt), mark:none),
+    lq.plot(x, x => 0.12 * calc.pow(x - 1, 2) + 0.3, label: "Szórásnégyzet", stroke:(thickness: 2pt), mark:none),
     lq.plot(x, x => 8 * calc.exp(-0.4 * x) + 0.5 + 0.12 * calc.pow(x - 1, 2) + 0.3, label: "Hiba", stroke:(thickness: 2pt), mark:none),
     lq.plot((3.86, 3.86), (0, 10), stroke: (dash: "dashed", paint: green, thickness: 1pt), mark:none),
     lq.scatter((3.86,), (3.49,), mark: "o", label: "Optimum pont"),
 ),
-caption: [Torzítás-variancia kompromisszum illusztrációja],
+caption: [Torzítás-szórásnégyzet kompromisszum illusztrációja],
 
 gap: 0.5cm,
 ) <bias_variance_tradeoff>
 
-Az @bias_variance_tradeoff alapján látható, hogy a modell komplexitásának növelésével a torzítás csökken, de a variancia nő. Az ábrán is látható, hogy kezdetben a modell komplexitásának növelésével a torzítás gyorsabban csökken, mint ahogy a variancia nő, így a teljes hiba csökken. Azonban egy bizonyos pont után a variancia növekedése gyorsabb lesz, mint a torzítás csökkenése, így a teljes hiba növekedni kezd.
- Az optimális pont ott van, ahol a teljes hiba minimális. Valós helyzetben, mivel a valódi függvény nem ismert, nem tudjuk explicit módon kiszámolni a torzítást és a varianciát, ezért gyakran keresztvalidációs módszereket alkalmazunk a modell teljesítményének értékelésére.
+Az @bias_variance_tradeoff alapján látható, hogy a modell komplexitásának növelésével a torzítás csökken, de a szórásnégyzet nő. Az ábrán is látható, hogy kezdetben a modell komplexitásának növelésével a torzítás gyorsabban csökken, mint ahogy a szórásnégyzet nő, így a teljes hiba csökken. Azonban egy bizonyos pont után a szórásnégyzet növekedése gyorsabb lesz, mint a torzítás csökkenése, így a teljes hiba növekedni kezd.
+ Az optimális pont ott van, ahol a teljes hiba minimális. Valós helyzetben, mivel a valódi függvény nem ismert, nem tudjuk explicit módon kiszámolni a torzítást és a szórásnégyzetet, ezért gyakran keresztvalidációs módszereket alkalmazunk a modell teljesítményének értékelésére.
 #v(0.3cm)
 Ahhoz, hogy kiértékeljük egy modell teljesítményét, szükségünk van egy mérőszámra, amely megmutatja, hogy a modell mennyire jól teljesít a tanító adathalmazon vagy egy új, ismeretlen adathalmazon. A regressziós problémák esetén a leggyakrabban használt mérőszámok közé tartozik az átlagos négyzetes hiba (MSE):
 $
@@ -799,7 +804,7 @@ $
 ahol $y_i$ a valódi érték, $hat(f)(x_i)$ a modell által adott előrejelzés, és $n$ a minta mérete. Minél kisebb az MSE értéke, annál jobb a modell teljesítménye. Ezt az értéket a tanító adatra tudjuk kiszámolni, de a modell választásánál az új, ismeretlen adatokon való teljesítmény a fontosabb. Mivel a tanító adaton való teljesítmény nem feltétlenül tükrözi az új adatokon való teljesítményt, nem választhatjuk a legkisebb MSE-vel rendelkező módszert. Sőt, ha a tanító adaton túl jól teljesít egy módszer, akkor fennáll a veszélye annak, hogy a modell túltanult (overfitting), vagyis a modell nemcsak a valódi mintázatot tanulta meg, hanem a tanító adathalmaz zaját is, így az új adatokon való teljesítménye gyenge lesz.
 \
 
-Tehát ebben az esetben is fennáll a torzítás-variancia kompromisszum esetéhez hasonló összefüggés: a modell komplexitásának növelésével a tanító adaton az MSE monoton csökken, azonban a teszt adaton az MSE egy bizonyos pont után növekedni kezd, mivel a modell túltanul. (@overfitting)
+Tehát ebben az esetben is fennáll a torzítás-szórásnégyzet kompromisszum esetéhez hasonló összefüggés: a modell komplexitásának növelésével a tanító adaton az MSE monoton csökken, azonban a teszt adaton az MSE egy bizonyos pont után növekedni kezd, mivel a modell túltanul. (@overfitting)
 
 #show: lq.set-diagram(width: 12cm, height: 8cm)
 #show: lq.set-diagram(
@@ -835,7 +840,7 @@ A gyakorlatban a tanító adaton az MSE értékét meg tudjuk határozni, de a t
 == Döntési fák
 
 A fa-alapú módszerek egy jelentős és széles körben használt osztálya a gépi tanulási algoritmusoknak. Ezek a módszerek könnyen értelmezhető modelleket hoznak létre, amelyek jól teljesítenek mind klasszifikációs, mind regressziós problémák esetén.
- Ezek a módszerek a bementeti változók terét egyszerű, jellemzően tégla alakú régókra osztják fel, rétegzik azokat. Ha egy új megfigyelést szeretnénk osztályozni vagy a hozzá tartozó értéket előrejelezni, akkor a modell megvizsgálja, hogy a megfigyelés melyik régióba esik, és a régióba eső tanuló adatok között előforduló leggyakoribb osztályt vagy a régióba eső tanuló adatok átlagát használja a predikcióhoz.
+ Ezek a módszerek a bemeneti változók terét egyszerű, jellemzően tégla alakú régiókra osztják fel, rétegzik azokat. Ha egy új megfigyelést szeretnénk osztályozni vagy a hozzá tartozó értéket előrejelezni, akkor a modell megvizsgálja, hogy a megfigyelés melyik régióba esik, és a régióba eső tanuló adatok között előforduló leggyakoribb osztályt vagy a régióba eső tanuló adatok átlagát használja a predikcióhoz.
 A modell struktúrája:
 - Gyökércsomópont: A legfelső szint, ami a teljes adatot reprezentálja.
 - Belső csomópontok: Egy-egy bemeneti változó (feature) alapján végzett döntést reprezentálnak, amelyek az adatot két vagy több részre osztják.
@@ -963,7 +968,7 @@ A @dontesi_fa_regio a regressziós döntési fa által létrehozott régiókat s
 === A döntési fák tanítása
 
 A fák építése mind a klasszifikációs, mind a regressziós problémák esetében rekurzív módon történik. A fák építése "mohó" módon történik, felülről lefelé haladva választjuk ki a legjobb vágást, amely az adott pillanatban a legjobban szétválasztja az adatokat. A legjobb vágás kiválasztásához különböző mérőszámokat használunk, ezek a következők lehetnek:
-- _Gini-index_: Klasszifikációs problémák esetén használju. Azt méri, hogy mekkora eséllyel osztályoznánk félre egy véletlenszerűen kiválasztott elemet, ha a részhalmaz eloszlása alapján osztályoznánk. Minél kisebb a Gini-index, annál tisztább a részhalmaz.
+- _Gini-index_: Klasszifikációs problémák esetén használjuk. Azt méri, hogy mekkora eséllyel osztályoznánk félre egy véletlenszerűen kiválasztott elemet, ha a részhalmaz eloszlása alapján osztályoznánk. Minél kisebb a Gini-index, annál tisztább a részhalmaz.
 $
 G(m) = sum_(k=1)^K p_(m k) (1 - p_(m k)) = 1 - sum_(k=1)^K p_(m k)^2,
 $
@@ -979,14 +984,14 @@ op("MSE(m)") = 1/n_m sum_(i=1)^m (y_i - hat(y)_m)^2,
 $
 ahol $n_m$ a $m$-edik részhalmazban lévő elemek száma, $y_i$ a tényleges válaszérték, és $hat(y)_m$ a részhalmaz átlaga.
 
-A döntési fák esetén ügyelni kell arra, hogy a fa ne nőjön túl mélyre, mert ez túltanuláshoz vezethet. Erre megoldás lehet a fa vágása (pruning). Kétfő vágási módszert alkalmaznak a gyakorlatban:
+A döntési fák esetén ügyelni kell arra, hogy a fa ne nőjön túl mélyre, mert ez túltanuláshoz vezethet. Erre megoldás lehet a fa vágása (pruning). Két fő vágási módszert alkalmaznak a gyakorlatban:
 - _Előmetszés (prepruning)_: A fa építése során már a vágás kiválasztásánál figyelembe vesszük a vágás utáni részhalmazok méretét, és csak akkor hajtjuk végre a vágást, ha a részhalmazok mérete egy bizonyos küszöbérték fölött van.
 - _Utólagos metszés (postpruning)_: Először egy teljes fát építünk, majd utólagosan, alulról felfelé haladva metszük vissza a fát.
 
 == Ensemble módszerek
 
 Az ensemble módszerek használata során több gyenge modellt kombinálunk egy erősebb modell lérehozásához. Két fő típusát különböztetjük meg:
-- _Bagging_: A bagging során a tanító adatból bootstrap (visszatevéses mintavétellel) több új adathalmazt hounk létre, majd mindegyiket tanítunk egy gyenge modellt (példáil egy metszés nélküli döntési fát). Majd egyesítjük a modellek előrejelzéseit, klasszifikáció esetén többségi szavazással, regresszió esetén pedig átlagolással. Mivel egy mély fának alacsony a torzítása, de magas a varianciája, ezért a bagging segítségével csökkenthetjük a varianciát anélkül, hogy a torzítást növelnénk.
+- _Bagging_: A bagging során a tanító adatból bootstrap (visszatevéses mintavétellel) több új adathalmazt hounk létre, majd mindegyiket tanítunk egy gyenge modellt (példáil egy metszés nélküli döntési fát). Majd egyesítjük a modellek előrejelzéseit, klasszifikáció esetén többségi szavazással, regresszió esetén pedig átlagolással. Mivel egy mély fának alacsony a torzítása, de magas a szórásnégyzete, ezért a bagging segítségével csökkenthetjük a szórásnégyzetet anélkül, hogy a torzítást növelnénk.
 - _Boosting_: Míg a bagging egymástól függetlenül, párhuzamosan épít fákat, addig a boosting során szekvenciálisan építjük a fákat. Minden új fa a korábbi fák információit használja fel és a a korábbi fák által helytelenül osztályzott vagy előrejelzett megfigyelésekre helyezi a hangsúlyt, azaz ezeket a megfigyeléseket nagyobb súllyal veszi figyelembe a tanítás során. 
 
 
@@ -1073,8 +1078,8 @@ caption: [Random Forest módszer vázlatos ábrája],
 gap: 0.5cm,
 )<random_forest>
 
-Minden fát a lehető legnagyobbra növesztünk, azaz metszés nélkül építjük. A bagging esetében előfordulhat, hogyha van egy nagyon erős változó, akkor a tanított fák közül sok ezt az erős változót fogja választani a legelső vágáshoz, így a fák hasonlóak lesznek egymáshoz, nem lesznek függetlenek, így a variancia csökkentése sem lesz olyan hatékony. A Random Forest esetében viszon csak csak egy véletlen $m$ elemű részhalmazt választunk a $p$ változoból, így a vágások $(p-m)/(p)$ arányában a legerősebb változó nem lesz kiválasztva, így a fák nagyobb mértékben lesznek különbözőekés és függetlenek, így a variancia csökkentése is hatékonyabb lesz.
-A modell hiperparaméterei közé tartozik a minimális csomópontok száma és a változókból kiválasztott részhalmaz mérete. Az m paraméter értékét gyakran a gyakorlatban $sqrt(p)$-re (klasszifikációs problémák esetén) vagy $p/3$-ra (regressziós problémák esetén) állítják be, de ez a probléma jellegétől függően változhat. A minimális csomópontok számát klasszifikációs problémák esetén gyakran 1-re, regressziós problémák esetén pedig 5-re állítják be, de ez is a probléma jellegétől függően változhat. A Random Forest módszer nagy előnye, hogy nem érzékeny a fák számára, így általában a nagy számú fa építése nem vezet túltanuláshoz, ahogy egyre több fát adunk a modellhez, a hibaartás csökken, és egy bizonyos pont után stabilizálódik.
+Minden fát a lehető legnagyobbra növesztünk, azaz metszés nélkül építjük. A bagging esetében előfordulhat, hogyha van egy nagyon erős változó, akkor a tanított fák közül sok ezt az erős változót fogja választani a legelső vágáshoz, így a fák hasonlóak lesznek egymáshoz, nem lesznek függetlenek, így a szórásnégyzet csökkentése sem lesz olyan hatékony. A Random Forest esetében viszont csak csak egy véletlen $m$ elemű részhalmazt választunk a $p$ változóból, így a vágások $(p-m)/(p)$ arányában a legerősebb változó nem lesz kiválasztva, így a fák nagyobb mértékben lesznek különbözőek és függetlenek, így a szórásnégyzet csökkentése is hatékonyabb lesz.
+A modell hiperparaméterei közé tartozik a minimális csomópontok száma és a változókból kiválasztott részhalmaz mérete. Az $m$ paraméter értékét gyakran a gyakorlatban $sqrt(p)$-re (klasszifikációs problémák esetén) vagy $p/3$-ra (regressziós problémák esetén) állítják be, de ez a probléma jellegétől függően változhat. A minimális csomópontok számát klasszifikációs problémák esetén gyakran 1-re, regressziós problémák esetén pedig 5-re állítják be, de ez is a probléma jellegétől függően változhat. A Random Forest módszer nagy előnye, hogy nem érzékeny a fák számára, így általában a nagy számú fa építése nem vezet túltanuláshoz, ahogy egyre több fát adunk a modellhez, a hiba csökken, és egy bizonyos pont után stabilizálódik.
 \
 Random Forest esetén, mivel minden fa egy bootstrap mintán tanul, a tanító adathalmaz körülbelül egyharmada minden fa esetében kimarad a tanításból, ezeket a kimaradt pontokat nevezzük out-of-bag (OOB) pontoknak. Ezt felhasználva a modell teljesítményét is értékelhetjük, anélkül, hogy külön teszt adathalmazt kellene fenntartanunk. A hibabecsléshez minden egyes megfigyelés esetén kiszámoljuk a fák előrejelzését, amelyek nem tanultak az adott megfigyelésen (azaz azok a fák, amelyeknél az adott megfigyelés OOB pont), majd ezeket az előrejelzéseket átlagoljuk (regresszió esetén) vagy többségi szavazással egyesítjük (klasszifikáció esetén), és összehasonlítjuk a valódi értékekkel.
 A hagyományos döntési fákkal szemben a Random Forest kevésbé átlátható, de többféle mutatóval is értékelhetjük a változók fontosságát, például a csomópontok tisztaságának növekedése alapján, vagy az OOB hibabecslés alapján, amely megmutatja, hogy egy adott változó kizárása hogyan befolyásolja a modell teljesítményét.
@@ -1082,7 +1087,7 @@ A hagyományos döntési fákkal szemben a Random Forest kevésbé átlátható,
  
 == Idősorok elemzése
 
-Idősornak tekinthetünk minden olyan adatot, amelyet időpontokhoz renelünk és a megfigyelések között időbeli függés van, például a bűnügyi statisztikák is jellemzően idősorok.
+Idősornak tekinthetünk minden olyan adatot, amelyet időpontokhoz rendelünk és a megfigyelések között időbeli függés van, például a bűnügyi statisztikák is jellemzően idősorok.
 Az idősorok elemzése olyan módszereket foglal magában, amelyekkel az adatokból mintázatokat, trendeket lehet felismerni, valamint előrejelzéseket kézíthetünk.
  Az idősorok elemzésének két fő célja van: a múltbeli adatok megértése és a jövőbeli értékek előrejelzése.
 Az idősorok egyik legfontosabb jellemzője, hogy az egymást követő megfigelések nem függetlenek. Ez a függőség lehet rövid távú, amikor a közelmúlt megfigyelései befolyásolják a jövőbeli értékeket, vagy hosszútávú, amikor trendek vagy szezonális mintázatok figyelhetők meg az adatokban. Akkor beszélhetünk trendről, ha az adatokban hosszú távú növekedés vagy csökkenés figyelhető meg, míg szezonális mintázat esetében az adatsort valamilyen ismétlődő ciklus jellemzi, például éves, havi vagy heti szinten.
@@ -1117,15 +1122,15 @@ $
 ]
 
 #definition[
-Egy idősor gyengén stacionáris, ha teljesül az alábbi három feltétel:
-1. Az idősor várható értéke időben állandó, azaz $E[X_t] = \mu$ minden $t$-re.
+Egy idősor gyengén stacionárius, ha teljesül az alábbi három feltétel:
+1. Az idősor várható értéke időben állandó, azaz $E[X_t] = mu$ minden $t$-re.
 2. $E[X_t^2] < infinity$ minden $t$-re.
 3. Két megfigyelés közötti kovariancia csak a köztük lévő időkülönbségtől ($h$) függ és nem a konkrét $t$ időponttól, azaz $op("Cov")(X_t, X_(t+h)) = gamma(h)$.]
 
 #definition[
 Egy idősor erősen stacionáris, ha minden $h$ és minden $t_1, t_2,...,t_n$ esetén teljesül, hogy $(X_t_1, X_t_2, ..., X_t_n)$ és $(X_(t_1+h), X_(t_2+h), ..., X_(t_n+h))$ azonos eloszlásúak.
 ]
-A (gyenge) stacionaritás fonto sfogalom az idősorelemzésben, mivel a legtöbb klasszikus idősorelemzési módszer feltételezi, hogy az idősor (gyengén)stacionáris. A stacionaritás azt jelenti, hogy az idősor statisztikai tulajdonságai időben állandóak, így a múltbeli adatok alapján megbízhatóan előrejelezhetjük a jövőbeli értékeket.
+A (gyenge) stacionaritás fontos fogalom az idősorelemzésben, mivel a legtöbb klasszikus idősorelemzési módszer feltételezi, hogy az idősor (gyengén)stacionárius. A stacionaritás azt jelenti, hogy az idősor statisztikai tulajdonságai időben állandóak, így a múltbeli adatok alapján megbízhatóan előrejelezhetjük a jövőbeli értékeket.
 
 === Klasszikus idősorelemzési módszerek
 
@@ -1133,8 +1138,8 @@ A klasszikus idősorelemzési módszereket két nagy csoportra oszhatjuk: determ
 
 ==== Determinisztikus és simításos módszerek
 
-Ezek a módszerek az adatokban lévő véltlen ingadozás kiszűrésére, a mögöttes trendek és szezonális mintázatok kiemelésére szolgálnak. Ezek a módszerek olyan rekurzív becslésnek tekinthetők, amely során a múlbeli megfigyelések egy súlyozott kombinációját használjuk a jövőbeli érték becslésére. A súlyok meghatározása alapján különböző simítási módszereket különböztetünk meg:
-- *Egyszerű exponenciális simítás*: Olyan idősorok esetén használjuk, amelyekben nincs trend vagy szezonálsis mintázat. A módszer lényege, hogy a jövőbeli értéket a múltbeli értékek súlyozott átlagaként becsüljük, ahol a súlyok exponenciálisan csökkennek a múltbeli értékekre vonatkozóan. Az alapegyenlete a következőképpen írható fel:
+Ezek a módszerek az adatokban lévő véletlen ingadozás kiszűrésére, a mögöttes trendek és szezonális mintázatok kiemelésére szolgálnak. Ezek a módszerek olyan rekurzív becslésnek tekinthetők, amely során a múltbeli megfigyelések egy súlyozott kombinációját használjuk a jövőbeli érték becslésére. A súlyok meghatározása alapján különböző simítási módszereket különböztetünk meg:
+- *Egyszerű exponenciális simítás*: Olyan idősorok esetén használjuk, amelyekben nincs trend vagy szezonális mintázat. A módszer lényege, hogy a jövőbeli értéket a múltbeli értékek súlyozott átlagaként becsüljük, ahol a súlyok exponenciálisan csökkennek a múltbeli értékekre vonatkozóan. Az alapegyenlete a következőképpen írható fel:
  $
   hat(Y)_(t+1) = alpha Y_t + (1 - alpha) hat(Y)_t,
   $ ahol $alpha$ a simítási paraméter, amely értéke 0 és 1 között van, $Y_t$ az idősor $t$-edik megfigyelése, és $hat(Y)_t$ a $t$-edik időpontban becsült érték. Ebből megmutatható:
@@ -1153,12 +1158,12 @@ $
 ahol $ell_t$ a szint becslése, $b_t$ a trend becslése, $s_t$ a szezonális komponens becslése, $alpha$, $beta$ és $gamma$ a simítási paraméterek, amelyek értéke 0 és 1 között van, $Y_t$ az idősor $t$-edik megfigyelése, és $m$ a szezon hossza.
 Ekkor az előrejelzés az $t+h$ időpontban a következőképpen számítható:
 $
-hat(Y)_(t+h) = ell_t + h b_t + s_(t+h-m)),
+hat(Y)_(t+h) = ell_t + h b_t + s_(t+h-m),
 $ ahol $h$ a előrejelzés időtávja.
 
 ==== Sztochasztikus módszerek
 
-A klasszikus sztochasztikus megközelítés alapját a Box-Jenkins módszertan képezi, amely az autoregresszív és mozgóátlag modellekre épül. Ezek a modellek nemcsak a determinista komponenseket, hanem a véletlen ingadozásokat is modellezik. Ezek a módszerek feltételezik, hogy az idősor stacionáris, így gyakran szükséges az idősor differenciálása a stacionaritás eléréséhez.
+A klasszikus sztochasztikus megközelítés alapját a Box-Jenkins módszertan képezi, amely az autoregresszív és mozgóátlag modellekre épül. Ezek a modellek nemcsak a determinisztikus komponenseket, hanem a véletlen ingadozásokat is modellezik. Ezek a módszerek feltételezik, hogy az idősor stacionárius, így gyakran szükséges az idősor differenciálása a stacionaritás eléréséhez.
  - *Autoregresszív (AR) modellek*: Az AR modellekbe a jövőbeli értékek a múltbeli értékek lineáris kominációjakén áll elő:
 $
 Y_t = c + sum_(i=1)^p phi_i Y_(t-i) + epsilon_t,

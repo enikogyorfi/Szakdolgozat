@@ -115,8 +115,8 @@ def Scatter_plot(Results):
     plt.scatter(Results['Actual'], Results['Predicted'], alpha=0.5)
     plt.plot([Results['Actual'].min(), Results['Actual'].max()], [Results['Actual'].min(), Results['Actual'].max()], 'r--')
     plt.title('Valós vs Predikált értékek', color = 'black')
-    plt.xlabel('Valós értékek', color = 'black')
-    plt.ylabel('Predikált értékek', color = 'black')
+    plt.xlabel('Valós értékek', color = 'black', fontsize = 12)
+    plt.ylabel('Predikált értékek', color = 'black', fontsize = 12)
 
 
 def Histogram(Results, area_col, target_col):

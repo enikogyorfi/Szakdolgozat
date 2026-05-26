@@ -222,7 +222,7 @@
 = Gyakorlati alkalmazások
 
 Az előző fejezetekben bemutatott eszkozök, mint a sztochasztikus differenciálegyenletek, a különböző ML és DL modellek lehetőséget adnak arra, hogy elemezzünk összetett, időben változó rendszereket és előrejelzéseket készítsünk. Ebben a fejezetben ezen módszerek gyakorlati alkalmazását vizsgálom meg bűnözési adatokon,
- elemezem a bűnözés időbeli mintázatát, a bűnözést befolyásoló demográfiai tényezőket, valamint a bűnözés előrejelzésére szolgáló modellek teljesítményét.
+ elemzem a bűnözés időbeli mintázatát, a bűnözést befolyásoló demográfiai tényezőket, valamint a bűnözés előrejelzésére szolgáló modellek teljesítményét.
 
 A bűnügyi statisztikák elemzése társadalmi és gazdasági szempontból is fontos, segíthet megérteni a bűnőzést kiváltó okokat, és hozzájárulhat a hatékonyabb bűnmegelőzési stratégiák kidolgozásához. A bűncselekmények időbeli alakulásának vizsgálata lehetőséget ad a trendek, a szezonalitás és a hirtelen változások azonosítására, míg a demográfiai tényezők elemzése segíthet megérteni, hogy mely csoportok vannak nagyobb kockázatnak kitéve.
 
@@ -231,7 +231,7 @@ Elsőként korábban bemutatott geometriai Brown-mozgás segítségével modelle
 
  == Adatok bemutatása
 
-A vizsgálathoz a Chicago városában elkövetett bűncselekmények adatait használom, amelyeket a Chicago Police Department tett közzé. Az adatbázis tartalmazza a bűncselekmények típusát, helyét, időpontját és egyéb jellemzőit. Az adatok a 2001-től 2025-ig terjedő időszakot ölelik fel, és több mint 6 millió bűncselekményt tartalmaznak. Minden egyes rekord egy bűncselekményt reprezentál ée a legfontosabb jellemzői a következők:
+A vizsgálathoz a Chicago városában elkövetett bűncselekmények adatait használom, amelyeket a Chicago Police Department tett közzé. Az adatbázis tartalmazza a bűncselekmények típusát, helyét, időpontját és egyéb jellemzőit. Az adatok a 2001-től 2025-ig terjedő időszakot ölelik fel, és több mint 6 millió bűncselekményt tartalmaznak. Minden egyes rekord egy bűncselekményt reprezentál és a legfontosabb jellemzői a következők:
 - _ID_: Egyedi azonosító minden bűncselekményhez.
 - _Dátum_: A bűncselekmény elkövetésének időpontja.
 - _Primary Type_: A bűncselekmény típusa (pl. lopás, testi sértés, stb.).
@@ -266,9 +266,9 @@ A vizsgálathoz a Chicago városában elkövetett bűncselekmények adatait hasz
 A modellezés megjezdése előtt fontos megismerni a felhasznált bűnözési adatok szerkezetét és jellemzőit. Így először vizuális eszközökkel szemléltetem az adathalmaz néhány fontos aspektusát, elsősorban a teljes, 2001 és 2025 közötti időszakra aggregált formában. Az elemzés célja, hogy képet kapjunk a bűncselekmények típus szerinti megoszlásáról, térbeli elhelyezkedéséről, időbeli mintázatairól, valamint a letartóztatási arányok különbségeiről.
 
 Az ábrák segítségével azonosíthatók azok a bűncselekménytípusok, amelyek a legnagyobb számban fordultak elő, továbbá megfigyelhetők a városon belüli területi különbségek is. Emellett az időbeli aggregálások lehetőséget adnak a hosszabb távú trendek és szezonális mintázatok feltárására. Ez az előzetes feltáró elemzés fontos kiindulópontot jelent a későbbi modellezési lépésekhez, mivel segít megérteni, hogy milyen jellegű adatokra épülnek az előrejelző modellek.
-#pagebreak()
+
 #figure(
-  image("Images/EDA/major_crimes_chicago.svg", width: 50%),
+  image("Images/EDA/major_crimes_chicago.svg", width: 60%),
   caption: [Chicago bűnesemények típusai és gyakorisága]
 )<buneset_tipusok_chicago>
 
@@ -288,14 +288,14 @@ A @buneset_heti_nap_eloszlasa a bűncselekmények eloszlását mutatja a hét na
 #figure(
   image("Images/EDA/arrest_stats_top10.svg", width: 85%),
   caption: [Leggyakoribb bűncselekménytípusok és letartóztatási arányuk])<arrest_stats_top10>
-A @arrest_stats_top10 a leggyakoribb bűncselekménytípusokat mutatja be a letartóztatási arányukkal együtt. Az ábra alapján látható, hogy a leggyakoribb bűncselekménytípusok közül a lopás (THEFT) és a testi sértés (BATTERY) esetében a letartóztatási arány viszonylag alacsony, míg a kábítószerrel kapcsolatos bűncselekmények (NARCOTICS) esetében kiugróan magas.
+A @arrest_stats_top10 a leggyakoribb bűncselekménytípusokat mutatja be a letartóztatási arányukkal együtt. Az ábra alapján látható, hogy a leggyakoribb bűncselekménytípusok közül a lopás és a testi sértés esetében a letartóztatási arány viszonylag alacsony, míg a kábítószerrel kapcsolatos bűncselekmények esetében kiugróan magas.
  #figure(
   image("Images/EDA/buneset_havi_alakulasa.svg", width: 85%),
   caption: [Bűncselekmények havi alakulása])<buneset_havi_alakulasa>
 #figure(
   image("Images/EDA/buneset_havi_alakulasa_osszesitett.svg", width: 85%),
   caption: [Bűncselekmények havi alakulása (összesítve)])<buneset_havi_alakulasa_osszesitett>
-A @buneset_havi_alakulasa és a @buneset_havi_alakulasa_osszesitett a bűncselekmények havi alakulását mutatja be. A @buneset_havi_alakulasa alapján látható a bűnözés éven belüli szezonális mintázata, jellemzően a nyári hónapokban a legmagasabb a bűncselekmények száma, míg a téli hónapokban egy jelentős csökkenés figyelhető meg. Bár a bűnözés csökkenő trndet mutata a 2001 és 2025 közötti időszakban, a szezonalitás továbbra is megfigyelhető. Ezeket a megfigyeléseket számszerűsíti a @buneset_havi_alakulasa_osszesitett, itt is megfigyelhető, hogy valóban a nyári hónapokban a legmagasabb a bűncselekmények száma, míg ez a szám a téli hónapokra csökken.
+A @buneset_havi_alakulasa és a @buneset_havi_alakulasa_osszesitett a bűncselekmények havi alakulását mutatja be. A @buneset_havi_alakulasa alapján látható a bűnözés éven belüli szezonális mintázata, jellemzően a nyári hónapokban a legmagasabb a bűncselekmények száma, míg a téli hónapokban egy jelentős csökkenés figyelhető meg. Bár a bűnözés csökkenő trendet mutat a 2001 és 2025 közötti időszakban, a szezonalitás továbbra is megfigyelhető. Ezeket a megfigyeléseket számszerűsíti a @buneset_havi_alakulasa_osszesitett, itt is megfigyelhető, hogy valóban a nyári hónapokban a legmagasabb a bűncselekmények száma, míg ez a szám a téli hónapokra csökken.
 
 == Baseline modell
 
@@ -303,9 +303,9 @@ A komplexebb modellek alkalmazása előtt készítettem egy egyszerű baseline m
 
 Ennél a módszernél az előrejelzés minden körzet esetén a 2024-es év utolsó három hónapjának (október, november, december) bűncselekményszámának átlagát jelenti.. A modell tehát nem tanul külön paramétereket, és nem használ további magyarázó változókat, hanem kizárólag a legutóbbi rövid távú bűnözési szintből indul ki.
 
-Ez a megközelítés azért alkalmas baseline modellként, mert a bűnözési adatokban gyakran megfigyelhető rövid távú stabilitás, vagyis hogy a bűnözés szintje egy adott körzetben viszonylag hasonló marad rövid időn belül.Ha egy komplexebb modell nem teljesít érdemben jobban ennél az egyszerű mozgóátlagos előrejelzésnél, akkor az arra utalhat, hogy a modell nem tudott jelentős többletinformációt kinyerni az adatokból.
+Ez a megközelítés azért alkalmas baseline modellként, mert a bűnözési adatokban gyakran megfigyelhető rövid távú stabilitás, vagyis hogy a bűnözés szintje egy adott körzetben viszonylag hasonló marad rövid időn belül. Ha egy komplexebb modell nem teljesít érdemben jobban ennél az egyszerű mozgóátlagos előrejelzésnél, akkor az arra utalhat, hogy a modell nem tudott jelentős többletinformációt kinyerni az adatokból.
 
-A baseline modell teljesítményét ugyanazokkal a metrikákkal értékeltem ki, mint később a komplexebb modelleket. Az ereményeket az alábbi táblázatban foglaltam össze:
+A baseline modell teljesítményét ugyanazokkal a metrikákkal értékeltem ki, mint később a komplexebb modelleket. Az eredményeket az alábbi táblázatban foglaltam össze:
 
 #figure(
     caption: [A baseline modell előrejelzései és teljesítménymutatói],
@@ -324,7 +324,7 @@ Ebben a fejezetben a bűnözés időbeli alakulását modellezem geometriai Brow
 
 === Adatok előkészítése
 
-Elsőként, hogy a modellt alkalmazni tudjam, a nyers adatokat megfelelő térbeli és időbeli felbontásra kellett hozni. Ahogy az @buneset_suruseg_terkep is mutatja, a bűnözési mintázat jelentős eltéréseket mutat a városon belül, ezért az előrejelzéseket kerültenként készítem el (a 21-es és 31-es körzetre nem állt rendelkezésre elég információ, így azokat az elemzés során nem vettem figyelembe). Az időbeli felbontáshoz először minden körzetre és évre kiszámoltam a havi bűncselekmények számát, majd ebből az adatból kiszámoltam a bűncselekmények napi átlagos számát, így figyelembe tudtam venni, hogy az egyes hónapok különböző hosszúságúak. Tanító adathalmazatként a 2001 és 2024 közötti időszakot, míg teszt adatként 2025 január és augusztus közötti időszakot használtam. Illetve még az adatelőkészítés során eltávolítottam azokat az oszlopokat amelykre nem lesz szükség a modellépítés során, például a bűncselekmények pontos helyét jelző földrajzi koordinátákat, illetve a bűncselekmények típusát jelző oszlopokat is, mivel ezek nem relevánsak a bűnözés időbeli alakulásának modellezése szempontjából.
+Elsőként, hogy a modellt alkalmazni tudjam, a nyers adatokat megfelelő térbeli és időbeli felbontásra kellett hozni. Ahogy az @buneset_suruseg_terkep is mutatja, a bűnözési mintázat jelentős eltéréseket mutat a városon belül, ezért az előrejelzéseket körzetenként készítem el (a 21-es és 31-es körzetre nem állt rendelkezésre elég információ, így azokat az elemzés során nem vettem figyelembe). Az időbeli felbontáshoz először minden körzetre és évre kiszámoltam a havi bűncselekmények számát, majd ebből az adatból kiszámoltam a bűncselekmények napi átlagos számát, így figyelembe tudtam venni, hogy az egyes hónapok különböző hosszúságúak. Tanító adathalmazatként a 2001 és 2024 közötti időszakot, míg teszt adatként 2025 január és augusztus közötti időszakot használtam. Illetve még az adatelőkészítés során eltávolítottam azokat az oszlopokat amelykre nem lesz szükség a modellépítés során, például a bűncselekmények pontos helyét jelző földrajzi koordinátákat, illetve a bűncselekmények típusát jelző oszlopokat is, mivel ezek nem relevánsak a bűnözés időbeli alakulásának modellezése szempontjából.
 
 
 === Paraméterek meghatározása
@@ -338,7 +338,7 @@ Elsőként a szimuláció alapparamétereit határoztam meg, ezek a következők
 
 A körzetek idősorait geometriai Brown-mozgással modelleztem. Jelölje $S_(i,t)$ az i-edik körzetben a bűncselekmények napi átlagos számát a t-edik időpontban. Ekkor az i-edik körzet idősora a következő sztochasztikus differenciálegyenlettel írható le:
 $
-d S_(i,t) = S_(i,t) μ_i d t + σ_i S_(i,t) d W_(i.t))
+d S_(i,t) = S_(i,t) μ_i d t + σ_i S_(i,t) d W_(i.t)
 $
 ahol $mu_i$ az i-edik körzet drift paramétere, $sigma_i$ a volatilitás paramétere, és $W_(i,t)$ az i-edik körzethez tartozó Brown-mozgás. A megoldás az alábbi alakban adható meg:
  $
@@ -374,7 +374,7 @@ $
 R = (ρ_(i,j))
 $
 
-A korrelált Brown-mozgások előállításához a körzetek korrelációs mátrixának Cholesky-felbontását használtam:
+A korrelált Brown-mozgások előállításához a körzetek korrelációs mátrixának Cholesky-felbontását használjuk:
 $
 R = L L^T
 $
@@ -937,7 +937,7 @@ Az ábrán a 20 leggyakoribb bűncselekménytípus esetében mutatja, hogy a per
 #figure(
     caption: [A 20 leggyakoribb bűncselekménytípus esetében a feature importance értékek hőtérképen],
     [
-        #image("Images/Results_img/socio_feature_importance_heatmap.png" , width: 90%)
+        #image("Images/Results_img/socio_feature_importance_heatmap.png" , width: 100%)
     ]
 ) <top20_feature_importance_value_heatmap>
 
