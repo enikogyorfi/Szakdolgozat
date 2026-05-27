@@ -272,7 +272,7 @@ A modellezés megkezdése előtt fontos megismerni a felhasznált bűnözési ad
 Az ábrák segítségével azonosíthatók azok a bűncselekménytípusok, amelyek a legnagyobb számban fordultak elő, továbbá megfigyelhetők a városon belüli területi különbségek is. Emellett az időbeli aggregálások lehetőséget adnak a hosszabb távú trendek és szezonális mintázatok feltárására. Ez az előzetes feltáró elemzés fontos kiindulópontot jelent a későbbi modellezési lépésekhez, mivel segít megérteni, hogy milyen jellegű adatokra épülnek az előrejelző modellek.
 
 #figure(
-  image("Images/EDA/major_crimes_chicago.svg", width: 60%),
+  image("Images/EDA/major_crimes_chicago.svg", width: 65%),
   caption: [Chicago bűnesemények típusai és gyakorisága]
 )<buneset_tipusok_chicago>
 
@@ -301,6 +301,7 @@ A @arrest_stats_top10 a leggyakoribb bűncselekménytípusokat mutatja be a leta
   caption: [Bűncselekmények havi alakulása (összesítve)])<buneset_havi_alakulasa_osszesitett>
 A @buneset_havi_alakulasa és a @buneset_havi_alakulasa_osszesitett a bűncselekmények havi alakulását mutatja be. A @buneset_havi_alakulasa alapján látható a bűnözés éven belüli szezonális mintázata, jellemzően a nyári hónapokban a legmagasabb a bűncselekmények száma, míg a téli hónapokban egy jelentős csökkenés figyelhető meg. Bár a bűnözés csökkenő trendet mutat a 2001 és 2025 közötti időszakban, a szezonalitás továbbra is megfigyelhető. Ezeket a megfigyeléseket számszerűsíti a @buneset_havi_alakulasa_osszesitett, itt is megfigyelhető, hogy valóban a nyári hónapokban a legmagasabb a bűncselekmények száma, míg ez a szám a téli hónapokra csökken.
 
+#pagebreak()
 == A modellértékelés során felhasznált metrikák
 
 A modellek értékelése során több különböző metrikát is használtam, hogy átfogó képet kapjak a modellek teljesítményéről.
@@ -312,7 +313,7 @@ $
  $
  "MAE" = 1/n sum_(i=1)^(n) |y_i - (hat(y))_i|
  $
-#pagebreak()
+
 - _MAPE (Mean Absolute Percentage Error)_: százalékos formában fejezi ki a relatív hibát, így könnyebben értelmezhető, különösen akkor, ha a tényleges értékek nagyságrendje változó.
  $
  "MAPE" = 100/n sum_(i=1)^(n) |(y_i - (hat(y))_i)/y_i|
