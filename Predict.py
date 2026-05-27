@@ -20,6 +20,30 @@ plt.rcParams.update({
     "axes.facecolor": "white",
     "savefig.facecolor": "white"})
 
+FEATURE_NAME_HU = {
+    "Year": "Év",
+    "Community Area": "Közösségi terület",
+    "counts_1": "Bűnesetszám 1 év késleltetéssel",
+    "counts_2": "Bűnesetszám 2 év késleltetéssel",
+    "counts_3": "Bűnesetszám 3 év késleltetéssel",
+    "counts_1_rollingmean": "1 éves mozgóátlag",
+    "counts_2_rollingmean": "2 éves mozgóátlag",
+    "counts_3_rollingmean": "3 éves mozgóátlag",
+    "total_pop": "Teljes népesség",
+    "poverty_rate": "Szegénységi ráta",
+    "male_15_34_rate": "15-34 éves férfiak aránya",
+    "employment_rate": "Foglalkoztatottsági ráta",
+    "unemployment_rate": "Munkanélküliségi ráta",
+    "no_hs_25plus_rate": "Érettségi nélküliek aránya",
+    "per_capita_income": "Egy főre jutó jövedelem",
+    "weighted_avg_income": "Súlyozott átlagjövedelem",
+}
+
+
+def feature_display_names(feature_names):
+    return [FEATURE_NAME_HU.get(feature, feature) for feature in feature_names]
+
+
 def train_test_split(data, features, target, test_year):
     df = data.copy()
     df["Year"] = pd.to_numeric(df["Year"], errors="coerce")
@@ -115,8 +139,11 @@ def Scatter_plot(Results):
     plt.scatter(Results['Actual'], Results['Predicted'], alpha=0.5)
     plt.plot([Results['Actual'].min(), Results['Actual'].max()], [Results['Actual'].min(), Results['Actual'].max()], 'r--')
     plt.title('Valós vs Predikált értékek', color = 'black')
-    plt.xlabel('Valós értékek', color = 'black', fontsize = 12)
-    plt.ylabel('Predikált értékek', color = 'black', fontsize = 12)
+    plt.xlabel('Valós értékek', color = 'black', fontsize = 15)
+    plt.ylabel('Predikált értékek', color = 'black', fontsize = 15)
+    ax = plt.gca()
+    ax.set_axisbelow(True)
+    ax.grid(True, linestyle="--", linewidth=0.6, alpha=0.5)
 
 
 def Histogram(Results, area_col, target_col):
@@ -137,37 +164,42 @@ def Histogram(Results, area_col, target_col):
 
 def feature_importance(model, X_train):
     importances = model.feature_importances_
-    feature_names = X_train.columns
+    feature_names = feature_display_names(X_train.columns)
+    plt.figure(figsize=(12, 8))
     feature_importances = pd.Series(importances, index=feature_names).sort_values(ascending=False)
     sns.set_style("white")
     ax =sns.barplot(x=feature_importances, y=feature_importances.index)
-    ax.set_title("Feature Importances", color="black")
-    ax.set_xlabel("Importance Score", color="black")
-    ax.set_ylabel("Feature", color="black")
-    ax.tick_params(axis="y", labelsize=15)
+    ax.set_title("Változók fontossága", color="black")
+    ax.set_xlabel("Fontossági érték", color="black")
+    ax.set_ylabel("Változó", color="black")
+    ax.tick_params(axis="y", labelsize=20)
+    ax.tick_params(axis='x', labelsize=20)
 
 def shap_summary(model, X_test):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(X_test)
-    shap.summary_plot(shap_values, X_test, show=False)
-    shap.summary_plot(shap_values, X_test, plot_type="bar", show=False)
-    plt.title(f' SHAP Summary')
+    X_test_display = X_test.copy()
+    X_test_display.columns = feature_display_names(X_test.columns)
+    shap.summary_plot(shap_values, X_test_display, show=False)
+    shap.summary_plot(shap_values, X_test_display, plot_type="bar", show=False)
+    plt.title('SHAP összefoglaló')
 
 
 
 def permutation_importance_plot(model, X_test, y_test, feature_names):
     perm = permutation_importance(model, X_test, y_test, n_repeats=10, random_state=42)
     perm_importance = pd.DataFrame({
-        'Feature': feature_names,
+        'Feature': feature_display_names(feature_names),
         'Importance': perm.importances_mean,
         'Type': 'Validation (Permutation)'
     }).sort_values(by='Importance', ascending=False)
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 8))
     ax = sns.barplot(x=perm_importance['Importance'], y=perm_importance['Feature'])
-    ax.set_title('Permutation Importances (validation set)', color = 'black')
-    ax.set_xlabel('Mean Importance', color = 'black')
-    ax.set_ylabel('Feature', color = 'black')
-    ax.tick_params(axis='y', labelsize=15)
+    ax.set_title('Permutációs változófontosság', color = 'black')
+    ax.set_xlabel('Átlagos fontosság', color = 'black')
+    ax.set_ylabel('Változó', color = 'black')
+    ax.tick_params(axis='y', labelsize=20)
+    ax.tick_params(axis='x', labelsize=20)
 
 def permutation_importance_table(model, name, X_test, y_test, feature_names):
     Result_tables_dir = "Results_tables"
@@ -192,7 +224,7 @@ def shap_table(model,name, X_train):
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(X_train)
         shap_df = pd.DataFrame({
-            "Feature": X_train.columns,
+            "Feature": feature_display_names(X_train.columns),
             "Mean_ABS_SHAP_Value": np.abs(shap_values).mean(axis=0),
             "Mean_SHAP": shap_values.mean(axis=0)
             }).sort_values(by="Mean_ABS_SHAP_Value",  ascending=False)
@@ -234,9 +266,9 @@ def visualitzacio(Results, name, model, X_train, X_test, y_test):
         plt.close()
         mlflow.log_artifact(full_path, artifact_path="plots")
         plt.show()
-        plt.tight_layout()
         permutation_importance_plot(model, X_test, y_test, X_train.columns)
         full_path = os.path.join(images_dir, f'{name}_permutation_importance.png')
+        plt.tight_layout()
         plt.savefig(full_path,  dpi=300, bbox_inches='tight')
         plt.close()
         mlflow.log_artifact(full_path, artifact_path="plots")
@@ -291,4 +323,3 @@ def residual_model(data, name, rolling_features, demo_features, target, test_yea
         mlflow.log_metrics(metrics_final)
 
     return Results_test_pred, metrics_res, Results_final, metrics_final
-

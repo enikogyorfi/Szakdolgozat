@@ -108,7 +108,7 @@
 #show heading.where(level: 3): set text(size: 14pt, weight: "bold")
 
 #show figure.caption: it => context [
-  #counter(figure).display(). Ábra: #it.body
+  #counter(figure).display(). ábra: #it.body
 ]
 
 #show ref: it => {
@@ -116,7 +116,7 @@
   if el != none and el.func() == figure and not el.kind == table {
     // Lekéri a hivatkozott ábra sorszámát
     let num = counter(figure).at(el.location()).first()
-    link(el.location())[#num. Ábra]
+    link(el.location())[#num. ábra]
   } else {
     it
   }
@@ -213,6 +213,15 @@
 
 #align(center)[Budapest, #year-text]
 
+#pagebreak()
+#v(6cm)
+#align(left)[
+  #text(size: 20pt)[Köszönetnyilvánítás]
+]
+#v(1cm)
+ Szeretnék köszönetet mondani témavezetőmnek, Maga Balázsnak, a szakdolgozatom elkészítése során nyújtott segítségéért, támogatásáért és iránymutatásáért. Különösen hálás vagyokm hogy lehetőségem volt, egy hozzám közel álló témával foglalkozni, és szabadon kísérletezhettem különböző módszerekkel és megközelítésekkel.
+ Köszönöm a pozitív és támogató hozzáállását, a szakmai tanácsait és türelmét a dolgozatírás során. Támogatása sokat jelentett számomra ebben az időszakban.
+ 
 #pagebreak()
 #outline(title: [Tartalomjegyzék])
 #pagebreak()
@@ -326,12 +335,12 @@ E[f(X(t)) | cal(F)(s)] = g(X(s))
 $
 
 ] <def_kilencedik>
-
+#box[
 *Megjegyzés.* Tehát a Markov-folyamat jövőbeli állapotának eloszlása csak a jelenlegi állapottól függ, és független a múltbeli állapotoktól. Ebből következik, hogy az együttes valószínűségi sűrűség feltételes formája felírható átmeneti sűrűségek szorzataként:
 $
   p(x_n, t_n dots x_2, t_2 | x_1, t_1) = p(x_n, t_n | x_(n-1), t_(n-1)) dots p(x_2, t_2 | x_1, t_1).
 $
-
+ ]
 #definition[
   Egy folytonos Markov-folyamat időben homogén, ha az átmeneti sűrűsége csak az időbeli különbségektől függ:
   $
@@ -401,22 +410,13 @@ $
   x(t) = x_0 + integral_0^t f(s, x(s)) dif s.
 $
 
-Egy sztochasztiku differenciálegyenlet (SDE) akkor jön létre, ha a differenciálegyenlet egy együtthatója determinisztikus paraméter helyett sztochasztikus paraméterré válik. Például tekintsük a következő KDE-t:
+Egy sztochasztikus differenciálegyenlet (SDE) akkor jön létre, ha a differenciálegyenlet egy együtthatója determinisztikus paraméter helyett sztochasztikus paraméterré válik. Például tekintsük a következő KDE-t:
 $
-  (d x(t)) / (d t) = a(t)x(t).
+  d x(t)  = a(t)x(t) d t.
 $
-Amennyiben feltesszük, hogy $a(t)$ egy sztochasztikus folyamat, akkor az egyenlet sztochasztikus differenciálegyenletté alakul. Ekkor az $a(t)$ a következő formában írható fel:
-$
-  a(t) = f(t) + h(t)xi(t),
-$
-ahol $xi(t)$ egy fehér zaj folyamat.
+Ez azt jelenti, hogy az $x(t)$ $t$ időpontban az $d t$ időlépés alatt $a(t)x(t)$-rel változik.
+A sztochasztikus differenciálegyenletekbe bevehetünk egy véletlen hatást is, amelyet Brown-mozgással modellezve az egyenlet differenciál alakban például a következőképpen írható fel:
 
-Ekkor az SDE a következőképpen néz ki:
-$
-  (d x(t)) / (d t) = (f(t) + h(t)xi(t)) x(t)
-$
-
-Legyen $dif B(t) = xi(t) dif t$, ahol $dif B(t)$ a Brown-mozgás differenciálját jelöli, ekkor az SDE differenciál formában a következőképpen írható fel:
 $
   dif x(t) = f(t)x(t) dif t + h(t)x(t) dif B(t).
 $
@@ -452,20 +452,13 @@ Az előbbi kifejezésben az integrál egyik összetevője egy $B(t)$, $t >= 0$ B
 Ez analóg a Lebesgue-integrál lépcsős függvényeivel, ahol a függvény értéke egy adott intervallumon állandó.
 
 #definition[
-  @shreve2004 Egy elemi folyamat Itô-integrálja a következőképpen definiálható:
+  @shreve2004 Egy elemi folyamat Itô-integrálja a következőképpen definiáljuk:
   $
     I(t) = integral_0^T Delta(s) dif B(s)
       = \
-      sum_(j=0)^(n) Delta(t_j) (B(t_(j)) - B(t_(j-1))) + Delta(t_n) (B(T)- B(t_n)). #<equate:revoke>
+      sum_(j=0)^(n) Delta(t_j) (B(t_(j)) - B(t_(j-1)) #<equate:revoke>
   $
 ] <def_tizennegyedik>
-
-#theorem[
-  @shreve2004 Legyen $Delta(t)$ egy elemi folyamat, ekkor az Itô-izometria a következőképpen írható fel:
-  $
-    E[(integral^t Delta(s) dif B(s))^2] = E[integral^t Delta^2(s) dif s].
-  $
-] <thm_ito_isometry>
 
 Az elemi folyamatok integráljának felhasználásával az Itô-integrál kiterjeszthető általános adaptált sztochasztikus folyamatokra, amelyek kielégítik a megfelelő feltételeket:
 
@@ -512,7 +505,7 @@ Ez a kifejezés nem értelmezhető a klasszikus analízisben használt láncszab
   $
 ] <thm_ito_doeblin>
 
-Ahhoz, hogy megértsük az Itô–Doeblin-formula jelentőségét, tekintsük a következő példát. Legyen $f(x) = 1/2 x^2$, ekkor $f$ nem függ az időtől, így $f_t = 0$, és a parciális deriváltakak $f_(x) = x$ és $f_(x x) = 1$. Legyen $x_(j-1)$ és $x_j$ két szomszédos pont egy partícióban, és tekintsük a Taylor-sor első két tagját:
+Ahhoz, hogy megértsük az Itô–Doeblin-formula jelentőségét, tekintsük a következő példát. Legyen $f(x) = 1/2 x^2$, ekkor $f$ nem függ az időtől, így $f_t = 0$, és a parciális deriváltakat $f_(x) = x$ és $f_(x x) = 1$. Legyen $x_(j-1)$ és $x_j$ két szomszédos pont egy partícióban, és tekintsük a Taylor-sor első két tagját:
 $
   f(x_j) - f(x_(j-1)) = f_x (x_(j-1))(x_j - x_(j-1)) + 1/2 f_(x x)(x_(j-1))(x_j - x_(j-1))^2.
 $
@@ -521,7 +514,7 @@ $
   f(B(T)) - f(B(0)) = sum_(j=1)^n f_x(B(t_(j-1)))(B(t_j) - B(t_(j-1))) + \
   1/2 sum_(j=1)^n f_(x x)(B(t_(j-1)))(B(t_j) - B(t_(j-1)))^2.  #<equate:revoke>
 $
-Ha ebbe behelyettesítjük a parciális deriváltakak értékét, akkor a következő egyenlőséget kapjuk:
+Ha ebbe behelyettesítjük a parciális deriváltakat értékét, akkor a következő egyenlőséget kapjuk:
 $
   f(B(T)) - f(B(0)) = sum_(j=1)^n B(t_(j-1))(B(t_j) - B(t_(j-1))) + \
   1/2 sum_(j=1)^n (B(t_j) - B(t_(j-1)))^2. #<equate:revoke>
@@ -541,10 +534,10 @@ $
 Ez pontosan az Itô–Doeblin-formula egy speciális esete, amelyben a függvény csak a Brown-mozgás értékétől függ, és nem függ az időtől.
 \
 
-Eddig az Itô–Doeblin-formulát egy speciális esetre vizsgáltuk, nevezetesen a Brown-mozgásra.Azonban ez a formula általánosítható tetszőleges Itô- folyamatokre is.
+Eddig az Itô–Doeblin-formulát egy speciális esetre vizsgáltuk, nevezetesen a Brown-mozgásra. Azonban ez a formula általánosítható tetszőleges Itô- folyamatokra is.
 
 #definition[
-    @shreve2004 Legyen $B(t)$ egy Brown mozgás és $cal(F)$ a $B(t)$-hez tartozó filtráció. Az $X(t)$ folyamatot Itô-folyamatnak nevezzük, ha felírható a következő alapkban:
+    @shreve2004 Legyen $B(t)$ egy Brown mozgás és $cal(F)$ a $B(t)$-hez tartozó filtráció. Az $X(t)$ folyamatot Itô-folyamatnak nevezzük, ha felírható a következő alakban:
 $  X(t) = X(0) + integral_0^t mu(s) dif s + integral_0^t sigma(s) dif B(s), $
 ahol $mu(s)$ és $sigma(s)$ adaptált sztochasztikus folyamatok, amelyek kielégítik a megfelelő integrálhatósági feltételeket, és $X(0)$ egy adott kezdeti érték.
 ] <def_tizenotodik>
@@ -567,7 +560,7 @@ $
 ] <thm_ito_doeblin_general>
 
 A fenti tételben a $(dif X(t))^2$ kifejezés a következőképpen értelmezendő:
-$  (dif X(t))^2 = (mu(t, X(t)) dif t + sigma(t, X(t)) dif B(t))^2. $
+$  (dif X(t))^2 = (mu(t, X(t)) dif t + sigma(t, X(t)) dif B(t)^2. $
 A következő egyenlőségek teljesülnek:
 - $(dif t)^2 = 0$,
 - $dif t dif B(t) = 0$,
@@ -630,7 +623,7 @@ $
   S(t) = S(0) exp((mu - 1/2 sigma^2)t + sigma B(t)).
 $
 ]
-Mivel $ln S(t)$ normális eloszlású, ezért a geometriai Brown.mozgás eloszlásáról a következő állítás tehető:
+Mivel $ln S(t)$ normális eloszlású, ezért a geometriai Brown-mozgás eloszlásáról a következő állítás tehető:
 
 #proposition[
 @herzog2013 A geometriai Brown-mozgás $S(t)$ minden $t > 0$ esetén
@@ -648,7 +641,7 @@ lognormális eloszlású.]
 ] <lemma_gbm_expectation>
 
 #proof[
-  Az $S(t)$ folyamat explicit megoldása a következőképpen írható fel:
+  Az $S(t)$ folyamat explicit megoldása a következőképpen írható fel a @exp_megoldas[]. egyenlet szerint:
   $
     S(t) = S(0) exp((mu - 1/2 sigma^2)t + sigma B(t)).
   $
@@ -763,7 +756,7 @@ Ahhoz, hogy a várható hiba értékét minimalizáljuk, olyan módszert kell v�
   Tehát láthatjuk, hogy a modell komplexitásának növelése csökkenti a torzítást, de növeli a szórásnégyzetet. Ez az úgynevezett torzítás-szórásnégyzet kompromisszum (bias-variance tradeoff).
   
 
-#show: lq.set-diagram(width: 12cm, height: 8cm)
+#show: lq.set-diagram(width: 12cm, height: 7.5cm)
 #show lq.selector(lq.title): set align(center)
 #let x = lq.linspace(0, 10)
 #show: lq.set-diagram(
@@ -806,7 +799,7 @@ ahol $y_i$ a valódi érték, $hat(f)(x_i)$ a modell által adott előrejelzés,
 
 Tehát ebben az esetben is fennáll a torzítás-szórásnégyzet kompromisszum esetéhez hasonló összefüggés: a modell komplexitásának növelésével a tanító adaton az MSE monoton csökken, azonban a teszt adaton az MSE egy bizonyos pont után növekedni kezd, mivel a modell túltanul. (@overfitting)
 
-#show: lq.set-diagram(width: 12cm, height: 8cm)
+#show: lq.set-diagram(width: 12cm, height: 7.5cm)
 #show: lq.set-diagram(
   xaxis: (format-ticks: none),
   yaxis: (format-ticks: none)
@@ -884,7 +877,7 @@ A @decision_tree_example egy döntési fa példáját mutatja be: lakások árá
  - A gyökércsomópontban az elhelyezkedés szerepel, ez a döntési folyamat kiindulópontja. A modell a tanítás során ezt a változót találta a legfontosabbnak, ez bontja fel legjobban az adatokat.
  - Élek: A lehetséges állapotokat jelölik.
 - Belső csomópontok: Ha az "elhelyezkedés" értéke alapján nem tudunk dönteni, további változókat kell vizsgálnunk. Például, ha a lakás a belvárosban helyezkedik el, akkor a következő változó, amit megvizsgálunk, a "Méret".
-- Levélcsomópontok: Ezek a végső döntéseket jelölik, például ha a lakás a belvárosban helyezkedi el és a mérete "Nagy", akkor a modell szerint a lakás ára 95 millió forint.
+- Levélcsomópontok: Ezek a végső döntéseket jelölik, például ha a lakás a belvárosban helyezkedik el és a mérete "Nagy", akkor a modell szerint a lakás ára 95 millió forint.
 
 #figure(
   canvas({
@@ -963,7 +956,7 @@ A @decision_tree_example egy döntési fa példáját mutatja be: lakások árá
 ) <dontesi_fa_regio>
 
 A @dontesi_fa_regio a regressziós döntési fa által létrehozott régiókat szemlélteti. Minden színezett tartomány egy levélcsomópontnak felel meg, és az ott szereplő szám az adott régióhoz rendelt becsült célérték. 
-#pagebreak()
+
 
 === A döntési fák tanítása
 
@@ -990,8 +983,8 @@ A döntési fák esetén ügyelni kell arra, hogy a fa ne nőjön túl mélyre, 
 
 == Ensemble módszerek
 
-Az ensemble módszerek használata során több gyenge modellt kombinálunk egy erősebb modell lérehozásához. Két fő típusát különböztetjük meg:
-- _Bagging_: A bagging során a tanító adatból bootstrap (visszatevéses mintavétellel) több új adathalmazt hounk létre, majd mindegyiket tanítunk egy gyenge modellt (példáil egy metszés nélküli döntési fát). Majd egyesítjük a modellek előrejelzéseit, klasszifikáció esetén többségi szavazással, regresszió esetén pedig átlagolással. Mivel egy mély fának alacsony a torzítása, de magas a szórásnégyzete, ezért a bagging segítségével csökkenthetjük a szórásnégyzetet anélkül, hogy a torzítást növelnénk.
+Az ensemble módszerek használata során több gyenge modellt kombinálunk egy erősebb modell létrehozásához. Két fő típusát különböztetjük meg:
+- _Bagging_: A bagging során a tanító adatból bootstrap (visszatevéses mintavétellel) több új adathalmazt hozunk létre, majd mindegyiket tanítunk egy gyenge modellt (például egy metszés nélküli döntési fát). Majd egyesítjük a modellek előrejelzéseit, klasszifikáció esetén többségi szavazással, regresszió esetén pedig átlagolással. Mivel egy mély fának alacsony a torzítása, de magas a szórásnégyzete, ezért a bagging segítségével csökkenthetjük a szórásnégyzetet anélkül, hogy a torzítást növelnénk.
 - _Boosting_: Míg a bagging egymástól függetlenül, párhuzamosan épít fákat, addig a boosting során szekvenciálisan építjük a fákat. Minden új fa a korábbi fák információit használja fel és a a korábbi fák által helytelenül osztályzott vagy előrejelzett megfigyelésekre helyezi a hangsúlyt, azaz ezeket a megfigyeléseket nagyobb súllyal veszi figyelembe a tanítás során. 
 
 
@@ -1088,9 +1081,9 @@ A hagyományos döntési fákkal szemben a Random Forest kevésbé átlátható,
 == Idősorok elemzése
 
 Idősornak tekinthetünk minden olyan adatot, amelyet időpontokhoz rendelünk és a megfigyelések között időbeli függés van, például a bűnügyi statisztikák is jellemzően idősorok.
-Az idősorok elemzése olyan módszereket foglal magában, amelyekkel az adatokból mintázatokat, trendeket lehet felismerni, valamint előrejelzéseket kézíthetünk.
+Az idősorok elemzése olyan módszereket foglal magában, amelyekkel az adatokból mintázatokat, trendeket lehet felismerni, valamint előrejelzéseket készíthetünk.
  Az idősorok elemzésének két fő célja van: a múltbeli adatok megértése és a jövőbeli értékek előrejelzése.
-Az idősorok egyik legfontosabb jellemzője, hogy az egymást követő megfigelések nem függetlenek. Ez a függőség lehet rövid távú, amikor a közelmúlt megfigyelései befolyásolják a jövőbeli értékeket, vagy hosszútávú, amikor trendek vagy szezonális mintázatok figyelhetők meg az adatokban. Akkor beszélhetünk trendről, ha az adatokban hosszú távú növekedés vagy csökkenés figyelhető meg, míg szezonális mintázat esetében az adatsort valamilyen ismétlődő ciklus jellemzi, például éves, havi vagy heti szinten.
+Az idősorok egyik legfontosabb jellemzője, hogy az egymást követő megfigyelések nem függetlenek. Ez a függőség lehet rövid távú, amikor a közelmúlt megfigyelései befolyásolják a jövőbeli értékeket, vagy hosszútávú, amikor trendek vagy szezonális mintázatok figyelhetők meg az adatokban. Akkor beszélhetünk trendről, ha az adatokban hosszú távú növekedés vagy csökkenés figyelhető meg, míg szezonális mintázat esetében az adatsort valamilyen ismétlődő ciklus jellemzi, például éves, havi vagy heti szinten.
 Ezek alapján az idősorok több, egymástól független komponensből állhatnak, tehát egy $Y_t$ idősor felírható a következőképpen:
 
 $
@@ -1134,7 +1127,7 @@ A (gyenge) stacionaritás fontos fogalom az idősorelemzésben, mivel a legtöbb
 
 === Klasszikus idősorelemzési módszerek
 
-A klasszikus idősorelemzési módszereket két nagy csoportra oszhatjuk: determinisztikus és sztochasztikus módszerekre. 
+A klasszikus idősorelemzési módszereket két nagy csoportra oszthatjuk: determinisztikus és sztochasztikus módszerekre.
 
 ==== Determinisztikus és simításos módszerek
 
@@ -1159,18 +1152,18 @@ ahol $ell_t$ a szint becslése, $b_t$ a trend becslése, $s_t$ a szezonális kom
 Ekkor az előrejelzés az $t+h$ időpontban a következőképpen számítható:
 $
 hat(Y)_(t+h) = ell_t + h b_t + s_(t+h-m),
-$ ahol $h$ a előrejelzés időtávja.
+$ ahol $h$ az előrejelzés időtávja.
 
 ==== Sztochasztikus módszerek
 
 A klasszikus sztochasztikus megközelítés alapját a Box-Jenkins módszertan képezi, amely az autoregresszív és mozgóátlag modellekre épül. Ezek a modellek nemcsak a determinisztikus komponenseket, hanem a véletlen ingadozásokat is modellezik. Ezek a módszerek feltételezik, hogy az idősor stacionárius, így gyakran szükséges az idősor differenciálása a stacionaritás eléréséhez.
- - *Autoregresszív (AR) modellek*: Az AR modellekbe a jövőbeli értékek a múltbeli értékek lineáris kominációjakén áll elő:
+ - *Autoregresszív (AR) modellek*: Az AR modellekbe a jövőbeli értékek a múltbeli értékek lineáris kominációjaként áll elő:
 $
 Y_t = c + sum_(i=1)^p phi_i Y_(t-i) + epsilon_t,
 $
 ahol $Y_t$ az idősor $t$-edik megfigyelése, $c$ egy konstans, $phi_i$ az autoregresszív paraméterek, $p$ az autoregresszív rend, és $epsilon_t$ a hiba.
 
-- *Mozgóátlag (MA) modellek*: Az MA modellek, szemben a determinisztikus mozgóátlag modelekkel, azt feltételezik, hogy a jövőbeli értékek nem a múltbeli tényleges értékektől, hanem a múltbeli előrejelzések hibáitól függnek:
+- *Mozgóátlag (MA) modellek*: Az MA modellek, szemben a determinisztikus mozgóátlag modellekkel, azt feltételezik, hogy a jövőbeli értékek nem a múltbeli tényleges értékektől, hanem a múltbeli előrejelzések hibáitól függnek:
 $
 Y_t = c + sum_(i=1)^q theta_i epsilon_(t-i) + epsilon_t,
 $
@@ -1191,7 +1184,7 @@ Delta^d Y_t = c + sum_(i=1)^p phi_i Delta^d Y_(t-i) + sum_(j=1)^q theta_i epsilo
 $
 ahol $Delta^d Y_t$ a d-edik rendű differenciált idősor $t$-edik megfigyelése.
 
-A szezonalitás modellezésére a SARIMA modellt használjuk, amely az ARIMA modell kiterjesztése, és a szezonális komponenseket is figyelembe veszi. Amennyiben más, külső tényezőket is szeretnénk figyelembe venni az előrejezés során, akkor az ARIMAX modellt használhatjuk, azonban ez csak akkor alkalmazható, ha lineáris kapcsolat van a külső tényezők és az idősor között, ami a gyakorlatban sokszor nem teljesül.
+A szezonalitás modellezésére a SARIMA modellt használjuk, amely az ARIMA modell kiterjesztése, és a szezonális komponenseket is figyelembe veszi. Amennyiben más, külső tényezőket is szeretnénk figyelembe venni az előrejelzés során, akkor az ARIMAX modellt használhatjuk, azonban ez csak akkor alkalmazható, ha lineáris kapcsolat van a külső tényezők és az idősor között, ami a gyakorlatban sokszor nem teljesül.
 
 === Gépi tanulási és mélytanulási módszerek idősorok elemzésére
 
@@ -1201,23 +1194,16 @@ Y_t = f(X_t) + epsilon_t,
 $
 ahol $Y_t$ a jövőbeli érték, $X_t$ a bemeneti változók, $f$ a modell, és $epsilon_t$ a hiba. A gépi tanulási módszerek (például a döntési fák, Random Forest, Gradient Boosting, Support Vector Machines) általában nem tudják értelmezni az idősorok időbeli függését, így új változókat kell bevezetni, amelyek kifejezik a múltbeli értékek hatását a jövőbeli értékekre, ilyen változók lehetnek például:
 - _Késleltetett (Lag) változók_: Ezek a múltbeli értékek, például $Y_(t-1)$, $Y_(t-2)$, ..., $Y_(t-p)$, ahol $p$ a késleltetés rendje.
-- _Mozgóátlag változók_: Ezek a múltbeli értékek átlagai, például $op("MA_p") = (Y_(t-1) + Y_(t-2) + ... + Y_(t-p)) / p$, ahol $p$ a mozgóátlag rendje.
-A gépi tanulási módszerek nagy előnye a klasszikus módszerekkel szemben, hogy képesek a nemlineáris összefüggések modellezésére, illetve képesek a változók közötti kölcsönhatások figyelembevételére is. A gépi tanulási módszerekkel szemben a mélytanulási módszerek képesek megragadni az adatok időbeliségét is, például a Recurrent Neural Networks (RNN) és a Long Short-Term Memory (LSTM) hálózatok.
+- _Mozgóátlag változók_: Ezek a múltbeli értékek átlagai, például $op("MA")_p = (Y_(t-1) + Y_(t-2) + ... + Y_(t-p)) / p$, ahol $p$ a mozgóátlag rendje.
+A gépi tanulási módszerek nagy előnye a klasszikus módszerekkel szemben, hogy képesek a nemlineáris összefüggések modellezésére, illetve képesek a változók közötti kölcsönhatások figyelembevételére is. A hagyományos gépi tanulási módszerekkel szemben a mélytanulási módszerek közvetlenül képesek megragadni az adatok időbeliségét is, például a Recurrent Neural Networks (RNN) és a Long Short-Term Memory (LSTM) hálózatok.
 - _Recurrent Neural Networks (RNN)_: Olyan neurális hálózatok, amelyek képesek az adatok időbeli függését modellezni egy belső, rekurzív állapot ($h_t$) segítségével:
 $
 h_t = sigma(W_h h_(t-1) + W_x X_t + b),
 $
 ahol $h_t$ a rekurzív állapot a $t$-edik időpontban, $W_h$ és $W_x$ a súlyok, $b$ a torzítás (bias), és $sigma$ egy aktivációs függvény.
 - _Long Short-Term Memory (LSTM) hálózatok_: Olyan RNN-ek, amelyek képesek hosszú távú függőségek modellezésére is, egy speciális cella struktúrával, amely három kaput tartalmaz: a bemeneti kaput , a kimeneti kaput és a felejtési kaput. Ezek a kapuk szabályozzák az információ áramlását a cellában, így lehetővé téve a hosszú távú függőségek megragadását is.
-$
-i_t = sigma(W_i [h_(t-1), X_t] + b_i),
-\ 
-o_t = sigma(W_o [h_(t-1), X_t] + b_o),
-\ 
-f_t = sigma(W_f [h_(t-1), X_t] + b_f), 
-$
 
-Bár a mélytanulási módszerek rendelkeznek a legnagyobb kapacitással, gyakran nagy mennyiségű adatot és számítási erőforrást igényelnek a tanításhoz és black-box jellegük miatt az eredmények értelmezése is nehéz lehet. Ezzel szemben a gépi tanulási módszerek gyakran jó kompromisszumot jelentenek, nem igénylik a klasszikus módszerek szigorú előfeltételezéseit és alkalmazásukhoz nem szükséges annyi adat és számítási erőforrás, mint a mélytanulási módszerek esetén, valamint az eredmények értelmezését is megkönnyítik a mélytanulási módszerekkel szemben, például a döntési fák esetén a változók fontosságának értékelésével.
+Bár a mélytanulási módszerek rendelkeznek a legnagyobb kapacitással, gyakran nagy mennyiségű adatot és számítási erőforrást igényelnek a tanításhoz és black-box jellegük miatt az eredmények értelmezése is nehéz lehet. Ezzel szemben a hagyományos gépi tanulási módszerek gyakran jó kompromisszumot jelentenek, nem igénylik a klasszikus módszerek szigorú előfeltételezéseit és alkalmazásukhoz nem szükséges annyi adat és számítási erőforrás, mint a mélytanulási módszerek esetén, valamint az eredmények értelmezését is megkönnyítik a mélytanulási módszerekkel szemben, például a döntési fák esetén a változók fontosságának értékelésével.
 
 #include "Gyakorlati_resz.typ"
 
@@ -1225,3 +1211,72 @@ Bár a mélytanulási módszerek rendelkeznek a legnagyobb kapacitással, gyakra
 = Irodalomjegyzék
 
 #bibliography("reference.bib", full: true, title:none)
+
+#pagebreak()
+= Mesterséges Intelligencia használata a szakdolgozatban
+
+#rect(
+  stroke: 0.8pt + black,
+  inset: 10pt,
+  width: 100%,
+)[
+  Alulírott Győrfi Enikő Tünde nyilatkozom, hogy szakdolgozatom elkészítése során az alább felsorolt
+  feladatok elvégzésére a megadott MI alapú eszközöket alkalmaztam:
+
+  #v(0.6em)
+
+  #let graycell(body) = table.cell(fill: rgb("#d9d9d9"))[#body]
+
+  #table(
+    columns: (1.6fr, 1.7fr, 1.6fr, 1.7fr),
+    align: left,
+    inset: 4pt,
+    stroke: none,
+
+    table.header(
+      [#strong[#emph[Feladat]]],
+      [#strong[#emph[Felhasznált \ eszköz]]],
+      [#strong[#emph[Felhasználás \ helye]]],
+      [#strong[#emph[Megjegyzés]]],
+    ),
+
+    table.hline(stroke: 0.8pt + black),
+
+    [Nyelvhelyesség ellenőrzése],
+    graycell[Chat GPT 5.5 \ és Gemini 3.1. Pro],
+    graycell[5. fejezet],
+    graycell[],
+
+    table.hline(stroke: 0.5pt + black),
+
+    [Ábra készítés],
+    [Gemini 3.1. Pro],
+    [3.ábra, 5. ábra],
+    [],
+
+    table.hline(stroke: 0.5pt + black),
+
+    [Segítség a kód elkészítésében],
+    graycell[GPT-5.5, \ GitHub Copilot],
+    graycell[],
+    graycell[hibakeresés,\  kód optimalizálás \ demográfiai adatok kinyerése],
+
+    table.hline(stroke: 0.5pt + black),
+
+    [Adat keresés],
+    [Chat GPT \ Gemini 3.1. Pro],
+    [5.5 fejezet],
+    [Demográfiai adatok],
+
+    table.hline(stroke: 0.5pt + black),
+
+    [Typst használata / formázás],
+    graycell[Gemini 3.1. Pro \ GitHub Copilot],
+    graycell[Teljes dolgozat],
+    graycell[],
+  )
+
+  #v(0.8em)
+
+  A felsoroltakon túl más MI alapú eszközt nem használtam.
+]

@@ -95,6 +95,10 @@
 #show heading.where(level: 3): set text(size: 14pt, weight: "bold")
 
 #show figure.caption: it => context {
+  if it.numbering == none {
+    return [#it.body]
+  }
+
   // 1. Lekérjük a sorszámot. Az 'it.counter' automatikusan tudja,
   // hogy a táblázatok vagy a képek számlálóját kell-e néznie!
   let num = it.counter.display()
@@ -117,7 +121,7 @@
     } else if el.kind == table {
       [Táblázat]
     } else {
-      [Ábra]
+      [ábra]
     }
 
     link(el.location())[#num. #nev]
@@ -221,10 +225,10 @@
 
 = Gyakorlati alkalmazások
 
-Az előző fejezetekben bemutatott eszkozök, mint a sztochasztikus differenciálegyenletek, a különböző ML és DL modellek lehetőséget adnak arra, hogy elemezzünk összetett, időben változó rendszereket és előrejelzéseket készítsünk. Ebben a fejezetben ezen módszerek gyakorlati alkalmazását vizsgálom meg bűnözési adatokon,
+Az előző fejezetekben bemutatott eszközök, mint a sztochasztikus differenciálegyenletek, a különböző ML és DL modellek lehetőséget adnak arra, hogy elemezzünk összetett, időben változó rendszereket és előrejelzéseket készítsünk. Ebben a fejezetben ezen módszerek gyakorlati alkalmazását vizsgálom meg bűnözési adatokon,
  elemzem a bűnözés időbeli mintázatát, a bűnözést befolyásoló demográfiai tényezőket, valamint a bűnözés előrejelzésére szolgáló modellek teljesítményét.
 
-A bűnügyi statisztikák elemzése társadalmi és gazdasági szempontból is fontos, segíthet megérteni a bűnőzést kiváltó okokat, és hozzájárulhat a hatékonyabb bűnmegelőzési stratégiák kidolgozásához. A bűncselekmények időbeli alakulásának vizsgálata lehetőséget ad a trendek, a szezonalitás és a hirtelen változások azonosítására, míg a demográfiai tényezők elemzése segíthet megérteni, hogy mely csoportok vannak nagyobb kockázatnak kitéve.
+A bűnügyi statisztikák elemzése társadalmi és gazdasági szempontból is fontos, segíthet megérteni a bűnözést kiváltó okokat, és hozzájárulhat a hatékonyabb bűnmegelőzési stratégiák kidolgozásához. A bűncselekmények időbeli alakulásának vizsgálata lehetőséget ad a trendek, a szezonalitás és a hirtelen változások azonosítására, míg a demográfiai tényezők elemzése segíthet megérteni, hogy mely csoportok vannak nagyobb kockázatnak kitéve.
 
 
 Elsőként korábban bemutatott geometriai Brown-mozgás segítségével modellezem a bűnözés időbeli alakulását, majd Random Forest modellt fogok alkalmazni a bűnözés előrejelzésére és a legfontosabb tényezők azonosítására.
@@ -238,7 +242,7 @@ A vizsgálathoz a Chicago városában elkövetett bűncselekmények adatait hasz
 - _Description_: Részletes leírás a bűncselekményről.
 - _Arrest_: Jelzi, hogy történt-e letartóztatás a bűncselekmény kapcsán.
 - _District_: A város melyik rendőri körzetében történt a bűncselekmény.
-- _Community Area_: A város melyik területén történt a bűncselekmény.
+- _Community Area_: A város melyik területén történt a bűncselekmény (városrészi egység).
 - _Latitude_ és _Longitude_: A bűncselekmény helyének földrajzi koordinátái.
 #pagebreak()
 
@@ -263,7 +267,7 @@ A vizsgálathoz a Chicago városában elkövetett bűncselekmények adatait hasz
   supplement: [Táblázat],
 )<chicago_adat_minta>
 
-A modellezés megjezdése előtt fontos megismerni a felhasznált bűnözési adatok szerkezetét és jellemzőit. Így először vizuális eszközökkel szemléltetem az adathalmaz néhány fontos aspektusát, elsősorban a teljes, 2001 és 2025 közötti időszakra aggregált formában. Az elemzés célja, hogy képet kapjunk a bűncselekmények típus szerinti megoszlásáról, térbeli elhelyezkedéséről, időbeli mintázatairól, valamint a letartóztatási arányok különbségeiről.
+A modellezés megkezdése előtt fontos megismerni a felhasznált bűnözési adatok szerkezetét és jellemzőit. Így először vizuális eszközökkel szemléltetem az adathalmaz néhány fontos aspektusát, elsősorban a teljes, 2001 és 2025 közötti időszakra aggregált formában. Az elemzés célja, hogy képet kapjunk a bűncselekmények típus szerinti megoszlásáról, térbeli elhelyezkedéséről, időbeli mintázatairól, valamint a letartóztatási arányok különbségeiről.
 
 Az ábrák segítségével azonosíthatók azok a bűncselekménytípusok, amelyek a legnagyobb számban fordultak elő, továbbá megfigyelhetők a városon belüli területi különbségek is. Emellett az időbeli aggregálások lehetőséget adnak a hosszabb távú trendek és szezonális mintázatok feltárására. Ez az előzetes feltáró elemzés fontos kiindulópontot jelent a későbbi modellezési lépésekhez, mivel segít megérteni, hogy milyen jellegű adatokra épülnek az előrejelző modellek.
 
@@ -297,11 +301,36 @@ A @arrest_stats_top10 a leggyakoribb bűncselekménytípusokat mutatja be a leta
   caption: [Bűncselekmények havi alakulása (összesítve)])<buneset_havi_alakulasa_osszesitett>
 A @buneset_havi_alakulasa és a @buneset_havi_alakulasa_osszesitett a bűncselekmények havi alakulását mutatja be. A @buneset_havi_alakulasa alapján látható a bűnözés éven belüli szezonális mintázata, jellemzően a nyári hónapokban a legmagasabb a bűncselekmények száma, míg a téli hónapokban egy jelentős csökkenés figyelhető meg. Bár a bűnözés csökkenő trendet mutat a 2001 és 2025 közötti időszakban, a szezonalitás továbbra is megfigyelhető. Ezeket a megfigyeléseket számszerűsíti a @buneset_havi_alakulasa_osszesitett, itt is megfigyelhető, hogy valóban a nyári hónapokban a legmagasabb a bűncselekmények száma, míg ez a szám a téli hónapokra csökken.
 
+== A modellértékelés során felhasznált metrikák
+
+A modellek értékelése során több különböző metrikát is használtam, hogy átfogó képet kapjak a modellek teljesítményéről.
+- _RMSE (Root Mean Squared Error)_: Érzékenyebb a nagyobb hibákra.
+ $
+"RMSE" = sqrt(sum_(i=1)^(n)(y_i - (hat(y))_i)^2)
+$
+- _MAE (Mean Absolute Error)_: azt mutatja meg, hogy az előrejelzések átlagosan mekkora abszolút eltérést mutatnak a tényleges értékektől.
+ $
+ "MAE" = 1/n sum_(i=1)^(n) |y_i - (hat(y))_i|
+ $
+#pagebreak()
+- _MAPE (Mean Absolute Percentage Error)_: százalékos formában fejezi ki a relatív hibát, így könnyebben értelmezhető, különösen akkor, ha a tényleges értékek nagyságrendje változó.
+ $
+ "MAPE" = 100/n sum_(i=1)^(n) |(y_i - (hat(y))_i)/y_i|
+ $
+- _Accuracy_: azt fejezi ki, hogy a modell átlagosan hány százalékos pontossággal közelítette meg a tényleges értékeket
+$
+"Accuracy" = 100- "MAPE"
+$
+- _WMAPE (Weighted Mean Absolute Percentage Error)_: az összesített abszolút hibát viszonyítja a tényleges értékek összegéhez. Ez stabilabb mutató lehet olyan esetekben, amikor bizonyos megfigyeléseknél alacsony vagy nulla esetszám fordul elő.
+$
+"WMAPE" = (sum_(i=1)^n |y_i - hat(y)_i|) /(sum_(i=1)^n |y_i|)*100
+$
+
 == Baseline modell
 
 A komplexebb modellek alkalmazása előtt készítettem egy egyszerű baseline modellt is, amely viszonyítási alapként szolgál a későbbi előrejelző modellek értékeléséhez. A baseline modell célja, hogy egy egyszerű, könnyen érthető előrejelzést adjon, amelyhez a komplexebb modellek teljesítményét viszonyítani lehet.
 
-Ennél a módszernél az előrejelzés minden körzet esetén a 2024-es év utolsó három hónapjának (október, november, december) bűncselekményszámának átlagát jelenti.. A modell tehát nem tanul külön paramétereket, és nem használ további magyarázó változókat, hanem kizárólag a legutóbbi rövid távú bűnözési szintből indul ki.
+Ennél a módszernél az előrejelzés minden körzet esetén a 2024-es év utolsó három hónapjának (október, november, december) bűncselekményszámának átlagát jelenti. A modell tehát nem tanul külön paramétereket, és nem használ további magyarázó változókat, hanem kizárólag a legutóbbi rövid távú bűnözési szintből indul ki.
 
 Ez a megközelítés azért alkalmas baseline modellként, mert a bűnözési adatokban gyakran megfigyelhető rövid távú stabilitás, vagyis hogy a bűnözés szintje egy adott körzetben viszonylag hasonló marad rövid időn belül. Ha egy komplexebb modell nem teljesít érdemben jobban ennél az egyszerű mozgóátlagos előrejelzésnél, akkor az arra utalhat, hogy a modell nem tudott jelentős többletinformációt kinyerni az adatokból.
 
@@ -319,12 +348,12 @@ A baseline modell teljesítményét ugyanazokkal a metrikákkal értékeltem ki,
 
 == Bűnözés időbeli modellezése geometriai Brown-mozgással (Korrelált Brown-mozgás)
 
-Ebben a fejezetben a bűnözés időbeli alakulását modellezem geometriai Brown-mozgással. A felépített modell alapját Julia Calatayud és tárasi (@calatayud2023) 2023-ban megjelent tanulmánya adja, amelyben a bűnözés időbeli alakulását sztochasztikus differenciálegyenletekkel modellezték. A módszer lényege, hogy a különböző területekhez tartozó Brown-mozgások nem függetlenek, hanem korreláltak, így a modell képes figyelembe venni a térségek közötti együttmozgást is.
+Ebben a fejezetben a bűnözés időbeli alakulását modellezem geometriai Brown-mozgással. A felépített modell alapját Julia Calatayud és társai (@calatayud2023) 2023-ban megjelent tanulmánya adja, amelyben a bűnözés időbeli alakulását sztochasztikus differenciálegyenletekkel modellezték. A módszer lényege, hogy a különböző területekhez tartozó Brown-mozgások nem függetlenek, hanem korreláltak, így a modell képes figyelembe venni a térségek közötti együttmozgást is.
  A szerzők a spanyolországi Valencia város bűnözési adatait vizsgálták geometriai Brown-mozgás segítségével, de az általuk javasolt módszertan alkalmazható más városok, így Chicago bűnözési adatainak modellezésére is. A következőkben bemutatom hogyan készítettem elő az adatokat és hogyan határoztam meg a geometriai Brown-mozgás paramétereit, majd a modell segítségével előrejelzéseket készítek a bűnözés alakulására vonatkozóan.
 
 === Adatok előkészítése
 
-Elsőként, hogy a modellt alkalmazni tudjam, a nyers adatokat megfelelő térbeli és időbeli felbontásra kellett hozni. Ahogy az @buneset_suruseg_terkep is mutatja, a bűnözési mintázat jelentős eltéréseket mutat a városon belül, ezért az előrejelzéseket körzetenként készítem el (a 21-es és 31-es körzetre nem állt rendelkezésre elég információ, így azokat az elemzés során nem vettem figyelembe). Az időbeli felbontáshoz először minden körzetre és évre kiszámoltam a havi bűncselekmények számát, majd ebből az adatból kiszámoltam a bűncselekmények napi átlagos számát, így figyelembe tudtam venni, hogy az egyes hónapok különböző hosszúságúak. Tanító adathalmazatként a 2001 és 2024 közötti időszakot, míg teszt adatként 2025 január és augusztus közötti időszakot használtam. Illetve még az adatelőkészítés során eltávolítottam azokat az oszlopokat amelykre nem lesz szükség a modellépítés során, például a bűncselekmények pontos helyét jelző földrajzi koordinátákat, illetve a bűncselekmények típusát jelző oszlopokat is, mivel ezek nem relevánsak a bűnözés időbeli alakulásának modellezése szempontjából.
+Elsőként, hogy a modellt alkalmazni tudjam, a nyers adatokat megfelelő térbeli és időbeli felbontásra kellett hozni. Ahogy az @buneset_suruseg_terkep is mutatja, a bűnözési mintázat jelentős eltéréseket mutat a városon belül, ezért az előrejelzéseket körzetenként készítem el (a 21-es és 31-es körzetre nem állt rendelkezésre elég információ, így azokat az elemzés során nem vettem figyelembe). Az időbeli felbontáshoz először minden körzetre és évre kiszámoltam a havi bűncselekmények számát, majd ebből az adatból kiszámoltam a bűncselekmények napi átlagos számát, így figyelembe tudtam venni, hogy az egyes hónapok különböző hosszúságúak. Tanító adathalmazként a 2001 és 2024 közötti időszakot, míg teszt adatként 2025 január és augusztus közötti időszakot használtam. Illetve még az adatelőkészítés során eltávolítottam azokat az oszlopokat, amelyekre nem lesz szükség a modellépítés során, például a bűncselekmények pontos helyét jelző földrajzi koordinátákat, illetve a bűncselekmények típusát jelző oszlopokat is, mivel ezek nem relevánsak a bűnözés időbeli alakulásának modellezése szempontjából.
 
 
 === Paraméterek meghatározása
@@ -402,13 +431,9 @@ A táblázat alapján látható, hogy a három szcenárióban kapott előrejelz�
 
 #figure(
     image("Images/Results_img/predictions_vs_actuals_district_1.png", width: 85%),
-    caption: [Tényleges bűncselekmények napi átlagos száma a teszt időszakban és a három szcenárióban kapott előrejelzések],
+    caption: [Tényleges bűncselekmények napi átlagos száma a tesztidőszakdőszakban és a három szcenárióban kapott előrejelzések],
 ) <geom_brown_simulation_results_1_kerulet_actual_vs_predicted>
-A különbségek számszerűsítéséhez kiszámoltam az RMSE értékeket is:
- $
-"RMSE" = sqrt(sum_(i=1)^(n)(y_i - (hat(y))_i)^2)
-$
-és ábrázoltam a három szcenárióra:
+A különbségek számszerűsítéséhez kiszámoltam az RMSE értékeket is és ábrázoltam a három szcenárióra:
 
 #figure(
     image("Images/Results_img/rmse_by_scenario_district_1.png", width: 75%),
@@ -425,10 +450,10 @@ Az eredmények összefoglalását az alábbi táblázat mutatja:
     [
         #set text(size: 9pt)
         #pandas-table("Results/gbm_overall_metrics.csv")
-        )
+        
     ]
 ) <geom_brown_simulation_results_rmse_table>
-A táblázat alapján látható, hogy a modell 91,07%-os pontosággal (Accuracy) tudta előrejelezni a bűnözés alakulását a teszt időszakban, ami azt jelzi, hogy a geometriai Brown-mozgás jól alkalmazható a bűnözés időbeli modellezésére. Az RMSE és MAE (mean absolute error) értékek alapján is jól teljesített a modell, ezek az értékek azt mutatják, hogy a modell által előrejelzett értékek sehol nem térnek el kiugóan a tényleges értékektől.
+A táblázat alapján látható, hogy a kiválasztott szcenárió 91,07%-os pontossággal (Accuracy) tudta előrejelezni a bűnözés alakulását a tesztidőszakdőszakban, Az RMSE és MAE (mean absolute error) értékek alapján is jól teljesített a kiválasztott szcenárió, ezek az értékek azt mutatják, hogy a modell által előrejelzett értékek sehol nem térnek el kiugróan a tényleges értékektől.
 
 #figure(
   grid(
@@ -455,25 +480,28 @@ A @osszehasonlito-abra alapján is látható, hogy a két hőtérkép hasonló m
     image("Images/Results_img/gbm_difference_heatmap_2.png" , width: 40%),
     caption: [Az előrejelzés és a tényleges adatok közötti különbség hőtérképen],
 ) <gbm_difference_heatmap>
- Hogy vizuálisan is látható legyen a különbség a két hőtérkép között, készítettem egy külön hőtérképet, amely az előrejelzés és a tényleges adatok közötti különbséget mutatja be. A @gbm_difference_heatmap alapján látható, hogy a különbségek nagy része kisebb értékek körül helyezkedik el, de megfiygelhető, hogy a 19-es, 14-es és 12-es körzetekben az abszolút átlagos hiba magasabb.
+ Hogy vizuálisan is látható legyen a különbség a két hőtérkép között, készítettem egy külön hőtérképet, amely az előrejelzés és a tényleges adatok közötti különbséget mutatja be. A @gbm_difference_heatmap alapján látható, hogy a különbségek nagy része kisebb értékek körül helyezkedik el, de megfigyelhető, hogy a 18-as, 6-os és 2-es körzetekben az abszolút átlagos hiba magasabb.
 
+Fontos azonban hangsúlyozni, hogy a geometriai Brown-mozgás sztochasztikus modell, ezért nem egyetlen determinisztikus előrejelzést ad, hanem lehetséges jövőbeli pályákat generál, tehát ezek a pályák nem a hagyományos értelemben vett előrejelzések, hanem a bűnözés időbeli alakulásának lehetséges kimenetei. Ezért a modell eredményeit úgy érdemes tekinteni, mint egy jó leíró modellt, amely képes megragadni a bűnözés időbeli mintázatait.
 
-
+A kapott eredmények alapján, a bűnözés alakulásában a sztochasztikus komponensek mellett jelen vannak olyan determinisztikusabb komponensek is, például a múltbeli trendek, szezonális mintázatok amelyeket érdemes lehet további modellekkel is vizsgálni.
+#pagebreak()
 
 == Bűnözés előrejelzése Random Forest modellel
 
-A geometriai Brown-mozgás alkalmazásával sikerült feltárni a bűnözés időbeli alakulását és a sztochasztkus differenciálegyenletek segítségével megragadni az előrejelzés bizonytalanságát. Ez a megközelítés elsősorban a múltbeli adatoból származtatott drift és volatilitás paraméterekre támaszkodik és vázolja fel a jövőbeli szcenáriókat, azonban nem ismerjük meg az adatokban lévő struktúrákat és összefüggéseket. Ezért ebben a részben egy másik megközelítést alkalmazok, egy Random Forest modellt, amely képes megragadni az adatokban lévő nemlineáris összefüggéseket és interakciókat. A modell építése során a bűncselekmények számát jelzem előre minden körzetre és minden hónapra vonatkozóan, ugyanazt a tanító és teszt adathalmazatot használva, mint a geometriai Brown-mozgás esetében.
+A geometriai Brown-mozgás alkalmazásával sikerült feltárni a bűnözés időbeli alakulását és a sztochasztikus differenciálegyenletek segítségével megragadni az előrejelzés bizonytalanságát. Ez a megközelítés elsősorban a múltbeli adatokból származtatott drift és volatilitás paraméterekre támaszkodik és vázolja fel a jövőbeli szcenáriókat, azonban nem ismerjük meg az adatokban lévő struktúrákat és összefüggéseket. Ezért ebben a részben egy másik megközelítést alkalmazok, egy Random Forest modellt, amely képes megragadni az adatokban lévő nemlineáris összefüggéseket és interakciókat. A modell építése során a bűncselekmények számát jelzem előre minden körzetre és minden hónapra vonatkozóan, ugyanazt a tanító és teszt adathalmazt használva, mint a geometriai Brown-mozgás esetében.
 
 === Adatok előkészítése
 
-A Random Forest modell esetében is hasonlóan a geometriai Brown-mozgáshoz a 2001 és 2024 közötti időszakot használtam tanító adathalmazatként, míg a 2025 január és augusztus közötti időszakot teszt adathalmazatként. Az adatelőkészítés során azonban nem csak a bűncselekmények számát tartalmazó oszlopokat hagytam meg, hanem további jellemzőket is hozzáadtam, amelyek potenciálisan befolyásolhatják a bűnözés alakulását. A célváltozó most is a bűncselekmények napi átlagos száma minden körzetre és minden hónapra vonatkozóan. Mivel a Random Forest modell nem tudja az időbeliséget megragadni, kiegészítettem az adatokat új bemeneti változókkal, amelyek az időbeli mintázatokat reprezentálják. Ezek a következők voltak:
+A Random Forest modell esetében is hasonlóan a geometriai Brown-mozgáshoz a 2001 és 2024 közötti időszakot használtam tanító adathalmazként, míg a 2025 január és augusztus közötti időszakot teszt adathalmazatként. Az adatelőkészítés során azonban nem csak a bűncselekmények számát tartalmazó oszlopokat hagytam meg, hanem további jellemzőket is hozzáadtam, amelyek potenciálisan befolyásolhatják a bűnözés alakulását. A célváltozó most is a bűncselekmények napi átlagos száma minden körzetre és minden hónapra vonatkozóan. Mivel a Random Forest modell nem tudja az időbeliséget megragadni, kiegészítettem az adatokat új bemeneti változókkal, amelyek az időbeli mintázatokat reprezentálják. Ezek a következők voltak:
 - _Month_: A hónap száma (1-12)
 - _Year index_: Az év indexe, amely a 2001-től kezdődő évek számát jelenti (pl. 2001 = 0, 2002 = 1, stb.)
-- _Month sin_: A hónap szinusz transzformációja, amely segít megragadni a szezonális mintázatokat
-- _Month cos_: A hónap koszinusz transzformációja, amely segít megragadni a szezonális mintázatokat
+- _Month sin_: A hónap szinusz transzformációja, amely segít a modellnek értelmezni a hónapok távolságát egymástól, például hogy a január és december közötti különbség kisebb, mint a január és június közötti különbség
+- _Month cos_: A hónap koszinusz transzformációja, amely segít a modellnek értelmezni a hónapok távolságát egymástól, például hogy a január és december közötti különbség kisebb, mint a január és június közötti különbség
 - _IsSummer_: Egy bináris változó, amely jelzi, hogy a hónap a nyári időszakban van-e (június, július, augusztus)
 - _IsWinter_: Egy bináris változó, amely jelzi, hogy a hónap a téli időszakban van-e (december, január, február)
 #figure(
+   numbering: none,
    caption: [Az időbeli jellemzők előkészítése],
   [
 ```py
@@ -495,6 +523,7 @@ def prepare_month_data(df, col):
 )
 Továbbá mivel a bűnözés jövőbeli rátája egy körzetben nagymértékben függ az elmúlt időszakok tendenciáitól és a hónapok kinyerése és átalakítása segít a szezonalitás modellezésében, de nem képes megragadni a folyamatos időbeli trendet. Tehát, hogy a Random Forest modellt hatékonyan tudjam alkalmazni idősorok elmzésére, az adatelőkészítés során úgynevezett késleltetett változókat (lag features) is létrehoztam. Ezek a változók a bűncselekmények napi átlagos számát tartalmazzák az előző hónapokban minden körzetre vonatkozóan. Tehát így a modell képes lesz emlékezni a múltbeli értékekre.
 #figure(
+    numbering: none,
     caption: [Késleltetett változók létrehozása],
     [
 ```py
@@ -509,6 +538,7 @@ def create_lagged_features(df, col, lag=1):
 
 A lag változók létrehozása mellett a múltbeli értékekből kiszámolt mozgóátlagot és mozgószórást is hozzáadtam az adatokhoz, hogy egy-egy kiugró érték ne befolyásolja túlzottan a modellt és hogy a modell a mozgószórás értékek alapján meg tudja ragadni a bűnözés ingadozásait.
 #figure(
+    numbering: none,
     caption: [Mozgóátlagok és mozgószórások létrehozása],
     [
 ```py
@@ -517,20 +547,18 @@ def rolling_mean(df, idopontok):
        df[f'Rolling Mean {i}'] = (
         df.groupby('District')['Number of Crimes Per Day']
         .transform(lambda s: s.shift(1).rolling(window=i).mean()))
-
     return df
 ```
 ```py
 def rolling_std(df, idopontok):
     for i in idopontok:
         df[f'Rolling Std {i}'] = (df.groupby('District')['Number of Crimes Per Day'].transform(lambda s: s.shift(1).rolling(window=i).std()))
-
     return df
 ```
 ])
 === Modellépítés és eredmények
 
-Az adatok előkéazítése után a Random Forest modellek betanítása következett. Két különböző modellt építettem, az elsőben csak a késleltetett változókat használtam, míg a második modellben már a mozgóátlagokat és mozgószórásokat is hozzáadtam a bemeneti változókhoz.
+Az adatok előkészítése után a Random Forest modellek betanítása következett. Két különböző modellt építettem, az elsőben csak a késleltetett változókat használtam, míg a második modellben már a mozgóátlagokat és mozgószórásokat is hozzáadtam a bemeneti változókhoz.
 
 ==== Modell 1: Késleltetett változók
 
@@ -544,16 +572,16 @@ A modellben során használt bemeneti változók a következők voltak:
 - _Number of Crimes Per Day Lag 1_: A bűncselekmények napi átlagos száma az előző hónapban
 - _Number of Crimes Per Day Lag 2_: A bűncselekmények napi átlagos száma két hónappal ezelőtt
 
-A késleltetett (lag) változók számának megválasztása során több különböző beállítást is kipróbáltam, az eredmények alapján a 2 hónapra visszamenő késleltetett változók adták a legjobb eredményeket, ezért ezeket használtam a modellben. Több lag-változó használata esetn a modell teljesítmény már nem mutatott javulást, ezt magyarázhatja, hogy a bűnözés alakulására leginkább az előző hónapok tendenciái vannak hatással, és a túl sok lag-változó használata már nem ad hozzá új információt a modell számára, viszont növeli a modell komplexitását és a túlillesztés kockázatát.
+A késleltetett (lag) változók számának megválasztása során több különböző beállítást is kipróbáltam, az eredmények alapján a 2 hónapra visszamenő késleltetett változók adták a legjobb eredményeket, ezért ezeket használtam a modellben. Több lag-változó használata esetén a modell teljesítmény már nem mutatott javulást, ezt magyarázhatja, hogy a bűnözés alakulására leginkább az előző hónapok tendenciái vannak hatással, és a túl sok lag-változó használata már nem ad hozzá új információt a modell számára, viszont növeli a modell komplexitását és a túlillesztés kockázatát.
 
 A Random Forest modell nem hónaponként készítette el az előrejelzést, hanem egyszerre, a 8 hónapra vonatkozóan. Így a modell egy adott időpont és körzet alapján egy teljes előrejelzési horizontot állított elő. Ennek előnye, hogy a több hónapra vonatkozó becslések egyszerre készülnek el, vagyis a modell nem kényszerül arra, hogy minden újabb hónap előrejelzéséhez az előző saját becslését használja fel. Ez csökkentheti a hibák továbbterjedését, amely a szekvenciális előrejelzéseknél gyakran problémát jelent.
 
 A Random Forest modell hiperparamétereit RandomizedSearchCV segítségével hangoltam, amely egy véletlenszerű keresést hajt végre a megadott hiperparaméterek között, és a legjobb kombinációt választja ki a modell teljesítménye alapján. A legjobb hiperparaméterek a következők voltak:
 - _n_estimators_: 521 (a döntési fák száma a Random Forest modellben)
-- _max_depth_: 12 (a döntési fák maximális mélyse)
+- _max_depth_: 12 (a döntési fák maximális mélysége)
 - _max_features_: '0.5' (a bemeneti változók aránya, amelyet minden döntési fa építésekor véletlenszerűen kiválasztanak)
 
-A modell validálásához walk-forward cross-validation-t alkalmaztam, amely egy időbeli keresztvalidációs módszer. A módszer során a tanító adathalmazatot több részre osztottam, és minden részre külön-külön tanítottam a modellt, majd a következő részre vonatkozóan készítettem előrejelzést, így megőriztem az időbeli sorrendiséget.
+A modell validálásához walk-forward cross-validation-t alkalmaztam, amely egy időbeli keresztvalidációs módszer. A módszer során a tanító adathalmazt több részre osztottam, és minden részre külön-külön tanítottam a modellt, majd a következő részre vonatkozóan készítettem előrejelzést, így megőriztem az időbeli sorrendiséget.
 A keresztvalidáció során a következő eredményeket kaptam:
 #figure(
     caption: [Walk-forward keresztvalidáció eredményei],
@@ -563,16 +591,16 @@ A keresztvalidáció során a következő eredményeket kaptam:
     ]
 ) <walk_forward_cv_results>
 
-A modell teljesítményét a teszt adathalmazaton is értékeltem, amely 2025 január és augusztus közötti időszakot öleli fel. A következő táblázat mutatja a teszt adathalmazaton kapott eredményeket:
+A modell teljesítményét a teszt adathalmazon is értékeltem, amely 2025 január és augusztus közötti időszakot öleli fel. A következő táblázat mutatja a teszt adathalmazon kapott eredményeket:
 #figure(
-    caption: [Teszt adathalmazaton \
+    caption: [teszt adathalmazon \
      kapott eredmények],
     [
         #set text(size: 9pt)
         #pandas-table("Results/lagged_test_results.csv")
     ]
 ) <test_results_model_1>
-A táblázat alapján látható, hogy a modell 90,82%-os pontosággal (Accuracy) tudta előrejelezni a bűnözés alakulását a teszt időszakban, illetve az RMSE érték is viszonlyag alacsony (3,11), ami azt jelenti, hogy az előrejelzett napi átlagos bűncselekményszám átlagosan kis mértékben tér el a tényleges értékektől.
+A táblázat alapján látható, hogy a modell 90,82%-os pontosággal (Accuracy) tudta előrejelezni a bűnözés alakulását a tesztidőszakdőszakban, illetve az RMSE érték is viszonylag alacsony (3,11), ami azt jelenti, hogy az előrejelzett napi átlagos bűncselekményszám átlagosan kis mértékben tér el a tényleges értékektől.
 Akárcsak a geometriai Brown-mozgás esetében, a modell előrejelzéseit hőtérképen is megjelenítettem, hogy vizuálisan is összehasonlítható legyen a tényleges adatokkal.
 #figure(
   grid(
@@ -601,7 +629,7 @@ Az eltérések vizuális megjelenítéséhez készítettem egy külön hőtérk�
 ) <lagged_difference_heatmap>
 Az @lagged_difference_heatmap alapján látható, hogy a különbségek nagy része nem jelentős, de megfigyelhető pár körzet, ahol az abszolút átlagos hiba magasabb, például a 14, 25 és 19-es körzetekben, ahol 4 fölötti átlagos hibát kaptam.
 
-=== Modell 2: Késleltetett változók, mozgóátlagok és mozgószórások
+==== Modell 2: Késleltetett változók, mozgóátlagok és mozgószórások
 
 A második modellben a bemeneti változókat még kiegészítettem a mozgóátlagokkal és mozgószórásokkal, így a bemeneti változók a következők voltak:
 - _District_: A körzet azonosítója
@@ -614,20 +642,20 @@ A második modellben a bemeneti változókat még kiegészítettem a mozgóátla
 - _Number of Crimes Per Day Lag 2_: A bűncselekmények napi átlagos száma két hónappal ezelőtt
 - _Rolling Mean 3_: A bűncselekmények napi átlagos számának 3 hónapos mozgóátlaga
 - _Rolling Mean 4_: A bűncselekmények napi átlagos számának 4 hónapos mozgóátlaga
-- _Rolling Std {k_}: A bűncselekmények napi átlagos számának k hónapos mozgószórása, ahol k = 3, 4, 5, 6
+- _Rolling Std {k_}: A bűncselekmények napi átlagos számának k hónapos mozgószórása, ahol #box[k = 3, 4, 5, 6]
 
 A modell felépítése és a hiperparaméterek hangolása ugyanúgy történt, mint az első modell esetében. A keresztvalidáció során a következő eredményeket kaptam:
 #figure(
-    caption: [Walk-forwar keresztvalidáció eredményei],
+    caption: [Walk-forward keresztvalidáció eredményei],
     [
         #set text(size: 9pt)
         #pandas-table("Results/walk_forward_cv_results_rollingmean.csv")
     ]
 ) <walk_forward_cv_results_model_2>
 
-A teszt adathalmazaton kapott eredményeket a következő táblázat mutatja:
+A teszt adathalmazon kapott eredményeket a következő táblázat mutatja:
 #figure(
-    caption: [Teszt adathalmazaton kapott eredmények],
+    caption: [teszt adathalmazon kapott eredmények],
     [
         #set text(size: 9pt)
         #pandas-table("Results/rollingmean_test_results.csv")
@@ -660,7 +688,7 @@ Továbbá a különbség hőtérképet is elkészítettem:
     caption: [Az előrejelzés és a tényleges adatok közötti különbség hőtérképen],
 ) <rollingmean_difference_heatmap>
 
-Az ábráról leolvasható, hogy az eltérések értéeki kis tartományban mozognak, de megfigyelhető, hogy a 12-es körzetben jelentős eltérés van, ahol az átlagos hiba 10 fölötti érték, ami kiugróan magas. Ez magyarázható azzal, hogy a körzetben a bűncselekmények száma növekedett a teszt időszakban, míg a tanító adathalmazatban csökkenő tendencia volt megfigyelhető, így a modell nem tudta jól megragadni ezt a változást.
+Az ábráról leolvasható, hogy az eltérések értékei kis tartományban mozognak, de megfigyelhető, hogy a 12-es körzetben jelentős eltérés van, ahol az átlagos hiba 10 fölötti érték, ami kiugróan magas. Ez magyarázható azzal, hogy a körzetben a bűncselekmények száma növekedett a tesztidőszakdőszakban, míg a tanító adathalmazatban csökkenő tendencia volt megfigyelhető, így a modell nem tudta jól megragadni ezt a változást.
 
 === Összefoglalás
 
@@ -689,36 +717,36 @@ A geometriai Brown-mozgás teljesítménye valamivel gyengébb lett, mint a Rand
 
 Az előző fejezetekben a bűnözés időbeli alakulását vizsgáltam geometriai Brown-mozgás, illetve Random Forest modellek segítségével. Ezekben a modellekben a fő cél az volt, hogy a múltbeli bűnözési adatok alapján minél pontosabb előrejelzést készítsek a következő hónapokra. A modellek elsősorban az idősoros mintázatokra, a szezonalitásra, a lag-változókra és a mozgóátlagokra épültek. Ebben a fejezetben egy ettől eltérő megközelítést vizsgálok. Itt nemcsak maga az előrejelzés a cél, hanem annak vizsgálata is, hogy mely társadalmi-demográfiai jellemzők állhatnak kapcsolatban a bűnözés alakulásával és az egyes bűncselekménytípusok esetében milyen tényezők lehetnek meghatározóak.
 
-További különbség az eddigi fejezetekhez képest, hogy az elemzést már nem körzetekre végzem, hanem ugynevezett community area szinten, amely egy kisebb területi egység, illetve nem havi szinten, hanem éves szinten vizsgálom a bűnözés alakulását. Ennek oka, hogy a társadalmi-demográfiai jellemzők általában éves szinten állnak rendelkezésre és community area szinten aggregálható.
+További különbség az eddigi fejezetekhez képest, hogy az elemzést már nem körzetekre végzem, hanem városrészi egység (community area) szinten, amely egy kisebb területi egység, illetve nem havi szinten, hanem éves szinten vizsgálom a bűnözés alakulását. Ennek oka, hogy a társadalmi-demográfiai jellemzők általában éves szinten állnak rendelkezésre és városrészi egység szinten aggregálható.
 
 === Adatok előkészítése
 
-Ebben a fejezetben tanító adatként a 2013 és 2023 közötti időszakot használtam, míg az előrejelzést a 2024-es évre készítettem el, az előző fejezthez képest az eltérés oka, hogy erre a periódusra állnak rendelkezésre a legfrissebb társadalmi-demográfiai adatok.
+Ebben a fejezetben tanító adatként a 2013 és 2023 közötti időszakot használtam, míg az előrejelzést a 2024-es évre készítettem el, az előző fejezethez képest az eltérés oka, hogy erre a periódusra állnak rendelkezésre a legfrissebb társadalmi-demográfiai adatok.
 
 A demográfiai és társadalmi-gazdasági jellemzők adatainak forrása a U.S. Census Bureau által publikált American Community Survey (ACS) 5 éves becslései voltak, amelyek évente frissülnek és részletes információkat tartalmaznak a lakosság összetételéről, jövedelmi viszonyairól, foglalkoztatottságáról, oktatási szintjéről és egyéb társadalmi-gazdasági jellemzőiről.
 Az ACS 5 éves becslések nem egyetlen év pontos állapotát, hanem több év adataiból képzett becslést reprezentálnak. Emiatt ezek a változók inkább a városrészek tartósabb társadalmi-gazdasági jellemzőit írják le, nem pedig hirtelen éves változásokat. Ez ugyanakkor előnyös is lehet a bűnözési mintázatok vizsgálatában, mert a demográfiai tényezők hatása jellemzően nem egyik évről a másikra, hanem hosszabb időtávon jelenik meg.
 
-Az elemzéshez a 2013 és 2023 közötti adatokat használtam fel. Az adatok eredetileg census tract szinten álltak rendelkezésre, amely egy kisebb területi egység, mint a community area. Ezért először a census tract-eket aggregáltam community area szintre. A feldolgozás során több társadalmi és gazdasági mutatót képeztem illetve a nyers adatok helyett arányszámokat alkalmaztam, a jobb összehasonlíthatóság érdekében. Az elemzés során a következő mutatókat használtam:
-- _Teljes népesség_: A community area teljes lakossága
+Az elemzéshez a 2013 és 2023 közötti adatokat használtam fel. Az adatok eredetileg népszámlálási körzet szinten álltak rendelkezésre, amely egy kisebb területi egység, mint a városrészi egység. Ezért először a census tract-eket aggregáltam városrészi egység szintre. A feldolgozás során több társadalmi és gazdasági mutatót képeztem illetve a nyers adatok helyett arányszámokat alkalmaztam, a jobb összehasonlíthatóság érdekében. Az elemzés során a következő mutatókat használtam:
+- _Teljes népesség_: A városrészi egység teljes lakossága
 - _Munkanélküliek aránya_: A munkanélküliek aránya a teljes munkaerőhöz képest
-- _Egy főre jutó jövedelem_: A community area egy főre jutó jövedelme
+- _Egy főre jutó jövedelem_: A városrészi egység egy főre jutó jövedelme
 - _Iskolázottsági mutatók_: A középiskolát végzettek aránya, a diplomások aránya illetve a középiskolai végzettség nélküli lakosok aránya
 - _Szegénységi ráta_: A szegénységi küszöb alatt élők aránya
 - _Fiatal férfiak aránya_: A 15-34 éves férfiak aránya a teljes lakossághoz képest
 
-Mivel az ACS-adatok csak 2023-ig álltak rendelkezésre, a 2024-es előrejelzéshez a jellemzőket becsülni kellett. Ehhez Community Area-nként negyedfokú polinomiális extrapolációt alkalmaztam, amely a múltbeli értékek alapján egy negyedfokú polinomot illesztett az adatokra, majd ezt a polinomot használva becsültem meg a 2024-es értékeket.
+Mivel az ACS-adatok csak 2023-ig álltak rendelkezésre, a 2024-es előrejelzéshez a jellemzőket becsülni kellett. Ehhez városrészi egység-nként negyedfokú polinomiális extrapolációt alkalmaztam, amely a múltbeli értékek alapján egy negyedfokú polinomot illesztett az adatokra, mivel a polinomiális közelítés kellően ugyanakkor már ez is képes az adatokban megjelenő nemlineáris tendenciák követésére és a vizsgált fokszámok közül a negyedfokú izonyult a legjobbnak. Majd ezt a polinomot használva becsültem meg a 2024-es értékeket.
 
-A bűnözési adatok előkészítése során az adatokat community area szintre aggregáltam és éves szinten összesítettem. Elsőként az összes bűncselekményt egyben vizsgáltam, majd külön-külön elemeztem a leggyakoribb bűncselekménytípusokat is, mint például a lopás, testi sértés. A feldolgozás során az előző fejezetekhez hasonlóan létrehoztam késleltetett változókat, mozgóátlagokat és mozgószórásokat is, hogy a modell ne csak a társadalmi-demográfiai jellemzőket, hanem a bűnözés múltbeli alakulását is figyelembe vegye az előrejelzés során.
+A bűnözési adatok előkészítése során az adatokat városrészi egység szintre aggregáltam és éves szinten összesítettem. Elsőként az összes bűncselekményt egyben vizsgáltam, majd külön-külön elemeztem a leggyakoribb bűncselekménytípusokat is, mint például a lopás, testi sértés. A feldolgozás során az előző fejezetekhez hasonlóan létrehoztam késleltetett változókat, mozgóátlagokat és mozgószórásokat is, hogy a modell ne csak a társadalmi-demográfiai jellemzőket, hanem a bűnözés múltbeli alakulását is figyelembe vegye az előrejelzés során.
 
 === Eredmények és értékelés
 
-A demográfiai adatok bevonásával végzett elemzést két lépésben készítettem el. Elsőként egy összesített modellt építettem, amelyben az adott Community Area-ban és évben előforduló összes bűncselekmény számát vizsgáltam. Ennek célja az volt, hogy általános képet kapjak arról, mely társadalmi-gazdasági és demográfiai jellemzők kapcsolódnak leginkább a bűnözés teljes szintjéhez.
+A demográfiai adatok bevonásával végzett elemzést két lépésben készítettem el. Elsőként egy összesített modellt építettem, amelyben az adott városrészi egységben és évben előforduló összes bűncselekmény számát vizsgáltam. Ennek célja az volt, hogy általános képet kapjak arról, mely társadalmi-gazdasági és demográfiai jellemzők kapcsolódnak leginkább a bűnözés teljes szintjéhez.
 
 Ezt követően a leggyakoribb bűncselekménytípusokat külön-külön is elemeztem, hogy megvizsgáljam, hogy a különböző bűncselekménytípusok esetében milyen tényezők lehetnek meghatározóak. Erre azért volt szükség, mert például egy vagyon elleni bűncselekmény, egy erőszakos bűncselekmény vagy egy kábítószerrel kapcsolatos eset mögött eltérő társadalmi és gazdasági mintázatok állhatnak.
 
 ==== Összesített modell
 
-Tehát elsőként az összes bűncselekmény együttes esetszámát vizsgáltam, a célváltozó ennek megfelelően a bűncselekmények éves száma volt minden Community Area-ban. Az előrejelzés pedig egy évre előre készült, a 2024-es évre vonatkozóan. A modell célja egyrészt az volt, hogy vizsgáljam, hogy a társadalmi-gazdasági és demográfiai jellemzők bevonása javítja-e az előrejelzés pontosságát, másrészt pedig hogy megvizsgáljam, hogy mely tényezők állnak leginkább kapcsolatban a bűnözés alakulásával.
+Tehát elsőként az összes bűncselekmény együttes esetszámát vizsgáltam, a célváltozó ennek megfelelően a bűncselekmények éves száma volt minden városrészi egységben. Az előrejelzés pedig egy évre előre készült, a 2024-es évre vonatkozóan. A modell célja egyrészt az volt, hogy vizsgáljam, hogy a társadalmi-gazdasági és demográfiai jellemzők bevonása javítja-e az előrejelzés pontosságát, másrészt pedig hogy megvizsgáljam, hogy mely tényezők állnak leginkább kapcsolatban a bűnözés alakulásával.
 
 Ennek megfelelően két modellt építettem, az elsőben csak a bűnözés múltbeli alakulását figyelembe vevő változókat használtam, míg a második modellben már a társadalmi-gazdasági és demográfiai jellemzőket is bevontam. A két modell összehasonlítás azért is fontos, mert az előző fejezetekben tárgyalt modellek, amik csak a bűnözés időbeli alakulását használták fel, is jó előrejelzéseket adtak, így a demográfiai adatok hozzáadott értéke csak akkor mutatható ki, ha a második modell a korábbi bűnözési szint figyelembevétele mellett is javítja az előrejelzési teljesítményt.
 Az értékelés során a korábban már ismertetett metrikákat használtam: RMSE, MAE, MAPE és Accuracy. Az eredményeket az alábbi táblázat foglalja össze:
@@ -730,7 +758,7 @@ Az értékelés során a korábban már ismertetett metrikákat használtam: RMS
     ]
 ) <summary_total_crime>
 
-A táblázat alapján látható, hogy a társadalmi-gazdasági és demográfiai jellemzők bevonása javította az előrejelzés pontosságát, 88,74%-ról 90,14%-ra nőtt az Accuracy értéke. Tehát az új jellemzők hozzáadása valóban többletinformációt adott a modellnek, ugyanakkor a javulás mértéke nem volt ugrásszerű. Ennek oka lehet egyrészről, hogy a demográfiai tényezők csak lassan, általában hossazbb időszak alatt mutatnak jelentős változást, így a 2024-es évre vonatkozóan a becsült értékek nem térnek el jelentősen a 2023-as értékektől, másrészről pedig az idősoros jellemzők, mint például a lag-változók és a mozgóátlagok, már önmagukban is sok információt tartalmaznak, a modell már önmagában is viszonylag jó előrejelzést tud adni, így a további jellemzők hozzáadása ehhez képest már csak kisebb mértékben javítja a teljesítményt. További magyarázat lehet, hogy a 2024-es adatra a társadalmi-gazdasági és demográfiai jellemzők nem közvetlen megfigyelésből származnak, hanem becsült értékek, így ezek is hibával terheltek, ami csökkentheti a modell teljesítményét.
+A táblázat alapján látható, hogy a társadalmi-gazdasági és demográfiai jellemzők bevonása javította az előrejelzés pontosságát, 88,74%-ról 90,14%-ra nőtt az Accuracy értéke. Tehát az új jellemzők hozzáadása valóban többletinformációt adott a modellnek, ugyanakkor a javulás mértéke nem volt ugrásszerű. Ennek oka lehet egyrészről, hogy a demográfiai tényezők csak lassan, általában hosszabb időszak alatt mutatnak jelentős változást, így a 2024-es évre vonatkozóan a becsült értékek nem térnek el jelentősen a 2023-as értékektől, másrészről pedig az idősoros jellemzők, mint például a lag-változók és a mozgóátlagok, már önmagukban is sok információt tartalmaznak, a modell már önmagában is viszonylag jó előrejelzést tud adni, így a további jellemzők hozzáadása ehhez képest már csak kisebb mértékben javítja a teljesítményt. További magyarázat lehet, hogy a 2024-es adatra a társadalmi-gazdasági és demográfiai jellemzők nem közvetlen megfigyelésből származnak, hanem becsült értékek, így ezek is hibával terheltek, ami csökkentheti a modell teljesítményét.
 
 #figure(
   grid(
@@ -739,19 +767,19 @@ A táblázat alapján látható, hogy a társadalmi-gazdasági és demográfiai 
 
     // Első kép és esetleg alá egy kis belső felirat
     align(center)[
-      #image("Images/Results_img/RF_2024_byCommunityArea_onlylagged_Results_scatter.png", width: 90%)
+      #image("Images/Results_img/RF_2024_byCommunityArea_onlylagged_Results_scatter.png", width: 100%)
       *(a)* Csak idősoros jellemzőket használó modell előrejelzése 
     ],
 
     // Második kép
     align(center)[
-      #image("Images/Results_img/RF_2024_byCommunityArea_laggedrolling_szocdem_Results_scatter.png", width: 90%)
+      #image("Images/Results_img/RF_2024_byCommunityArea_laggedrolling_szocdem_Results_scatter.png", width: 100%)
       *(b)* Idősoros jellemzőket és társadalmi-gazdasági, demográfiai jellemzőket is használó modell előrejelzése
     ]
   ),
   caption: [Az előrejelzések és a tényleges adatok összehasonlítása szórásdiagramon]
 )<összehasonlító_scatter>
-Az ábrán is látható, hogy mindkét modell előrejelzései jól követik a tényleges aatokat, tehát a pontok nagy része a 45 fokos egyenes közelében helyezkedik el, iiletve az ábrán is látható, hogy a magasabb esetszámnál a társadlmi-gazdasági és demográfiai jellemzőket is tartalmazó modell előrejelzései jobban követik a tényleges adatokat.
+Az ábrán is látható, hogy mindkét modell előrejelzései jól követik a tényleges adatokat, tehát a pontok nagy része a 45 fokos egyenes közelében helyezkedik el, illetve az ábrán is látható, hogy a magasabb esetszámnál a társadalmi-gazdasági és demográfiai jellemzőket is tartalmazó modell előrejelzései jobban követik a tényleges adatokat.
 
 
 #figure(
@@ -761,27 +789,25 @@ Az ábrán is látható, hogy mindkét modell előrejelzései jól követik a t�
         #image("Images/Results_img/RF_2024_byCommunityArea_laggedrolling_szocdem_Feature_importance.png" , width: 80%)
     ]
 ) <feature_importance>
-Az @feature_importance ábra alapján látható, hogy a legfontosabb jellemzők között elsősorban a bűnözés múltbeli alakulását leíró változók szerepelnek, a társadalmi-gazdasági és demográfiai jellemzők közül pedig teljes népesség illetve a fiat férfiak aránya tűnik a legfontosabbnak.
+Az @feature_importance alapján látható, hogy a legfontosabb jellemzők között elsősorban a bűnözés múltbeli alakulását leíró változók szerepelnek, a társadalmi-gazdasági és demográfiai jellemzők közül pedig teljes népesség illetve a fiatal férfiak aránya tűnik a legfontosabbnak.
 
 ==== Bűncselekménytípusok szerinti elemzés
 
-Az összesített modell után a bűncselekménytípusok elemzésésvel folytattam. A típusonkénti modellben a célváltozó minden esetben a kiválasztott bűncselekménytípus éves esetszáma volt minden Community Area-ban. A modell célja elsősorban au volt, hogy vizsgáljam, hogy az egyes bűncselekménytípusok esetében milyen társadalmi-gazdasági és demográfiai tényezők lehetnek meghatározóak, illetve hogy ezek a tényezők mennyire járulnak hozzá a modell előrejelzési teljesítményéhez. Ennek megfelelően ebben a fejezetben nem használtam a mozgóátlagokat, hanem csak a demográfiai és társadalmi-gazdasági jellemzőket,hogy a modellek értelmezése során egyértelműen meg lehessen vizsgálni, hogy mely tényezők járulnak hozzá leginkább az előrejelzéshez.
+Az összesített modell után a bűncselekménytípusok elemzésével folytattam. A típusonkénti modellben a célváltozó minden esetben a kiválasztott bűncselekménytípus éves esetszáma volt minden városrészi egységben. A modell célja elsősorban az volt, hogy vizsgáljam, hogy az egyes bűncselekménytípusok esetében milyen társadalmi-gazdasági és demográfiai tényezők lehetnek meghatározóak, illetve hogy ezek a tényezők mennyire járulnak hozzá a modell előrejelzési teljesítményéhez. Ennek megfelelően ebben a fejezetben nem használtam a mozgóátlagokat, hanem csak a demográfiai és társadalmi-gazdasági jellemzőket,hogy a modellek értelmezése során egyértelműen meg lehessen vizsgálni, hogy mely tényezők járulnak hozzá leginkább az előrejelzéshez.
 
 A modellek értelmezéséhez minden típus esetében elkészítettem háromféle ábrát:
 - _Feature importance_: Random Forest beépített feature importance értéke azt mutatja meg, hogy a döntési fák építése során az adott változó milyen mértékben járult hozzá a célváltozó jobb szétválasztásához
 - _SHAP értékek_: Az adott bűncselekménytípus esetében a legfontosabb jellemzők SHAP értékei, amelyek megmutatják, hogy az egyes jellemzők milyen irányban és milyen mértékben befolyásolják a modell előrejelzését
 - _Permutation importance_: Ennél a módszernél egy-egy változó értékeit véletlenszerűen összekeverjük, majd megvizsgáljuk, hogy ez mennyire rontja a modell teljesítményét. Ha egy változó összekeverése jelentősen növeli az előrejelzési hibát, akkor az azt jelzi, hogy a modell erősen támaszkodott erre a változóra.
 
-Az eddigi fejezetektől eltérően itt a modelll értékeléséhez WMAPE-t (Weighted Mean Absolute Percentage Error) használtam, mivel az egyes bűncselekménytípusok esetszáma nagyon eltérő lehet. Egy gyakori bűncselekménytípus, például a lopás esetében sokkal nagyobb esetszámok jelennek meg, míg ritkább típusoknál bizonyos Community Area-kban akár nagyon alacsony vagy nulla értékek is előfordulhatnak. Ilyen esetekben a hagyományos MAPE használata problémás lehet, mert az minden megfigyelésnél külön-külön oszt a tényleges értékkel. Ha a tényleges érték nagyon kicsi, akkor már egy kisebb abszolút hiba is aránytalanul nagy százalékos hibát eredményezhet, nulla érték esetén pedig a MAPE nem is értelmezhető.
-$
-"WMAPE" = (sum_(i=1)^n |y_i - hat(y)_i|) /(sum_(i=1)^n |y_i|)*100
-$
+Az eddigi fejezetektől eltérően itt a modell értékeléséhez WMAPE-t (Weighted Mean Absolute Percentage Error) használtam, mivel az egyes bűncselekménytípusok esetszáma nagyon eltérő lehet. Egy gyakori bűncselekménytípus, például a lopás esetében sokkal nagyobb esetszámok jelennek meg, míg ritkább típusoknál bizonyos városrészi egységekben akár nagyon alacsony vagy nulla értékek is előfordulhatnak. Ilyen esetekben a hagyományos MAPE használata problémás lehet, mert az minden megfigyelésnél külön-külön oszt a tényleges értékkel. Ha a tényleges érték nagyon kicsi, akkor már egy kisebb abszolút hiba is aránytalanul nagy százalékos hibát eredményezhet, nulla érték esetén pedig a MAPE nem is értelmezhető.
+
 
 A típusonkénti elemzés során minden bűncselekménykategóriánál külön értelmeztem az ábrákat. Elsőként a feature importance alapján megvizsgáltam, mely változók kapták a legnagyobb súlyt a modellben. Ezt követően a permutation importance eredményeivel ellenőriztem, hogy ezek a változók valóban hozzájárultak-e a modell prediktív teljesítményéhez. Végül a SHAP-ábrák segítségével részletesebben elemeztem, hogyan hatottak a legfontosabb változók az előrejelzett bűncselekményszámokra. A három leggyakrabban előforduló bűncselekménytípus esetében részletesen is bemutatom ezeket az elemzéseket.
 
-====== Lopás
+===== Lopás
 
-A leggyakarabb bűncselekménytípus a lopás volt. Az alábbi ábrák a lopás esetében mutatják be a feature importance értékeket, a permutation importance eredményeit és a SHAP értékeket:
+A leggyakoribb bűncselekménytípus a lopás volt. Az alábbi ábrák a lopás esetében mutatják be a feature importance értékeket, a permutation importance eredményeit és a SHAP értékeket:
 #figure(
   grid(
     columns: (1fr, 1fr),
@@ -789,13 +815,13 @@ A leggyakarabb bűncselekménytípus a lopás volt. Az alábbi ábrák a lopás 
 
     // Első kép és esetleg alá egy kis belső felirat
     align(center)[
-      #image("Images/Results_img/RF_2024_by_THEFT_szocdem_Feature_importance.png", width: 125%)
+      #image("Images/Results_img/RF_2024_by_THEFT_szocdem_Feature_importance.png", width: 100%)
       *(a)* Lopás esetében a feature importance értékek
     ],
 
     // Második kép
     align(center)[
-      #image("Images/Results_img/RF_2024_by_THEFT_szocdem_permutation_importance.png", width: 125%)
+      #image("Images/Results_img/RF_2024_by_THEFT_szocdem_permutation_importance.png", width: 100%)
       *(b)* Lopás esetében a permutation importance értékek
     ]
   ),
@@ -811,10 +837,10 @@ A leggyakarabb bűncselekménytípus a lopás volt. Az alábbi ábrák a lopás 
     ]
 ) <theft_feature_importance>
 
-Az ábrák alapján látható, hogy a lopás esetében a következők voltaka legfontosabb változók:
-- _Fiat férfiak aránya_: Ez a változó a legmagasabb feature importance értéket kapta, és a permutation importance alapján is ez a változó volt a legfontosabb. A SHAP-ábrán is látható, hogy a magasabb fiatal férfi arány általában magasabb lopásszámot ereményez.
+Az ábrák alapján látható, hogy a lopás esetében a következők voltak a legfontosabb változók:
+- _Fiatal férfiak aránya_: Ez a változó a legmagasabb feature importance értéket kapta, és a permutation importance alapján is ez a változó volt a legfontosabb. A SHAP-ábrán is látható, hogy a magasabb fiatal férfi arány általában magasabb lopásszámot eredményez.
 - _Teljes népesség_: Ez a változó is magas feature importance értéket kapott, és a permutation importance alapján is ez volt a második legfontosabb változó. A SHAP-ábrán is látható, hogy a nagyobb népességű körzetekben általában magasabb lopásszámot jósolt a modell.
-- _Egy főre jutó jövedelem_: Ez a változó is viszonylag magas feature importance értéket kapott, és a permutation importance alapján ez volt a harmadik legfontosabb változó. Az SHAP alapján látható, hogy ha magasabb volt az egy főre jutó jövedelem, akkor az bizonyos esetekben magasabb lopásszámot eredményezett, ami magyarázható azzal, hogy a magasabb jövedelmű körzetekben gyakrabb lehet a lopás.
+- _Egy főre jutó jövedelem_: Ez a változó is viszonylag magas feature importance értéket kapott, és a permutation importance alapján ez volt a harmadik legfontosabb változó. Az SHAP alapján látható, hogy ha magasabb volt az egy főre jutó jövedelem, akkor az bizonyos esetekben magasabb lopásszámot eredményezett, ami magyarázható azzal, hogy a magasabb jövedelmű körzetekben gyakoribb lehet a lopás.
 - _Középiskolai végzettség nélküli lakosok aránya (25 év felett)_: Ez a változó is viszonylag magas feature importance értéket kapott, és a permutation importance alapján is meghatározó volt. Az SHAP-ábra alapján elsősorban az figyelhető meg, hogyha csökken az alacsony iskolázottságú lakosok aránya, akkor az általában alacsonyabb lopásszámot eredményezett.
 - _Szegénységi ráta_: Ez a változó is viszonylag magas feature importance értéket kapott, és a permutation importance alapján is meghatározó volt. Az SHAP-ábra alapján látható, hogy a magasabb szegénységi ráta általában magasabb lopásszámot eredményezett.
 
@@ -837,13 +863,13 @@ A második leggyakoribb bűncselekménytípus a testi sértés volt. Az alábbi 
 
     // Első kép és esetleg alá egy kis belső felirat
     align(center)[
-      #image("Images/Results_img/RF_2024_by_BATTERY_szocdem_Feature_importance.png", width: 125%)
+      #image("Images/Results_img/RF_2024_by_BATTERY_szocdem_Feature_importance.png", width: 100%)
       *(a)* Testi sértés esetében a feature importance értékek
     ],
 
     // Második kép
     align(center)[
-      #image("Images/Results_img/RF_2024_by_BATTERY_szocdem_permutation_importance.png", width: 125%)
+      #image("Images/Results_img/RF_2024_by_BATTERY_szocdem_permutation_importance.png", width: 100%)
       *(b)* Testi sértés esetében a permutation importance értékek
     ]
   ),
@@ -859,7 +885,7 @@ A második leggyakoribb bűncselekménytípus a testi sértés volt. Az alábbi 
 Az ábrák alapján látható, hogy a testi sértés esetében a legfontosabb változók hasonlóak voltak, mint a lopás esetében:
 - _Népesség_: Ez a változó a legmagasabb feature importance értéket kapta, és a permutation importance alapján is ez a változó volt a legfontosabb. A SHAP-ábrán is látható, hogy a nagyobb népességű körzetekben általában magasabb testi sértés számot jósolt a modell.
 - _Szegénységi ráta_: Ez a változó is magas feature importance értéket kapott, és a permutation importance alapján is ez volt a második legfontosabb változó. Az SHAP-ábrán is látható, hogy a magasabb szegénységi ráta általában magasabb testi sértés számot eredményezett.
-- _Fiatal férfiak aránya_: Ez a változó is viszonylag magas feature importance értéket kapott, és a permutation importance alapján is meghatározó volt. A SHAP ábra alapján a magasabb arány kisebb mértékben, de alacsonyabb testi sértés számot eredményezett.
+- _Fiatal férfiak aránya_: Ez a változó is viszonylag magas feature importance értéket kapott, és a permutation importance alapján is meghatározó volt. A SHAP-ábra alapján a magasabb arány kisebb mértékben, de alacsonyabb testi sértés számot eredményezett.
 
 Ebben az esetben a modell WMAPE értéke 23,07% volt, ami azt jelenti, hogy az előrejelzések átlagosan 23,07%-kal tértek el a tényleges értékektől.
 
@@ -882,13 +908,13 @@ A harmadik leggyakoribb bűncselekménytípus a rongálás volt. Az alábbi ábr
 
     // Első kép és esetleg alá egy kis belső felirat
     align(center)[
-      #image("Images/Results_img/RF_2024_by_CRIMINAL_DAMAGE_szocdem_Feature_importance.png", width: 125%)
+      #image("Images/Results_img/RF_2024_by_CRIMINAL_DAMAGE_szocdem_Feature_importance.png", width: 100%)
       *(a)* Rongálás esetében a feature importance értékek
     ],
 
     // Második kép
     align(center)[
-      #image("Images/Results_img/RF_2024_by_CRIMINAL_DAMAGE_szocdem_permutation_importance.png", width: 125%)
+      #image("Images/Results_img/RF_2024_by_CRIMINAL_DAMAGE_szocdem_permutation_importance.png", width: 100%)
       *(b)* Rongálás esetében a permutation importance értékek
     ]
   ),
@@ -906,7 +932,7 @@ Az ábrák alapján megállapítható, hogy a itt sem tértek el jelentősen a l
 - _Népesség_: Ez a változó a legmagasabb feature importance értéket kapta, és a permutation importance alapján is ez a változó volt a legfontosabb. A SHAP-ábrán is látható, hogy a nagyobb népességű körzetekben általában magasabb rongálás számot jósolt a modell
 - _Szegénységi ráta_: Ez a változó is magas feature importance értéket kapott, és a permutation importance alapján is ez volt a második legfontosabb változó. Az SHAP-ábrán is látható, hogy a magasabb szegénységi ráta általában magasabb rongálás számot eredményezett, illetve a csökkenés a rongálási számot is meghatározóan csökkentette.
 - _Fogalkoztatottsági ráta_: Ez a változó is viszonylag magas feature importance értéket kapott, de a permutation importance alapján nem volt olyan meghatározó. A SHAP-ábra alapján látható, hogyha csökken a foglalkoztatottsági ráta, akkor az általában magasabb rongálás számot eredményezett.
-- _Fiatal férfiak aránya_: Ez a változó is viszonylag magas feature importance értéket kapott, de a permutation importance alapján nem volt annyira meghatározó. A SHAP ábra alapján a magasabb arány kisebb mértékben, de alacsonyabb rongálás számot eredményezett.
+- _Fiatal férfiak aránya_: Ez a változó is viszonylag magas feature importance értéket kapott, de a permutation importance alapján nem volt annyira meghatározó. A SHAP- ábra alapján a magasabb arány kisebb mértékben, de alacsonyabb rongálás számot eredményezett.
 
 A rongálás esetében a modell WMAPE értéke 21,48% volt, ami azt jelenti, hogy az előrejelzések átlagosan 21,48%-kal tértek el a tényleges értékektől.
 #figure(
@@ -952,9 +978,9 @@ A két hőtérképen a 20 leggyakoribb bűncselekménytípus esetében mutatja, 
 
 = Összefoglalás
 
-A szakdolgozatom célja a bűnözési gyakoriság modellezése és előrejelzése volt különböző módszerek összehasonlításával. Vizsgáltam egyrészt a bűnözés időbeli alakulását, másrészt pedig, hogy milyen más tényezők hatnak a bűnözés alakulására. A szakdolgozatom első részében a szükséges matematikai és gépi tanulási alapokat mutattam be, mejd a második részben ezeket alkalmaztam Chicago bűnözési adatain.
+A szakdolgozatom célja a bűnözési gyakoriság modellezése és előrejelzése volt különböző módszerek összehasonlításával. Vizsgáltam egyrészt a bűnözés időbeli alakulását, másrészt pedig, hogy milyen más tényezők hatnak a bűnözés alakulására. A szakdolgozatom első részében a szükséges matematikai és gépi tanulási alapokat mutattam be, majd a második részben ezeket alkalmaztam Chicago bűnözési adatain.
 
-Az elméleti részben először a sztochasztikus folyamatok alapfogalmait ismertettem. Ezt követően részletesebben foglalkoztam a Brown-mozgással, amely a sztochasztikus modellezés egyik alapvető folyamata. Majd a ztochasztikus differenciálegyenletek elméleti hátterét mutattam be. Ismertettem az Itô-integrál fogalmát, annak legfontosabb tulajdonságait, valamint az Itô–Doeblin-formulát, amely a klasszikus láncszabály sztochasztikus megfelelőjeként értelmezhető. Ezekre az eredményekre építve vezettem be a geometriai Brown-mozgást, amely olyan folyamatok modellezésére alkalmas, amelyek nem vehetnek fel negatív értéket, és amelyek változása arányos az aktuális értékükkel. A geometriai Brown-mozgás explicit megoldása és lognormális eloszlása később a gyakorlati modellezés alapját adta.
+Az elméleti részben először a sztochasztikus folyamatok alapfogalmait ismertettem. Ezt követően részletesebben foglalkoztam a Brown-mozgással, amely a sztochasztikus modellezés egyik alapvető folyamata. Majd a sztochasztikus differenciálegyenletek elméleti hátterét mutattam be. Ismertettem az Itô-integrál fogalmát, annak legfontosabb tulajdonságait, valamint az Itô–Doeblin-formulát, amely a klasszikus láncszabály sztochasztikus megfelelőjeként értelmezhető. Ezekre az eredményekre építve vezettem be a geometriai Brown-mozgást, amely olyan folyamatok modellezésére alkalmas, amelyek nem vehetnek fel negatív értéket, és amelyek változása arányos az aktuális értékükkel. A geometriai Brown-mozgás explicit megoldása és lognormális eloszlása később a gyakorlati modellezés alapját adta.
 
 Az elméleti rész másik nagy egységét a gépi tanulási módszerek bemutatása képezte. A felügyelt tanulás regressziós problémáira koncentráltam, mivel a gyakorlati részben is ezt a megközelítést alkalmaztam. Kitértem a torzítás-variancia kompromisszumra, a túlillesztés problémájára és a keresztvalidáció szerepére. Ezt követően a döntési fákat és az ensemble módszereket ismertettem, különös tekintettel a Random Forest modellre. Mivel a bűnözési adatok idősornak tekinthetők, kitértem az idősorelemzés alapjaira is, bemutatva a trend, a szezonalitás, a stacionaritás, az autokorreláció, valamint a klasszikus idősoros modellek alapgondolatát.
 
@@ -966,9 +992,9 @@ Ezt követően Random Forest modelleket építettem a bűncselekmények havi el�
 
 A második Random Forest modellben a késleltetett változók mellett mozgóátlagokat és mozgószórásokat is használtam. Ezek célja az volt, hogy a modell ne csak az előző havi értékeket, hanem a rövid távú trendet és az ingadozások mértékét is figyelembe vegye. Az eredmények alapján ez a modell teljesített a legkedvezőbben MAPE és Accuracy alapján.
 
-A dolgozat utolsó részében a demográfiai és társadalmi-gazdasági tényezők szerepét vizsgáltam. Ez a rész eltért az előző modellektől, mivel itt nemcsak az előrejelzés pontossága volt a cél, hanem annak elemzése is, hogy mely jellemzők kapcsolódhatnak a bűnözés alakulásához. Az elemzés területi egysége ebben a részben már nem a rendőrségi körzet, hanem a Community Area volt, mivel a társadalmi-demográfiai adatok ehhez a felbontáshoz illeszkedtek. Az előrejelzés éves szinten, 2024-re készült.
+A dolgozat utolsó részében a demográfiai és társadalmi-gazdasági tényezők szerepét vizsgáltam. Ez a rész eltért az előző modellektől, mivel itt nemcsak az előrejelzés pontossága volt a cél, hanem annak elemzése is, hogy mely jellemzők kapcsolódhatnak a bűnözés alakulásához. Az elemzés területi egysége ebben a részben már nem a rendőrségi körzet, hanem a városrészi egység volt, mivel a társadalmi-demográfiai adatok ehhez a felbontáshoz illeszkedtek. Az előrejelzés éves szinten, 2024-re készült.
 
-Először egy összesített modellt készítettem, amely az adott Community Area éves összes bűncselekményszámát jelezte előre. Két modellt hasonlítottam össze: az egyik csak a múltbeli bűnözési szintet leíró idősoros jellemzőket tartalmazta, míg a másik ezek mellett demográfiai változókat is felhasznált. Az eredmények alapján a demográfiai változók bevonása javította a modell teljesítményét, de a javulás nem volt ugrásszerű. Ez azzal magyarázható, hogy a demográfiai jellemzők általában lassan változnak, ezért egyéves előrejelzési horizonton csak mérsékelt többletinformációt hordoznak.
+Először egy összesített modellt készítettem, amely az adott városrészi egység éves összes bűncselekményszámát jelezte előre. Két modellt hasonlítottam össze: az egyik csak a múltbeli bűnözési szintet leíró idősoros jellemzőket tartalmazta, míg a másik ezek mellett demográfiai változókat is felhasznált. Az eredmények alapján a demográfiai változók bevonása javította a modell teljesítményét, de a javulás nem volt ugrásszerű. Ez azzal magyarázható, hogy a demográfiai jellemzők általában lassan változnak, ezért egyéves előrejelzési horizonton csak mérsékelt többletinformációt hordoznak.
 
 Végül a leggyakoribb bűncselekménytípusokat külön-külön is elemeztem. Ebben az esetben tehát nem csak azt vizsgáltam, hogy a modell milyen pontossággal jelez előre, hanem azt is, hogy mely változók bizonyultak fontosnak az adott bűncselekménytípus esetében.
 
