@@ -290,7 +290,7 @@ A @buneset_suruseg_terkep a rendőri körzeteket mutatja Chicagoban a bűnözés
 A @buneset_heti_nap_eloszlasa a bűncselekmények eloszlását mutatja a hét napjaira lebontva. Az ábráról kivehető a napszaki és heti mintázat, például, hogy a legtöbb bűncselekményt a hét végén éjfél körül követik el, illetve a hétköznapokon is megfigyelhető egy kisebb csúcs a délutáni órákban. A heti és napszakos mintázatok értelmezéséhez jó elméleti keretet ad a rutintevékenység-elmélet, amely szerint a bűncselekmények akkor valószínűbbek, amikor a potenciális elkövető, az alkalmas célpont és a megfelelő felügyelet hiánya térben és időben találkozik. Tehát ezek az ábrán is látható változások szorosan összefüggnek az emberek úgynevezett rutintevékenységeinek heti ingadozásával, hiszen ahogy a munkahelyi, otthoni és szabadidős tevékenységeink helyszínei megváltoznak a hétköznapok és a hétvégék során, úgy változik a potenciális elkövetők és a célpontok találkozásának valószínűsége is.(@andresen2015)
 .
 #figure(
-  image("Images/EDA/arrest_stats_top10.svg", width: 85%),
+  image("Images/EDA/arrest_stats_top10.svg", width: 100%),
   caption: [Leggyakoribb bűncselekménytípusok és letartóztatási arányuk])<arrest_stats_top10>
 A @arrest_stats_top10 a leggyakoribb bűncselekménytípusokat mutatja be a letartóztatási arányukkal együtt. Az ábra alapján látható, hogy a leggyakoribb bűncselekménytípusok közül a lopás és a testi sértés esetében a letartóztatási arány viszonylag alacsony, míg a kábítószerrel kapcsolatos bűncselekmények esetében kiugróan magas.
  #figure(

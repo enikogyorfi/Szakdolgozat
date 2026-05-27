@@ -606,7 +606,9 @@ $
   dif Y(t) = ((diff Phi(t,S)) / (diff t) + mu S(t) (diff Phi(t,S)) / (diff S) + 1/2 sigma^2 S^2(t) (diff^2 Phi(t,S)) / (diff S^2)) dif t \
   + sigma S(t) (diff Phi(t,S)) / (diff S) dif B(t). #<equate:revoke>
 $
-\
+
+#colbreak()
+
 Ebbe a parciális deriváltak értékét behelyettesítve kapjuk, hogy
 $  dif Y(t) = (mu - 1/2 sigma^2) dif t + sigma dif B(t).
 $
@@ -621,6 +623,7 @@ $
   ln(S(t)) = ln(S(0)) + (mu - 1/2 sigma^2)t + sigma B(t), \
   
   S(t) = S(0) exp((mu - 1/2 sigma^2)t + sigma B(t)).
+  
 $
 ]
 Mivel $ln S(t)$ normális eloszlású, ezért a geometriai Brown-mozgás eloszlásáról a következő állítás tehető:
@@ -649,6 +652,7 @@ lognormális eloszlású.]
   $
     E[exp(sigma B(t))] = exp(1/2 sigma^2 t).
   $
+  #colbreak()
   Ezt az eredményt felhasználva kapjuk, hogy
   $
     E[S(t)] = S(0) exp((mu - 1/2 sigma^2)t) E[exp(sigma B(t))] = S(0) exp(mu t).
@@ -966,6 +970,7 @@ $
 G(m) = sum_(k=1)^K p_(m k) (1 - p_(m k)) = 1 - sum_(k=1)^K p_(m k)^2,
 $
 ahol $p_(m k)$ a $k$-adik osztályba tartozó elemek aránya a $m$-edik részhalmazban.
+#pagebreak()
 - _Entrópia_: Szintén klasszifikációs problémák esetén használjuk. Azt méri, hogy mekkora információt nyerünk egy adott vágással. Minél nagyobb az entrópia csökkenése, annál jobb a vágás.
 $
 H(m) = - sum_(k=1)^K p_(m k) log(p_(m k)),
