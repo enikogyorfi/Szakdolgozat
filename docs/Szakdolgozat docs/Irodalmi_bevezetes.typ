@@ -1219,6 +1219,11 @@ Bár a mélytanulási módszerek rendelkeznek a legnagyobb kapacitással, gyakra
 #bibliography("reference.bib", full: true, title:none)
 
 #pagebreak()
+= Melléklet
+*1. számú melléklet - Kódok és egyéb anyagok*
+
+Az elemzéshez tartozó kódok és egyéb anyagok a következő linken érhetők el: #link("https://github.com/enikogyorfi/Szakdolgozat")[GitHub Repository]
+#pagebreak()
 = Mesterséges Intelligencia használata a szakdolgozatban
 
 #rect(
