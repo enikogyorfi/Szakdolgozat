@@ -539,11 +539,11 @@ Eddig az Itô–Doeblin-formulát egy speciális esetre vizsgáltuk, nevezetesen
 #definition[
      Legyen $B(t)$ egy Brown mozgás és $cal(F)$ a $B(t)$-hez tartozó filtráció. Az $X(t)$ folyamatot Itô-folyamatnak nevezzük, ha felírható a következő alakban:
 $  X(t) = X(0) + integral_0^t mu(s) dif s + integral_0^t sigma(s) dif B(s), $
-ahol $mu(s)$ és $sigma(s)$ adaptált sztochasztikus folyamatok, amelyek kielégítik a megfelelő integrálhatósági feltételeket, és $X(0)$ egy adott kezdeti érték. Továbbá ezen integrálegyenlet differenciálalakja következőképpen írható fel:
+ahol $mu(s)$ és $sigma(s)$ adaptált sztochasztikus folyamatok, amelyek kielégítik a megfelelő integrálhatósági feltételeket, és $X(0)$ egy adott kezdeti érték. Továbbá ezen integrálegyenlet differenciálalakja a következőképpen írható fel:
 $  dif X(t) = mu(t) dif t + sigma(t) dif B(t). $
 ] <def_tizenotodik>
 
-Tekintsünk egy általános Itô-folyamatot $X(t)$-t, amely kielégíti a defínicióban megadott intergrálegyenletet, ekkor azt mondjuk, hogy megoldja a következő SDE-t:
+Tekintsünk egy általános Itô-folyamatot $X(t)$-t, amely kielégíti a definícióban megadott integrálegyenletet, ekkor azt mondjuk, hogy megoldja a következő SDE-t:
 $
 dif X(t) = mu(t) dif t + sigma(t) dif B(t).
 $
