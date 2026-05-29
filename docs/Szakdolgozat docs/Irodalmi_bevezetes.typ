@@ -219,7 +219,7 @@
   #text(size: 20pt)[Köszönetnyilvánítás]
 ]
 #v(1cm)
- Szeretnék köszönetet mondani témavezetőmnek, Maga Balázsnak, a szakdolgozatom elkészítése során nyújtott segítségéért, támogatásáért és iránymutatásáért. Különösen hálás vagyokm hogy lehetőségem volt, egy hozzám közel álló témával foglalkozni, és szabadon kísérletezhettem különböző módszerekkel és megközelítésekkel.
+ Szeretnék köszönetet mondani témavezetőmnek, Maga Balázsnak, a szakdolgozatom elkészítése során nyújtott segítségéért, támogatásáért és iránymutatásáért. Különösen hálás vagyok hogy lehetőségem volt, egy hozzám közel álló témával foglalkozni, és szabadon kísérletezhettem különböző módszerekkel és megközelítésekkel.
  Köszönöm a pozitív és támogató hozzáállását, a szakmai tanácsait és türelmét a dolgozatírás során. Támogatása sokat jelentett számomra ebben az időszakban.
  
 #pagebreak()
@@ -249,9 +249,9 @@ A dolgozat utolsó gyakorlati egysége a társadalmi-demográfiai jellemzők viz
 
 Összegzésképpen, a dolgozat célja egy átfogó elemzés készítése a bűnözési gyakoriság modellezéséről, amelyben a sztochasztikus folyamatok és gépi tanulási módszerek egyaránt szerepet kapnak.
 
-= A Sztochasztikus Folyamatok Elméleti Alapjai
+= A sztochasztikus folyamatok elméleti alapjai
 
-Ebben a fejezetben a sztochasztikus folyamatok elméleti alapjait tekintem át. A fejezet felépítése és jelölésrendszere nagyrészt Shreve Stochastic Calculus for Finance II: Continuous-Time Models (@shreve2004) című könyvét követi.
+Ebben a fejezetben a sztochasztikus folyamatok elméleti alapjait tekintem át. A fejezet felépítése és jelölésrendszere nagyrészt Shreve Stochastic Calculus for Finance II: Continuous-Time Models (@shreve2004) című könyvét követi. A fejezet célja a gyakorlati részben alkalmazott modellekhez szükséges elméleti háttér megalapozása. Ezért csak azokat a definíciókat, tételeket és összefüggéseket ismertetem, amelyek a későbbi modellezési módszerek megértéséhez közvetlenül szükségesek. A bizonyításokat ennek megfelelően több helyen elhagyom, illetve csak vázlatosan tárgyalom.
 
 == Definíciók és alapfogalmak
 
@@ -283,7 +283,7 @@ Ebben a fejezetben a sztochasztikus folyamatok elméleti alapjait tekintem át. 
 ] <def_harmadik>
 
 #box[
-*Megjegyzés.* Ebben az esetben, ha $E^(cal(P))$ és $E^(cal(Q))$ a két mérték szerinti várható értékek, akkor minden $cal(Q)$ szerint integrálható véletlen változóra $X$:
+*Megjegyzés.* Ebben az esetben, ha $E^(cal(P))$ és $E^(cal(Q))$ a két mérték szerinti várható értékek, akkor minden $cal(Q)$ szerint integrálható $X$ valószínűségi változóra:
 $
   E^(cal(Q))[X] = integral_Omega X dif cal(Q) = integral_Omega X f dif cal(P) = E^(cal(P))[X f].
 $
@@ -362,7 +362,7 @@ $
 *Megjegyzés.* A független növekmények tulajdonságából adódóan a Brown-mozgás Markov-folyamat. Továbbá, mivel az átmeneti sűrűsége csak az időbeli különbségtől függ, egyben időben homogén Markov-folyamat is.
 
 #definition[
-  @shreve2004 Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. A $B(t)$-hez tartozó filtráció egy $cal(F)(t)$ szigma-algebrákból álló család, amelyre a következő feltételek teljesülnek:
+   Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. A $B(t)$-hez tartozó filtráció egy $cal(F)(t)$ szigma-algebrákból álló család, amelyre a következő feltételek teljesülnek:
 
   - Az információ halmozódik: $cal(F)(s) subset cal(F)(u)$ minden $0 <= s < u$ esetén, vagyis az idő előrehaladtával az elérhető információ mennyisége nem csökken.
   - Adaptivitás: minden $t >= 0$ esetén a $B(t)$ $cal(F)(t)$-mérhető.
@@ -371,7 +371,7 @@ $
 
 
 #theorem[
-  @shreve2004 Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. Ekkor $B(t)$ martingál a fenti definícióban definiált filtrációval.
+   Legyen $(Omega, cal(A), P)$ egy valószínűségi mező, amelyen a $B(t)$, $t >= 0$ Brown-mozgás definiálva van. Ekkor $B(t)$ martingál a fenti definícióban definiált filtrációval.
   ]
 
 #proof[
@@ -422,17 +422,14 @@ $
 $
 Általánosabban egy Itô-típusú sztochasztikus differenciálegyenlet a következő formában írható fel:
 $
-  dif x(t, omega) = f(t, x(t, omega)) dif t + g(t, x(t, omega)) dif B(t).
-$
-
-Egy általános, Itô-típusú SDE a következő szimbolikus formában írható fel:
-$
   dif X(t) = mu(t, X(t)) dif t + sigma(t, X(t)) dif B(t).
 $
 Ez az egyenlet valójában egy integrálegyenlet rövidítése, és két fő részből áll:
 
 - *Drift tag*: a folyamat változásának determinisztikus, előre jelezhető komponense egy infinitezimális $dif t$ időlépés alatt.
 - *Diffúziós tag* ($sigma(X_t, t) dif B_t$): ez a sztochasztikus, előre nem látható komponenst képviseli. A hatásának nagyságát a $sigma(X_t, t)$ volatilitás- vagy diffúziós függvény skálázza, amely függhet a rendszer aktuális állapotától és az időtől is. Ez a tag visz véletlenszerűséget a rendszer leírásába.
+
+A fenti differenciális alak inkább szimbolikus jelölés, amelynek pontos jelentését a hozzá tartozó integrálegyenlet adja meg, amelyet az Itô-integrál segítségével definiálunk. Ezt az integrálfogalmat a következő alfejezetben vezetem be. A tárgyalás során továbbra is Shreve Stochastic Calculus for Finance II: Continuous-Time Models (@shreve2004) című könyvét követem, az ettől eltérő forrásokat külön jelölöm.
 
 == Itô-integrál
 
@@ -446,19 +443,20 @@ Az ilyen típusú integrálok értelmezéséhez egy új integrálfogalom bevezet
 Az előbbi kifejezésben az integrál egyik összetevője egy $B(t)$, $t >= 0$ Brown-mozgás, valamint az ehhez tartozó $cal(F)(t)$, $t >= 0$ filtráció. Az integrandus $X(t)$ egy adaptált sztochasztikus folyamat, amely azt jelenti, hogy minden $t >= 0$ esetén $X(t)$ $cal(F)(t)$-mérhető. Az adaptáltság biztosítja, hogy $X(t)$ értéke csak a $t$ időpontig ismert információtól függ.
 
 #definition[
-  @shreve2004 Legyen a $0 = t_0 < t_1 < dots < t_n = T$ egy partíciója a $[0, T]$ intervallumnak, és legyen $Delta(t)$ konstans minden $t in [t_i, t_(i+1))$ intervallumon. Ekkor $Delta(t)$-t elemi folyamatnak nevezzük.
+   Legyen a $0 = t_0 < t_1 < dots < t_n = T$ egy partíciója a $[0, T]$ intervallumnak, és legyen $Delta(t)$ konstans minden $t in [t_i, t_(i+1))$ intervallumon. Ekkor $Delta(t)$-t elemi folyamatnak nevezzük.
 ] <def_tizenharmadik>
 
 Ez analóg a Lebesgue-integrál lépcsős függvényeivel, ahol a függvény értéke egy adott intervallumon állandó.
 
 #definition[
-  @shreve2004 Egy elemi folyamat Itô-integrálja a következőképpen definiáljuk:
+   Egy elemi folyamat Itô-integrálját a következőképpen definiáljuk:
   $
     I(t) = integral_0^T Delta(s) dif B(s)
       = \
       sum_(j=0)^(n) Delta(t_j) (B(t_(j)) - B(t_(j-1)) #<equate:revoke>
   $
 ] <def_tizennegyedik>
+#pagebreak()
 
 Az elemi folyamatok integráljának felhasználásával az Itô-integrál kiterjeszthető általános adaptált sztochasztikus folyamatokra, amelyek kielégítik a megfelelő feltételeket:
 
@@ -476,7 +474,7 @@ $
 Az integrál tulajdonságait a következő tétel foglalja össze:
 
 #theorem[
-  @shreve2004 Legyen $T$ egy pozitív konstans, és legyen $X(t)$, $0 <= t <= T$ egy adaptált sztochasztikus folyamat, amely kielégíti a fentebb írt feltételeket. Ekkor az
+  Legyen $T$ egy pozitív konstans, és legyen $X(t)$, $0 <= t <= T$ egy adaptált sztochasztikus folyamat, amely kielégíti a fentebb írt feltételeket. Ekkor az
   $
     I(t) = integral_0^t X(s) dif B(s)
   $
@@ -489,6 +487,7 @@ Az integrál tulajdonságait a következő tétel foglalja össze:
   - *Itô-izometria:* $E[I^2(t)] = E[integral_0^t X^2(u) dif u]$.
   - *Kvadratikus variáció:* $[I,I](t)=integral_0^t X^2(u) dif u$.
 ] <thm_ito_integral_properties>
+#pagebreak()
 
 Eddig azt vizsgáltuk, hogyan lehet értelmezni egy Brown-mozgásra vonatkozó integrált, és milyen tulajdonságokkal rendelkezik ez az integrál. Most vizsgáljuk meg, hogyan lehet értelmezni egy Brown-mozgás által meghatározott folyamat megváltozását. Tekintsük a következő kifejezést:
 $
@@ -497,7 +496,7 @@ $
 Ez a kifejezés nem értelmezhető a klasszikus analízisben használt láncszabály szerint, mivel a Brown-mozgás pályái sehol sem differenciálhatók. Ennek értelmezéséhez az Itô–Doeblin-formula alkalmazására van szükség, amely egy sztochasztikus változókra vonatkozó általánosított láncszabály.
 
 #theorem[
-   @shreve2004 Legyen $f(t,x)$ függvény, melynek parciális deriváltjai $f_t$, $f_x$ és $f_(x x)$ léteznek és folytonosak. Legyen továbbá $B(t)$ egy Brown-mozgás. Ekkor minden $T >= 0$ esetén teljesül a következő egyenlőség:
+    Legyen $f(t,x)$ függvény, melynek parciális deriváltjai $f_t$, $f_x$ és $f_(x x)$ léteznek és folytonosak. Legyen továbbá $B(t)$ egy Brown-mozgás. Ekkor minden $T >= 0$ esetén teljesül a következő egyenlőség:
   $
     f(T, B(T)) = f(0, B(0)) + integral_0^T f_t (t, B(t)) dif t \
     + integral_0^T f_x (t, B(t)) dif B(t) + 1/2 integral_0^T f_(x x)(t, B(t)) dif t.
@@ -514,6 +513,7 @@ $
   f(B(T)) - f(B(0)) = sum_(j=1)^n f_x(B(t_(j-1)))(B(t_j) - B(t_(j-1))) + \
   1/2 sum_(j=1)^n f_(x x)(B(t_(j-1)))(B(t_j) - B(t_(j-1)))^2.  #<equate:revoke>
 $
+#pagebreak()
 Ha ebbe behelyettesítjük a parciális deriváltakat értékét, akkor a következő egyenlőséget kapjuk:
 $
   f(B(T)) - f(B(0)) = sum_(j=1)^n B(t_(j-1))(B(t_j) - B(t_(j-1))) + \
@@ -537,18 +537,19 @@ Ez pontosan az Itô–Doeblin-formula egy speciális esete, amelyben a függvén
 Eddig az Itô–Doeblin-formulát egy speciális esetre vizsgáltuk, nevezetesen a Brown-mozgásra. Azonban ez a formula általánosítható tetszőleges Itô- folyamatokra is.
 
 #definition[
-    @shreve2004 Legyen $B(t)$ egy Brown mozgás és $cal(F)$ a $B(t)$-hez tartozó filtráció. Az $X(t)$ folyamatot Itô-folyamatnak nevezzük, ha felírható a következő alakban:
+     Legyen $B(t)$ egy Brown mozgás és $cal(F)$ a $B(t)$-hez tartozó filtráció. Az $X(t)$ folyamatot Itô-folyamatnak nevezzük, ha felírható a következő alakban:
 $  X(t) = X(0) + integral_0^t mu(s) dif s + integral_0^t sigma(s) dif B(s), $
-ahol $mu(s)$ és $sigma(s)$ adaptált sztochasztikus folyamatok, amelyek kielégítik a megfelelő integrálhatósági feltételeket, és $X(0)$ egy adott kezdeti érték.
+ahol $mu(s)$ és $sigma(s)$ adaptált sztochasztikus folyamatok, amelyek kielégítik a megfelelő integrálhatósági feltételeket, és $X(0)$ egy adott kezdeti érték. Továbbá ezen integrálegyenlet differenciálalakja következőképpen írható fel:
+$  dif X(t) = mu(t) dif t + sigma(t) dif B(t). $
 ] <def_tizenotodik>
 
-Tekintsünk egy általános Itô-folyamatot $X(t)$-t, amely kielégíti a következő SDE-t:
+Tekintsünk egy általános Itô-folyamatot $X(t)$-t, amely kielégíti a defínicióban megadott intergrálegyenletet, ekkor azt mondjuk, hogy megoldja a következő SDE-t:
 $
 dif X(t) = mu(t) dif t + sigma(t) dif B(t).
 $
 Ekkor az Itô–Doeblin-formula kiterjeszthető az $X(t)$ folyamatra is, és a következőképpen írható fel:
 #theorem[
-  @shreve2004 Legyen $X(t)$ egy Itô-folyamat, amely kielégíti a következő SDE-t:
+   Legyen $X(t)$ egy Itô-folyamat, amely kielégíti a következő SDE-t:
   $
     dif X(t) = mu(t, X(t)) dif t + sigma(t, X(t)) dif B(t),
   $
@@ -577,7 +578,7 @@ $  dif Y(t) = (diff f(t,X(t))) / (diff t) dif t + (diff f(t,X(t))) / (diff x) di
 A pénzügyi modellezésben és más területeken, ahol a vizsgált mennyiségek (például árak vagy populációk mérete) nem vehetnek fel negatív értéket, és a növekedésük arányos a jelenlegi méretükkel, a leggyakrabban használt modell a geometriai Brown-mozgás (GBM).
 
 #definition[
-   @shreve2004 Legyen $B(t)$ Brown-mozgás. Az $S(t)$ folyamatot geometriai Brown-mozgásnak nevezzük, ha kielégíti a következő sztochasztikus differenciálegyenletet:
+    Legyen $B(t)$ Brown-mozgás. Az $S(t)$ folyamatot geometriai Brown-mozgásnak nevezzük, ha kielégíti a következő sztochasztikus differenciálegyenletet:
   $
     dif S(t) = mu S(t) dif t + sigma S(t) dif B(t),
   $
@@ -702,7 +703,7 @@ $
 
 A gépi tanulás fontos szerepet játszik a tudomány, a gazdaság és a technológia számos területén. Például az orvostudományban a gépi tanulás segíthet a betegségek korai felismerésében és betegségekkel járó kockázatok azonosításában. A pénzügyi szektorban a gépi tanulás alkalmazható a kockázatkezelésben, a csalásfelderítésben és a kereskedési stratégiák optimalizálásában.
 \
-A gépi tanulás lehetővé teszi a nagy adathalmazok elemzését és a mintázatok felismerését ezért bűnügyi adatok elemzésére is használható, például a bűnözési mintázatik felismerésére és  bűnügyi előrejelzések készítésére.
+A gépi tanulás lehetővé teszi a nagy adathalmazok elemzését és a mintázatok felismerését ezért bűnügyi adatok elemzésére is használható, például a bűnözési mintázatok felismerésére és  bűnügyi előrejelzések készítésére.
 
 == A gépi tanulás alapjai
 
@@ -1128,7 +1129,7 @@ Egy idősor gyengén stacionárius, ha teljesül az alábbi három feltétel:
 #definition[
 Egy idősor erősen stacionáris, ha minden $h$ és minden $t_1, t_2,...,t_n$ esetén teljesül, hogy $(X_t_1, X_t_2, ..., X_t_n)$ és $(X_(t_1+h), X_(t_2+h), ..., X_(t_n+h))$ azonos eloszlásúak.
 ]
-A (gyenge) stacionaritás fontos fogalom az idősorelemzésben, mivel a legtöbb klasszikus idősorelemzési módszer feltételezi, hogy az idősor (gyengén)stacionárius. A stacionaritás azt jelenti, hogy az idősor statisztikai tulajdonságai időben állandóak, így a múltbeli adatok alapján megbízhatóan előrejelezhetjük a jövőbeli értékeket.
+A (gyenge) stacionaritás fontos fogalom az idősorelemzésben, mivel a legtöbb klasszikus idősorelemzési módszer feltételezi, hogy az idősor (gyengén) stacionárius. A stacionaritás azt jelenti, hogy az idősor statisztikai tulajdonságai időben állandóak, így a múltbeli adatok alapján megbízhatóan előrejelezhetjük a jövőbeli értékeket.
 
 === Klasszikus idősorelemzési módszerek
 
