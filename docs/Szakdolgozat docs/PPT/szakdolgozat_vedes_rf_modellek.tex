@@ -47,12 +47,15 @@
   \titlepage
 \end{frame}
  %2
+
 \begin{frame}{Motiváció}
 
 \centering
+\vspace{0.15cm}
+
 \begin{tikzpicture}[
   every node/.style={font=\scriptsize},
-  node distance=0.8cm
+  >=Latex
 ]
 
 % Központi elem
@@ -61,80 +64,79 @@
   very thick,
   rounded corners,
   fill=softblue!12,
-  minimum width=3.4cm,
+  minimum width=3.6cm,
   minimum height=1.0cm,
   align=center
-] (crime) {Bűnözési\\gyakoriság};
+] (crime) at (0,0) {Bűnözési\\gyakoriság};
 
 % Környező tényezők
 \node[
   draw=deepblue,
   rounded corners,
   fill=softgreen!15,
-  above=1.1cm of crime,
-  minimum width=3.0cm,
-  minimum height=0.7cm,
+  minimum width=3.1cm,
+  minimum height=0.75cm,
   align=center
-] (time) {időbeli\\változás};
+] (time) at (0,1.75) {időbeli\\változás};
 
 \node[
   draw=deepblue,
   rounded corners,
   fill=softorange!15,
-  left=1.4cm of crime,
-  minimum width=3.0cm,
-  minimum height=0.7cm,
+  minimum width=3.1cm,
+  minimum height=0.75cm,
   align=center
-] (space) {térbeli\\különbségek};
+] (space) at (-4.2,0) {térbeli\\különbségek};
 
 \node[
   draw=deepblue,
   rounded corners,
   fill=softred!12,
-  right=1.4cm of crime,
-  minimum width=3.0cm,
-  minimum height=0.7cm,
+  minimum width=3.1cm,
+  minimum height=0.75cm,
   align=center
-] (society) {társadalmi\\környezet};
+] (society) at (4.2,0) {társadalmi\\környezet};
 
 \node[
   draw=deepblue,
   rounded corners,
   fill=gray!12,
-  below=1.1cm of crime,
-  minimum width=3.0cm,
-  minimum height=0.7cm,
+  minimum width=3.1cm,
+  minimum height=0.75cm,
   align=center
-] (random) {véletlen\\ingadozás};
+] (random) at (0,-1.75) {véletlen\\ingadozás};
 
 % Nyilak
-\draw[-Latex,thick] (time) -- (crime);
-\draw[-Latex,thick] (space) -- (crime);
-\draw[-Latex,thick] (society) -- (crime);
-\draw[-Latex,thick] (random) -- (crime);
+\draw[->,thick] (time.south) -- (crime.north);
+\draw[->,thick] (space.east) -- (crime.west);
+\draw[->,thick] (society.west) -- (crime.east);
+\draw[->,thick] (random.north) -- (crime.south);
+
+% Modellezési kérdés
+\node[
+  draw=deepblue,
+  very thick,
+  rounded corners,
+  fill=softblue!8,
+  minimum width=6.8cm,
+  minimum height=0.95cm,
+  align=center
+] (question) at (0,-3.25) {
+  \textbf{Modellezési kérdés}\\[0.08cm]
+  Hogyan jelezhető előre a bűnözés alakulása?
+};
 
 \end{tikzpicture}
-
-\vspace{0.45cm}
-
-\begin{center}
-\begin{minipage}{0.55\textwidth}
-\begin{block}{Modellezési kérdés}
-\centering
-Hogyan jelezhető előre a bűnözés alakulása?
-\end{block}
-\end{minipage}
-\end{center}
 
 \end{frame}
 
 % 3
 \begin{frame}{Elméleti háttér: geometriai Brown-mozgás}
 
-    \begin{columns}[T]
+    \begin{columns}[c,onlytextwidth]
 
         % BAL OSZLOP: Modellegyenletek (A kép alapján)
-        \begin{column}{0.53\textwidth}
+        \begin{column}{0.5\textwidth}
 
             \begin{block}{Sztochasztikus differenciálegyenlet}
                 \vspace{-0.2cm}
@@ -221,34 +223,59 @@ Csökkenti a fák korrelációját és ezáltal a modell varianciáját.
 
 \end{frame}
 
+
 % 3
 \begin{frame}{Adatok: Chicago bűnözési adatai}
-\begin{columns}[T]
+
+\vspace{0.1cm}
+
+\begin{columns}[c,totalwidth=0.94\textwidth]
+
+% BAL OLDAL: ábra
 \begin{column}{0.48\textwidth}
 \centering
-\includegraphics[width=1\textwidth]{major_crimes_chicago.png}
+\includegraphics[
+  width=1.05\linewidth,
+  height=0.54\textheight,
+  keepaspectratio
+]{major_crimes_chicago_2.png}
+
+\vspace{0.15cm}
+{\small A leggyakoribb bűncselekménytípusok megoszlása.}
 \end{column}
-\begin{column}{0.48\textwidth}
-\begin{block}{Felhasznált felbontások}
+
+\hfill
+
+% JOBB OLDAL: blokkok
+\begin{column}{0.44\textwidth}
+
+\begin{block}{Bűnözési adatok}
 \begin{itemize}
-  \item \textbf{2001--2025}: több millió rekord
-  \item \textbf{havi idősor}: rendőrségi körzetek
-  \item \textbf{éves panel}: Community Area szint
-  \item \textbf{ACS}: társadalmi-demográfiai adatok
+  \setlength\itemsep{0.08cm}
+  \item Chicago nyilvános bűnözési adatbázisa
+  \item időszak: 2001--2025
+  \item több millió rekord
+  \item több szintű térbeli felbontás
 \end{itemize}
 \end{block}
-\vspace{0.35cm}
-\begin{block}{Kiértékelés}
+
+\vspace{0.14cm}
+
+\begin{block}{Demográfiai adatok}
 \begin{itemize}
-  \item RMSE, MAE, MAPE, Accuracy
-  \item típusonként: WMAPE
+  \setlength\itemsep{0.08cm}
+  \item American Community Survey adatok
+  \item Community Area szintű felbontás
+  \item éves adatok
+  \item társadalmi-demográfiai jellemzők
 \end{itemize}
 \end{block}
+
 \end{column}
+
 \end{columns}
+
 \end{frame}
-
-
 % 4
 
 \begin{frame}{Modellezési terv}
@@ -387,23 +414,49 @@ Csökkenti a fák korrelációját és ezáltal a modell varianciáját.
 % 6
 % 7
 \begin{frame}{Baseline modell: 3 hónapos mozgóátlag}
-\begin{columns}[T]
-\begin{column}{0.52\textwidth}
+
+\begin{columns}[T,totalwidth=0.90\textwidth]
+
+\begin{column}{0.48\textwidth}
 \centering
 \begin{tikzpicture}[every node/.style={font=\scriptsize}]
   \node[draw,rounded corners,fill=softblue!12,minimum width=1.15cm,minimum height=0.75cm] (oct) at (0,0) {okt.};
   \node[draw,rounded corners,fill=softblue!12,minimum width=1.15cm,minimum height=0.75cm,right=0.25cm of oct] (nov) {nov.};
   \node[draw,rounded corners,fill=softblue!12,minimum width=1.15cm,minimum height=0.75cm,right=0.25cm of nov] (dec) {dec.};
+
   \node[draw,rounded corners,fill=softgreen!18,minimum width=2.3cm,minimum height=0.85cm,below=0.9cm of nov,align=center] (avg) {átlag\\$\bar y_{3h}$};
+
   \node[draw,rounded corners,fill=softorange!18,minimum width=4.4cm,minimum height=0.9cm,below=0.9cm of avg,align=center] (pred) {ugyanaz az előrejelzés\\2025. jan.--aug.};
+
   \draw[-Latex,thick] (oct) -- (avg);
   \draw[-Latex,thick] (nov) -- (avg);
   \draw[-Latex,thick] (dec) -- (avg);
   \draw[-Latex,thick] (avg) -- (pred);
 \end{tikzpicture}
+
 \vspace{0.35cm}
 
-\begin{center}
+\end{column}
+
+\hfill
+
+\begin{column}{0.38\textwidth}
+\vspace{0.8cm}
+
+\begin{block}{Miért kellett baseline?}
+\begin{itemize}
+  \item egyszerű viszonyítási alap,
+  \item nem tanul paramétereket,
+  \item csak a legutóbbi rövid távú bűnözési szintből indul ki.
+\end{itemize}
+\end{block}
+
+\end{column}
+
+\end{columns}
+ \vfill
+
+\makebox[\textwidth][c]{%
 \begin{tabular}{llll}
 \toprule
 RMSE & MAE & MAPE & Acc.\\
@@ -411,60 +464,64 @@ RMSE & MAE & MAPE & Acc.\\
 3.19 & 2.51 & 8.81 & 91.19\\
 \bottomrule
 \end{tabular}
-\end{center}
-\end{column}
-\begin{column}{0.44\textwidth}
-\begin{block}{Miért kellett baseline?}
-\begin{itemize}
-  \item egyszerű viszonyítási alap,
-  \item nem tanul paramétereket,
-  \item csak a legutóbbi rövid távú szintet használja.
-\end{itemize}
-\end{block}
-\vspace{0.2cm}
-\begin{block}{Értelmezés}
-A jó baseline-eredmény azt mutatja, hogy a bűnözési adatokban erős \textbf{rövid távú perzisztencia} van.
-\end{block}
+}
 
-\end{column}
-\end{columns}
 \end{frame}
 
 % 8
 \begin{frame}{GBM modell: korrelált Brown-mozgások}
-\begin{columns}[T]
-\begin{column}{0.50\textwidth}
-\begin{block}{Körzetenkénti modell}
-\[
- dS_{i,t}=\mu_i S_{i,t}dt+\sigma_i S_{i,t}dW_{i,t}
-\]
-\[
- S_{i,t}=S_{i,0}\exp\!\left(\left(\mu_i-\frac{\sigma_i^2}{2}\right)t+\sigma_iW_{i,t}\right)
-\]
-\end{block}
-\begin{itemize}
-  \item $\mu_i$: hosszú távú trend,
-  \item $\sigma_i$: volatilitás,
-  \item $S_{i,0}$: 2024. decemberi érték.
-\end{itemize}
-\begin{block}{Lényeg}
-A GBM nem determinisztikus predikció, hanem \textbf{lehetséges jövőbeli pályák} szimulációja.
-\end{block}
-\end{column}
-\begin{column}{0.46\textwidth}
-\centering
-\begin{tikzpicture}[every node/.style={font=\scriptsize}]
-  \node[draw,rounded corners,fill=softblue!15,minimum width=4.7cm,minimum height=0.65cm] (returns) {körzetenkénti loghozamok};
-  \node[draw,rounded corners,fill=softgreen!15,below=0.48cm of returns,minimum width=4.7cm,minimum height=0.65cm] (corr) {korrelációs mátrix $R$};
-  \node[draw,rounded corners,fill=softorange!15,below=0.48cm of corr,minimum width=4.7cm,minimum height=0.65cm] (chol) {Cholesky-felbontás $R=LL^T$};
-  \node[draw,rounded corners,fill=softred!15,below=0.48cm of chol,minimum width=4.7cm,minimum height=0.65cm] (scen) {10 000 szimulált pálya};
-  \node[draw,rounded corners,fill=gray!12,below=0.48cm of scen,minimum width=4.7cm,minimum height=0.65cm] (best) {legkisebb átlagos RMSE};
-  \foreach \a/\b in {returns/corr,corr/chol,chol/scen,scen/best}{\draw[-Latex,thick] (\a) -- (\b);} 
-\end{tikzpicture}
-\vspace{0.2cm}
+% Az onlytextwidth biztosítja, hogy a dia két szélén megmaradjon a standard beamer margó
+\begin{columns}[T, onlytextwidth]
+
+\begin{column}{0.48\textwidth}
+  \begin{block}{Körzetenkénti modell}
+    \[
+     dS_{i,t}=\mu_i S_{i,t}dt+\sigma_i S_{i,t}dW_{i,t}
+    \]
+    \[
+     S_{i,t}=S_{i,0}\exp\!\left(\left(\mu_i-\frac{\sigma_i^2}{2}\right)t+\sigma_iW_{i,t}\right)
+    \]
+  \end{block}
+
+  \vspace{0.1cm} % Kis térköz a blokk és a felsorolás közé, hogy szellősebb legyen
+
+  % A leftmargini lokális átállításával a pöttyök egy vonalba kerülnek a fenti blokk bal szélével
+  \begingroup
+  \setlength{\leftmargini}{1.2em}
+  \begin{itemize}
+    \item $\mu_{i,t}=\log(S_{i,t+1}/S_{i,t})$
+    \item $\mu_i=\overline{\mu_{i,t}}+0.5\cdot \operatorname{sd}(\mu_{i,t})^2$: drift.
+    \item $\sigma_i=\operatorname{sd}(\mu_{i,t})$: volatilitás.
+    \item $S_{i,0}$: 2024. decemberi érték.
+  \end{itemize}
+  \endgroup
 
 \end{column}
+
+\begin{column}{0.48\textwidth} % Szintén 0.48, hogy szimmetrikus legyen
+  \centering
+  \vspace{0.2cm} % Kicsit lejjebb toljuk, hogy egyvonalban legyen a bal oldali tartalommal
+  \begin{tikzpicture}[every node/.style={font=\scriptsize}]
+    \node[draw,rounded corners,fill=softblue!15,minimum width=4.7cm,minimum height=0.65cm] (returns) {körzetenkénti loghozamok};
+    \node[draw,rounded corners,fill=softgreen!15,below=0.48cm of returns,minimum width=4.7cm,minimum height=0.65cm] (corr) {korrelációs mátrix $R$};
+    \node[draw,rounded corners,fill=softorange!15,below=0.48cm of corr,minimum width=4.7cm,minimum height=0.65cm] (chol) {Cholesky-felbontás $R=LL^T$};
+    \node[draw,rounded corners,fill=softred!15,below=0.48cm of chol,minimum width=4.7cm,minimum height=0.65cm] (scen) {10 000 szimulált pálya};
+    \node[draw,rounded corners,fill=gray!12,below=0.48cm of scen,minimum width=4.7cm,minimum height=0.65cm] (best) {legkisebb átlagos RMSE};
+    \foreach \a/\b in {returns/corr,corr/chol,chol/scen,scen/best}{\draw[-Latex,thick] (\a) -- (\b);}
+  \end{tikzpicture}
+\end{column}
+
 \end{columns}
+
+\vspace{-0.1cm} % Helykihagyás az alsó fókuszblokk előtt
+
+\begin{center}
+  \begin{minipage}{0.94\textwidth}
+    \begin{block}{Lényeg}
+      A GBM nem determinisztikus predikció, hanem lehetséges jövőbeli pályák szimulációja.
+    \end{block}
+  \end{minipage}
+\end{center}
 \end{frame}
 
 % 9
@@ -477,8 +534,8 @@ A GBM nem determinisztikus predikció, hanem \textbf{lehetséges jövőbeli pál
   \begin{column}{0.32\textwidth}
     \centering
     \includegraphics[
-      width=0.9\textwidth,
-      trim=0.3cm 0.2cm 0.4cm 0.2cm,
+      width=0.85\textwidth,
+      trim=0.3cm 0.2cm 0.3cm 0.1cm,
       clip
     ]{gbm_predicted_heatmap_2.png}
 
@@ -491,8 +548,8 @@ A GBM nem determinisztikus predikció, hanem \textbf{lehetséges jövőbeli pál
   \begin{column}{0.32\textwidth}
     \centering
     \includegraphics[
-      width=0.9\textwidth,
-      trim=0.3cm 0.2cm 0.4cm 0.2cm,
+      width=0.85\textwidth,
+      trim=0.8cm 0.2cm 0.3cm 0.1cm,
       clip
     ]{gbm_actual_heatmap_2.png}
 
@@ -505,8 +562,8 @@ A GBM nem determinisztikus predikció, hanem \textbf{lehetséges jövőbeli pál
   \begin{column}{0.32\textwidth}
     \centering
     \includegraphics[
-      width=0.9\textwidth,
-      trim=0.3cm 0.2cm 0.4cm 0.2cm,
+      width=0.85\textwidth,
+      trim=0.3cm 0.2cm 0.3cm 0.2cm,
       clip
     ]{gbm_difference_heatmap_2.png}
 
@@ -541,7 +598,7 @@ RMSE & MAE & MAPE & Accuracy\\
 \begin{block}{Modell 1: lag feature-ök}
 \begin{itemize}
   \item csak az előző hónapok értékei,
-  \item legjobb változat: \textbf{2 lag},
+  \item Időbeli és szezonális feature-ök,
   \item rövid távú múlt hatását méri.
 \end{itemize}
 \end{block}
@@ -570,8 +627,8 @@ RMSE & MAE & MAPE & Acc.\\
 \begin{block}{Modell 2: lag + rolling feature-ök}
 \begin{itemize}
   \item lag + mozgóátlag + mozgószórás,
-  \item trendet és ingadozást is megad,
-  \item \textbf{legjobb MAPE és Accuracy}.
+  \item Időbeli és szezonális feature-ök,
+  \item trendet és ingadozást is megad.
 \end{itemize}
 \end{block}
 \centering
@@ -601,54 +658,56 @@ RMSE & MAE & MAPE & Acc.\\
 \vspace{0.05cm}
 \centering
 
-\end{frame}
-\begin{frame}{Random Forest modellek összehasonlítása}
+\end{frame}\begin{frame}{Random Forest modellek összehasonlítása}
 
-\vspace{-0.2cm}
+\vspace{0.2cm}
 
 \begin{columns}[T,onlytextwidth]
 
 \begin{column}{0.33\textwidth}
 \centering
 \includegraphics[
-  height=0.42\textheight,
-  trim=0.4cm 0.4cm 0.3cm 1.5cm,
+  width=0.85\textwidth,
+  trim=0.3cm 0.2cm 0.3cm 0.2cm,
   clip
 ]{lagged_predicted_heatmap.png}
 
+\par\vspace{-0.6cm}
 {\scriptsize RF lag -- előrejelzés}
 \end{column}
 
 \begin{column}{0.33\textwidth}
 \centering
 \includegraphics[
-  height=0.42\textheight,
-  trim=0.4cm 0.4cm 0.3cm 1.5cm,
+  width=0.85\textwidth,
+  trim=0.3cm 0.2cm 0.3cm 0.2cm,
   clip
 ]{gbm_actual_heatmap_2.png}
 
+\par\vspace{-0.6cm}
 {\scriptsize Valós adatok}
 \end{column}
 
 \begin{column}{0.33\textwidth}
 \centering
 \includegraphics[
-  height=0.42\textheight,
-  trim=0.4cm 0.4cm 0.3cm 1.5cm,
+  width=0.85\textwidth,
+  trim=0.3cm 0.2cm 0.3cm 0.2cm,
   clip
 ]{rollingmean_predicted_heatmap.png}
 
+\par\vspace{-0.6cm}
 {\scriptsize RF rolling -- előrejelzés}
 \end{column}
 
 \end{columns}
 
-\vspace{0.35cm}
+\vspace{-0.1cm}
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
 \begin{block}{Megfigyelés}
-A két modell előrejelzése a főbb térbeli mintázatokat jól követi, azonban a rolling feature-ökkel kiegészített modell összességében pontosabb eredményt adott.
+A térbeli mintázatok jól látszanak, a rolling feature-ös modell pontosabb.
 \end{block}
 \end{minipage}
 \end{center}
@@ -660,78 +719,93 @@ A két modell előrejelzése a főbb térbeli mintázatokat jól követi, azonba
 % 8
 \begin{frame}{Modellek összehasonlítása}
 
-\begin{columns}[T,onlytextwidth]
+% Az [onlytextwidth] továbbra is kell, de most az oszlopok szélessége tudatosan NEM éri el az 1.0-t.
+% Bal oszlop (0.54) + Jobb oszlop (0.32) = 0.86. A maradék 0.14\textwidth (14% szabad hely)
+% úgy lesz elosztva, hogy a jobb oldalon jelentős üres margó keletkezik.
+\begin{columns}[T, onlytextwidth]
+    \begin{column}{0.0001\textwidth}
+    % Szándékosan üresen hagyva a jobb oldali nagy margóért
+  \end{column}
+  % BAL OLDAL (Táblázat és Grafikon) - kicsit keskenyebb lett, hogy beljebb húzódjon
+  \begin{column}{0.55\textwidth}
 
-% BAL OLDAL
-\begin{column}{0.62\textwidth}
+    \begin{table}
+    \centering
+    \small
+    \begin{tabular}{lrrrr}
+    \toprule
+    Modell & RMSE & MAE & MAPE & Acc. (\%) \\
+    \midrule
+    RF rolling & 3.23 & 2.12 & 7.29 & 92.71 \\
+    Baseline   & 3.19 & 2.51 & 8.81 & 91.19 \\
+    GBM        & 3.34 & 2.64 & 8.93 & 91.07 \\
+    RF lag     & 3.11 & 2.53 & 9.18 & 90.82 \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
 
-\begin{table}
-\centering
-\small
-\begin{tabular}{lrrrr}
-\toprule
-Modell & RMSE & MAE & MAPE & Acc.\\
-\midrule
-RF rolling & 3.23 & 2.12 & 7.29 & 92.71\\
-Baseline & 3.19 & 2.51 & 8.81 & 91.19\\
-GBM & 3.34 & 2.64 & 8.93 & 91.07\\
-RF lag & 3.11 & 2.53 & 9.18 & 90.82\\
-\bottomrule
-\end{tabular}
-\end{table}
+    \vspace{0.15cm}
 
-\vspace{0.25cm}
+    \centering
+    \begin{tikzpicture}
+    \begin{axis}[
+      ybar,
+      width=1.0\textwidth, % Továbbra is pontosan követi a felette lévő táblázat szélét
+      height=3.8cm,
+      ymin=88,
+      ymax=94,
+      ylabel={Accuracy (\%)},
+      symbolic x coords={RF rolling,Baseline,GBM,RF lag},
+      xtick=data,
+      xticklabel style={font=\scriptsize,rotate=15,anchor=east},
+      tick label style={font=\scriptsize},
+      label style={font=\scriptsize},
+      nodes near coords,
+      every node near coord/.append style={font=\scriptsize, /pgf/number format/fixed},
+      bar width=12pt, % Kicsit keskenyebb oszlopok, hogy illeszkedjen a kisebb szélességhez
+      grid=major,
+      grid style={gray!20},
+    ]
+    \addplot[fill=deepblue!85,draw=deepblue] coordinates {
+      (RF rolling,92.71)
+      (Baseline,91.19)
+      (GBM,91.07)
+      (RF lag,90.82)
+    };
+    \end{axis}
+    \end{tikzpicture}
 
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-  ybar,
-  width=0.9\textwidth,
-  height=4.0cm,
-  ymin=88,
-  ymax=94,
-  ylabel={Accuracy (\%)},
-  symbolic x coords={RF rolling,Baseline,GBM,RF lag},
-  xtick=data,
-  xticklabel style={font=\scriptsize,rotate=18,anchor=east},
-  tick label style={font=\scriptsize},
-  label style={font=\scriptsize},
-  nodes near coords,
-  every node near coord/.append style={font=\scriptsize},
-  bar width=16pt,
-  grid=major,
-  grid style={gray!20},
-]
-\addplot[fill=deepblue!85,draw=deepblue] coordinates {
-  (RF rolling,92.71)
-  (Baseline,91.19)
-  (GBM,91.07)
-  (RF lag,90.82)
-};
-\end{axis}
-\end{tikzpicture}
+  \end{column}
 
-\end{column}
+  % Belső rugalmas térköz a két oszlop között (vízszintes rugó)
+  \hfill
 
-% JOBB OLDAL
-\begin{column}{0.34\textwidth}
+  % JOBB OLDAL (Blokkok/Üzenetek) - szintén keskenyebb és beljebb van
+  \begin{column}{0.32\textwidth}
 
-\vspace{0.3cm}
+    \vspace{0.1cm}
 
-\begin{block}{Fő eredmény}
-\centering
-\textbf{RF rolling}\\
-adta a legjobb relatív pontosságot.
-\end{block}
+    \begin{block}{Fő eredmény}
+    \small
+    \centering
+    Random Forest mozgó változókkal kiegészítve\
+    adta a legjobb eredményt.
+    \end{block}
 
-\vspace{0.35cm}
+    \vspace{0.9cm}
 
-\begin{block}{Értelmezés}
-\centering
-A rolling feature-ök jobban megragadták a rövid távú mintázatokat.
-\end{block}
+    \begin{block}{Értelmezés}
+    \small
+    \centering
+    A mozgó változók jobban megragadták a rövid távú mintázatokat.
+    \end{block}
 
-\end{column}
+  \end{column}
+
+  % EXTRA ÜRES OSZLOP A JOBB SZÉLEN: ez kényszeríti a szöveget, hogy ne menjen ki a dia szélére
+  \begin{column}{0.03\textwidth}
+    % Szándékosan üresen hagyva a jobb oldali nagy margóért
+  \end{column}
 
 \end{columns}
 
@@ -772,37 +846,40 @@ Mely társadalmi-demográfiai jellemzők hordoznak információt az előrejelzé
 \begin{frame}{Példa: Lopás modell -- feature importance és permutation importance}
 
 \begin{columns}[T,onlytextwidth]
-
-\begin{column}{0.49\textwidth}
+\hfill
+\begin{column}{0.45\textwidth}
 \centering
 \includegraphics[
-  width=\textwidth,
-  trim=0.2cm 0.2cm 0.2cm 0.2cm,
+  width=0.92\textwidth,
+  trim=0.83cm 0.9cm 0.9cm 0.9cm,
   clip
 ]{RF_2024_by_THEFT_szocdem_Feature_importance.png}
-
+\par\vspace{-0.1cm}
 {\scriptsize Feature importance}
 \end{column}
-
-\begin{column}{0.49\textwidth}
+\hspace{0.04\textwidth}
+\begin{column}{0.45\textwidth}
 \centering
 \includegraphics[
-  width=\textwidth,
-  trim=0.2cm 0.2cm 0.2cm 0.2cm,
+  width=0.92\textwidth,
+  trim=0.83cm 0.9cm 0.9cm 0.9cm,
   clip
 ]{RF_2024_by_THEFT_szocdem_permutation_importance.png}
-
+\par\vspace{-0.1cm}
 {\scriptsize Permutation importance}
 \end{column}
-
+ \hfill
 \end{columns}
 
-\vspace{0.15cm}
+\vspace{0.1cm}
 
-\begin{block}{Értelmezés}
-Mindkét módszer szerint a \textbf{15--34 éves férfiak aránya} és a \textbf{teljes népesség} kiemelten fontos változó a lopások előrejelzésében.
-\end{block}
-
+\begin{center}
+  \begin{minipage}{0.94\textwidth}
+    \begin{block}{Értelmezés}
+      Mindkét módszer szerint a \textbf{15--34 éves férfiak aránya} és a \textbf{teljes népesség} kiemelten fontos változó a lopások előrejelzésében.
+    \end{block}
+  \end{minipage}
+\end{center}
 \end{frame}
 
 % 11
@@ -812,17 +889,19 @@ Mindkét módszer szerint a \textbf{15--34 éves férfiak aránya} és a \textbf
 \begin{frame}{Példa: Lopás modell -- SHAP összefoglaló ábra}
 
 \begin{columns}[T,onlytextwidth]
-
-\begin{column}{0.62\textwidth}
+ \hfill
+\begin{column}{0.6\textwidth}
 \centering
 \includegraphics[
-  width=0.9\textwidth,
-  trim=0.2cm 0.2cm 0.2cm 0.2cm,
+  width=0.85\textwidth,
+  trim=0.2cm 0.7cm 0.2cm 0.2cm,
   clip
 ]{RF_2024_by_THEFT_szocdem_shap_summary.png}
 \end{column}
 
-\begin{column}{0.34\textwidth}
+\hspace{0.02\textwidth}
+
+\begin{column}{0.32\textwidth}
 \begin{block}{Mit mutat a SHAP?}
 \begin{itemize}
   \item a változók \textbf{hatásának irányát} is megmutatja,
@@ -834,7 +913,9 @@ Mindkét módszer szerint a \textbf{15--34 éves férfiak aránya} és a \textbf
 \vspace{0.15cm}
 
 \end{column}
-
+ \begin{column}{0.08\textwidth}
+    % Szándékosan üresen hagyva a jobb oldali nagy margóért
+  \end{column}
 \end{columns}
 
 \end{frame}
@@ -850,7 +931,7 @@ Mindkét módszer szerint a \textbf{15--34 éves férfiak aránya} és a \textbf
   width=\textwidth,
   trim=0.2cm 0.2cm 0.2cm 0.2cm,
   clip
-]{socio_feature_relative_importance_heatmap_2.png}
+]{socio_feature_relative_importance_heatmap_ppt.png}
 \end{column}
 
 \begin{column}{0.25\textwidth}
@@ -890,11 +971,79 @@ A predikció és az értelmezhetőség eltérő modellezési döntéseket igény
 \end{columns}
 \end{frame}
 
+\begin{frame}{A gyakorlati rész fő tanulságai}
+
+\begin{columns}[c,onlytextwidth]
+
+% BAL OLDAL: rövidebb ábra
+\begin{column}{0.38\textwidth}
+\centering
+\begin{tikzpicture}[every node/.style={font=\scriptsize}, >=Latex]
+
+\node[
+  draw=deepblue, very thick, rounded corners,
+  fill=softblue!12,
+  minimum width=3.1cm, minimum height=0.65cm,
+  align=center
+] (gbm) at (0,0) {GBM};
+
+\node[
+  draw=deepblue, very thick, rounded corners,
+  fill=softgreen!15,
+  minimum width=3.1cm, minimum height=0.65cm,
+  align=center
+] (rf) at (0,-1.2) {Random Forest};
+
+\node[
+  draw=deepblue, very thick, rounded corners,
+  fill=softorange!15,
+  minimum width=3.1cm, minimum height=0.65cm,
+  align=center
+] (demo) at (0,-2.4) {Demográfia};
+
+\node[
+  draw=deepblue, very thick, rounded corners,
+  fill=softred!10,
+  minimum width=3.8cm, minimum height=0.75cm,
+  align=center
+] (concl) at (0,-3.8) {Előrejelzés\\és értelmezés};
+
+\draw[->,thick] (gbm) -- (rf);
+\draw[->,thick] (rf) -- (demo);
+\draw[->,thick] (demo) -- (concl);
+
+\end{tikzpicture}
+\end{column}
+
+% JOBB OLDAL: rövidebb szöveg
+\begin{column}{0.58\textwidth}
+
+\begin{block}{Fő megállapítások}
+\begin{itemize}
+  \item \textbf{GBM:} több lehetséges jövőbeli pályát szimulált, így a bizonytalanságot is szemléltette.
+  \item \textbf{RF lag:} a rövid távú múltbeli információ bizonyult fontosnak.
+  \item \textbf{RF rolling:} a legjobb eredményt adta MAPE és Accuracy alapján.
+  \item \textbf{Demográfia:} kiegészítő magyarázó erőt adott, főként az értelmezésben.
+\end{itemize}
+\end{block}
+
+\vspace{0.15cm}
+
+\begin{block}{Összegzés}
+A bűnözési gyakoriság többféle szemléletből is eredményesen vizsgálható.
+\end{block}
+
+\end{column}
+
+\end{columns}
+
+\end{frame}
+
 % 14
 \begin{frame}{Köszönöm a figyelmet!}
 \centering
 \vspace{1.0cm}
-{\Large Köszöm a figyelmet!}
+{\Large Köszönöm a figyelmet!}
 
 \end{frame}
 
